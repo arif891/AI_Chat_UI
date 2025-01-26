@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+    <title>LayX Document</title>
+
+    <link rel="stylesheet" href="/layx/layx.css">
+
+    <link rel="stylesheet" href="/assets/css/base.css">
+    <link rel="stylesheet" href="/assets/css/pages/chat_app.css">
+
+    <link rel="manifest" href="layx/others/pwa/assets/app.webmanifest">
+
+    <!-- Font file should be preloaded -->
+    <link rel="preload" href="/assets/font/Red_Hat_Display_variable.woff2" as="font" crossorigin>
+  </head>
+
+  <body>
+
+    <!-- Icons -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <symbol viewBox="0 0 16 16" id="sidebar-icon">
+        <path
+          d="M14 2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM2 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2z" />
+        <path d="M3 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" />
+      </symbol>
+      <symbol viewBox="0 0 16 16" id="clip-icon">
+        <path
+          d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0z" />
+      </symbol>
+      <symbol viewBox="0 0 16 16" id="globe-icon">
+        <path
+          d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855q-.215.403-.395.872c.705.157 1.472.257 2.282.287zM4.249 3.539q.214-.577.481-1.078a7 7 0 0 1 .597-.933A7 7 0 0 0 3.051 3.05q.544.277 1.198.49zM3.509 7.5c.036-1.07.188-2.087.436-3.008a9 9 0 0 1-1.565-.667A6.96 6.96 0 0 0 1.018 7.5zm1.4-2.741a12.3 12.3 0 0 0-.4 2.741H7.5V5.091c-.91-.03-1.783-.145-2.591-.332M8.5 5.09V7.5h2.99a12.3 12.3 0 0 0-.399-2.741c-.808.187-1.681.301-2.591.332zM4.51 8.5c.035.987.176 1.914.399 2.741A13.6 13.6 0 0 1 7.5 10.91V8.5zm3.99 0v2.409c.91.03 1.783.145 2.591.332.223-.827.364-1.754.4-2.741zm-3.282 3.696q.18.469.395.872c.552 1.035 1.218 1.65 1.887 1.855V11.91c-.81.03-1.577.13-2.282.287zm.11 2.276a7 7 0 0 1-.598-.933 9 9 0 0 1-.481-1.079 8.4 8.4 0 0 0-1.198.49 7 7 0 0 0 2.276 1.522zm-1.383-2.964A13.4 13.4 0 0 1 3.508 8.5h-2.49a6.96 6.96 0 0 0 1.362 3.675c.47-.258.995-.482 1.565-.667m6.728 2.964a7 7 0 0 0 2.275-1.521 8.4 8.4 0 0 0-1.197-.49 9 9 0 0 1-.481 1.078 7 7 0 0 1-.597.933M8.5 11.909v3.014c.67-.204 1.335-.82 1.887-1.855q.216-.403.395-.872A12.6 12.6 0 0 0 8.5 11.91zm3.555-.401c.57.185 1.095.409 1.565.667A6.96 6.96 0 0 0 14.982 8.5h-2.49a13.4 13.4 0 0 1-.437 3.008M14.982 7.5a6.96 6.96 0 0 0-1.362-3.675c-.47.258-.995.482-1.565.667.248.92.4 1.938.437 3.008zM11.27 2.461q.266.502.482 1.078a8.4 8.4 0 0 0 1.196-.49 7 7 0 0 0-2.275-1.52c.218.283.418.597.597.932m-.488 1.343a8 8 0 0 0-.395-.872C9.835 1.897 9.17 1.282 8.5 1.077V4.09c.81-.03 1.577-.13 2.282-.287z" />
+      </symbol>
+      <symbol viewBox="0 0 16 16" id="arrow-up-icon">
+        <path fill-rule="evenodd"
+          d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5" />
+      </symbol>
+      <symbol viewBox="0 0 16 16" id="settings-icon">
+        <path
+          d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z" />
+      </symbol>
+      <symbol viewBox="0 0 16 16" id="search-icon">
+        <path
+          d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+      </symbol>
+      <symbol viewBox="0 0 16 16" id="plus-icon">
+        <path fill-rule="evenodd"
+          d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
+      </symbol>
+      <symbol viewBox="0 0 16 16" id="down-icon">
+        <path fill-rule="evenodd"
+          d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+      </symbol>
+      <symbol viewBox="0 0 16 16" id="activity-icon">
+        <path fill-rule="evenodd"
+          d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2" />
+      </symbol>
+      <symbol viewBox="0 0 16 16" id="stars-icon">
+        <path
+          d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.361.361 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.361.361 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.828zM3.794 1.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387A1.73 1.73 0 0 0 4.593 5.69l-.387 1.162a.217.217 0 0 1-.412 0L3.407 5.69A1.73 1.73 0 0 0 2.31 4.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387A1.73 1.73 0 0 0 3.407 2.31zM10.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732L9.1 2.137a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z" />
+      </symbol>
+    </svg>
+
+
+
+    <div class="chat__wrapper initial" id="chat-app-root">
+      <div class="side__nav">
+        <div class="header__wrapper">
+          <button class="icon__btn sidebar-toggler">
+            <svg class="icon">
+              <use href="#sidebar-icon" />
+            </svg>
+          </button>
+          <button class="icon__btn">
+            <svg class="icon">
+              <use href="#search-icon" />
+            </svg>
+          </button>
+        </div>
+        <div class="top__wrapper">
+          <button class="" id="new-chat-button">
+            <svg class="icon">
+              <use href="#plus-icon" />
+            </svg>
+            <span> New Chat</span>
+          </button>
+          <p class="history__text">Recent</p>
+        </div>
+        <div class="history__wrapper">
+          <div class="scroll__container" id="chat-history-container">
+            <div class="items__wrapper">
+              <a href="#" class="item" data-chat-id="01">What is LayX framework?</a>
+              <a href="#" class="item">Some history text.</a>
+              <a href="#" class="item">Some history text.</a>
+              <a href="#" class="item">Some history text.</a>
+              <a href="#" class="item">Some history text.</a>
+              <a href="#" class="item">Some history text.</a>
+            </div>
+          </div>
+        </div>
+        <div class="footer__wrapper">
+          <div class="block user">
+            <img class="avatar__img" src="/layx/others/dynamic_render/assets/user.webp" alt="">
+            <div class="user__info">
+              <span class="name">User Name</span>
+              <span class="subscription">Premium</span>
+            </div>
+          </div>
+          <div class="block settings">
+            <svg class="icon">
+              <use href="#settings-icon" />
+            </svg>
+            <span class="title__text">Settings</span>
+          </div>
+          <div class="block theme">
+            <div class="wrapper">
+              <button data-theme-value="light"></button>
+              <button data-theme-value="dark"></button>
+              <button data-theme-value="auto"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="window__wrapper">
+          <div class="header__wrapper">
+            <div class="start__wrapper">
+              <button class="icon__btn sidebar-toggler">
+                <svg class="icon">
+                  <use href="#sidebar-icon" />
+                </svg>
+              </button>
+              <button class="icon__btn model__selector">
+                <span>Model</span>
+                <svg class="icon">
+                  <use href="#down-icon" />
+                </svg>
+              </button>
+            </div>
+            <div class="end__wrapper">
+              <button class="activity">
+                <svg class="icon">
+                  <use href="#activity-icon" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="scroll__container">
+            <div class="chat__block__wrapper" id="content-container">
+
+            </div>
+          </div>
+          <div class="initial__content_wrapper">
+            <div class="content__wrapper">
+              <h3 class="new__chat_text">Hey, How can i help you today?</h3>
+            </div>
+          </div>
+          <div class="offline__content_wrapper">
+            <div class="content__wrapper">
+              <h3 class="offline__chat_text">Your offline. Get online to use Model.</h3>
+            </div>
+          </div>
+        </div>
+        <div class="action__wrapper">
+          <div class="chat__action" id="chat-action">
+            <textarea class="chat__textarea" id="chat-massage" placeholder="Ask to model"></textarea>
+            <div class="bottom__wrapper">
+              <button class="r chat__button">
+                <svg class="icon">
+                  <use href="#clip-icon" />
+                </svg>
+              </button>
+              <button class="r chat__button">
+                <svg class="icon">
+                  <use href="#globe-icon" />
+                </svg>
+              </button>
+              <button class="dark r chat__button send" id="chat-send-button">
+                <svg class="icon">
+                  <use href="#arrow-up-icon" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <span class="note">Model can make mistakes. Check important info.</span>
+        </div>
+      </div>
+    </div>
+
+
+    <script src="/layx/layx.js" type="module"></script>
+
+    <script src="/assets/js/base.js"></script>
+    <script src="/assets/js/pages/home.js"></script>
+
+    <script type="module">
+      import ChatUI from './assets/js/chat_app.js';
+      const ui = new ChatUI();
+ 
+      const contentBlocks = {
+        block: {
+          content: `What is LayX framework?`,
+          role: 'user'
+        },
+
+        block: {
+         content:
+         `<div class="text__block">
+             <p>LayX is a next-generation CSS framework that revolutionizes how developers
+               approach web layouts. Built with modern web standards in mind, it combines the
+               power of CSS Grid, Flexbox, and Custom Properties to deliver a flexible,
+               maintainable, and performant solution for web development.</p>
+          </div>
+          <div class="text__block">
+              <h6>Core Features</h6>
+              <ul>
+                <li>Zero-dependency architecture</li>
+                <li>Modern CSS Grid and Flexbox based layout system</li>
+                <li>Built-in responsive design capabilities</li>
+                <li>Performance-first approach</li>
+                <li>Component-driven development</li>
+              </ul>
+          </div>`,
+          role: 'model'
+        },
+
+        block: {
+          content: ``,
+          role: 'system'
+        }
+      }
+
+      function genChatBlock(content, role) {
+        switch (role) {
+          case 'user':
+            return
+            `<div class="chat__block user">
+                <span class="massage">${content}</span>
+            </div>`
+
+            break;
+
+          case 'model':
+            return
+            `<div class="chat__block model">
+                <svg class="icon model__logo">
+                  <use href="#stars-icon" />
+                </svg>
+                <div class="response_wrapper">
+                  <div class="response">
+                    ${content}
+                  </div>
+                  <div class="actions__wrapper">
+                    
+                  </div>
+                </div>
+            </div>`
+
+            break;
+
+          case 'system':
+            return
+            `<div class="chat__block system">
+               ${content} 
+             </div>`
+
+            break;
+        }
+      }
+
+      ui.chatButton.addEventListener('click', () => {
+        ui.root.classList.remove('initial');
+        ui.chatTextarea.value = '';
+      });
+    </script>
+  </body>
+
+</html>

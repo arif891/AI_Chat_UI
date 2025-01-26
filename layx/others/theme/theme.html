@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+
+        <link rel="stylesheet" href="theme.css">
+
+        <link rel="stylesheet" href="/layx/main/base/variable.css">
+        <link rel="stylesheet" href="/layx/main/base/base.css">
+        <link rel="stylesheet" href="/layx/main/typography/typography.css">
+        <link rel="stylesheet" href="/layx/main/container/container.css">
+        <link rel="stylesheet" href="/layx/components/button/button.css">
+
+
+
+        <style>
+            body {
+                transition: .3s;
+            }
+
+            button {
+                margin: 5px;
+            }
+
+            button[data-theme-value] {
+                display: inline-flex;
+                gap: .5rem;
+            }
+        </style>
+    </head>
+
+
+    <body>
+
+        <container class="__container">
+            <button class="theme-toggler ">Toggle Theme</button> 
+
+            <div class="wrapper">
+                <button data-theme-value="light">Light</button>
+                <button data-theme-value="dark">Dark</button>
+                <button data-theme-value="auto">Auto</button>
+            </div>
+    
+            <p>Theme Update: <span class="theme-update"></span></p>
+        </container>
+        
+        <script type="module">
+            import Theme from './theme.js';
+        </script>
+    </body>
+
+</html>

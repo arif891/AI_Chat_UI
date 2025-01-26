@@ -1,0 +1,7 @@
+.icon {
+    display: inline-block;
+    height: 1em;
+    aspect-ratio: 1;
+    fill: currentColor;
+    vertical-align: middle;
+}

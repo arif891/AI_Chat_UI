@@ -1,0 +1,167 @@
+sheet, .sheet {
+  --edge-offset-x: 0;
+  --edge-offset-y: 0;
+  --padding-x: 1rem;
+  --padding-y: 1rem;
+  --radius: 0;
+  --indicator-offset: .5rem;
+  --bg: var(--bg-color, #fff);
+  --transition: .3s;
+
+  visibility: hidden;
+  content-visibility: auto;
+  position: fixed;
+  z-index: 4;
+  background: var(--bg);
+  transition: var(--transition);
+  overscroll-behavior: none;
+
+  &[open] {
+    visibility: visible;
+  }
+
+  &:not(:has(.draggable-area)), .draggable-area {
+    user-select: none;
+  }
+
+  &:not(:has(.snap)) {
+    padding: var(--padding-y, var(--padding, .5rem)) var(--padding-x, var(--padding, .5rem));
+  }
+
+  &.top {
+    inset: var(--edge-offset-y, 0) var(--edge-offset-x, 0) auto;
+    translate: 0 -100%;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+
+  &.right {
+    inset: var(--edge-offset-y, 0) var(--edge-offset-x, 0) var(--edge-offset-y, 0) auto;
+    translate: 100% 0;
+    border-radius: var(--radius) 0 0 var(--radius);
+  }
+
+  &.bottom {
+    inset: auto var(--edge-offset-x, 0) var(--edge-offset-y, 0);
+    translate: 0 100%;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  &.left {
+    inset: var(--edge-offset-y, 0) auto var(--edge-offset-y, 0) var(--edge-offset-x, 0);
+    translate: -100% 0;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+
+  &.top, &.right, &.bottom, &.left {
+    &[open] {
+      translate: 0 0;
+    }
+  }
+
+  &.top, &.bottom {
+    .snap:not(.default) {
+      padding-inline: var(--padding-x, var(--padding, .5rem));
+
+      &:first-child {
+        padding-top: var(--padding-y, var(--padding, .5rem));
+      }
+
+      &:last-child {
+        padding-bottom: var(--padding-y, var(--padding, .5rem));
+      }
+    }
+  }
+
+  &.left, &.right {
+    .snap:not(.default) {
+      padding-block: var(--padding-y, var(--padding, .5rem));
+
+      &:first-child {
+        padding-left: var(--padding-x, var(--padding, .5rem));
+      }
+
+      &:last-child {
+        padding-right: var(--padding-x, var(--padding, .5rem));
+      }
+    }
+  }
+
+  &.rounded-all {
+    border-radius: var(--radius);
+  }
+
+  &:not(.no-indicator) {
+
+    &:not(:has(.draggable-area))::after, .draggable-area::after {
+      content: '';
+      position: absolute;
+      background: rgba(var(--color-rgb), .2);
+      border-radius: 5rem;
+    }
+
+    &.top, &.bottom {
+
+      &::after, .draggable-area::after {
+        margin-inline: auto;
+        height: .4rem;
+        width: 3.5rem;
+      }
+
+      .draggable-area::after {
+        inset: 50% 0 auto;
+        translate: 0 -50%;
+      }
+    }
+
+    &.left, &.right {
+
+      &::after, .draggable-area::after {
+        margin-block: auto;
+        height: 3.5rem;
+        width: .4rem;
+      }
+
+      .draggable-area {
+        position: relative;
+      }
+
+      .draggable-area::after {
+        inset: 0 50% 0;
+        translate: -50% 0;
+      }
+    }
+
+    &.top::after {
+      inset: auto 0 var(--indicator-offset, .5rem);
+    }
+
+    &.bottom::after {
+      inset: var(--indicator-offset, .5rem) 0 auto;
+    }
+
+    &.left::after {
+      inset: 0 var(--indicator-offset, .5rem) 0 auto;
+    }
+
+    &.right::after {
+      inset: 0 auto 0 var(--indicator-offset, .5rem);
+    }
+  }
+
+  .close {
+    --bg: none;
+    padding: unset;
+    height: 1rem;
+  }
+
+  &~.sheet-backdrop {
+    --backdrop-bg: rgba(var(--bg-color-rgb), .3);
+  }
+}
+
+@media (pointer: coarse) {
+  body:has(:is(sheet, .sheet)[open]) {
+    overscroll-behavior: none;
+    overflow: hidden;
+  }
+}

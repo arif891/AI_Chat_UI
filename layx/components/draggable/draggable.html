@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+
+        <link rel="stylesheet" href="draggable.css">
+
+        <link rel="stylesheet" href="/layx/main/base/base.css">
+        <link rel="stylesheet" href="/layx/main/typography/typography.css">
+
+        <style>
+            body {
+                margin: 0;
+                font-family: "Red Hat Display", sans-serif;
+                background-color: antiquewhite;
+                overscroll-behavior: none;
+            }
+
+            draggable {
+                --bg: rgba(255, 255, 255, .5);
+
+                height: 30vh;
+                width: 30vw;
+                border-radius: .5rem;
+                overflow: hidden;
+
+                &:not(.middle) {
+                  display: grid;
+                  place-content: center;
+                }
+
+                .draggable-area {
+                    background-color: rgba(255, 255, 255, .8);
+                }
+
+                p {
+                    margin: unset;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <draggable class="left">
+            <p>draggable</p>
+        </draggable>
+        <draggable class="right">
+            <p>draggable</p>
+        </draggable>
+        <draggable class="center middle">
+            <div class="draggable-area">
+                <p style="text-align: center;">draggable</p>
+            </div>
+        </draggable>
+        <draggable class="bottom">
+            <p>draggable</p>
+        </draggable>
+        <draggable class="bottom right">
+            <p>draggable</p>
+        </draggable>
+
+        <script type="module">
+          import Draggable from './draggable.js';
+        </script>
+
+    </body>
+
+</html>
