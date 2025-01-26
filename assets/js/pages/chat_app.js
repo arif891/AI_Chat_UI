@@ -23,6 +23,7 @@ class ChatUI {
       chatTextarea: '#chat-massage',
       chatButton: '#chat-send-button',
       chatHistoryContainer: '#chat-history-container',
+      contentScrollContainer: '#content-scroll-container',
       contentContainer: '#content-container',
       sidebarStateName: 'chat-sidebar-open',
       backdrop: '.chat-backdrop',
@@ -34,6 +35,7 @@ class ChatUI {
     this.chatButton = document.querySelector(this.options.chatButton);
     this.chatHistoryContainer = document.querySelector(this.options.chatHistoryContainer);
     this.chatHistoryItems = this.chatHistoryContainer.querySelectorAll('.item');
+    this.contentScrollContainer = document.querySelector(this.options.contentScrollContainer);
     this.contentContainer = document.querySelector(this.options.contentContainer);
 
     this.init();
@@ -121,21 +123,71 @@ class ChatUI {
       backdrop.classList.toggle('open');
     }
   }
+
+  sanitizeInput(input) {
+    return input
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  addMessage(content, role) {
+    const sanitizedContent = role === 'user' ? this.sanitizeInput(content) : content;
+    const messageBlock = this.genContentBlock(sanitizedContent, role);
+    this.contentContainer.insertAdjacentHTML('beforeend', messageBlock);
+  }
+
+  genContentBlock(content, role) {
+    switch (role) {
+      case 'user':
+        return `<div class="chat__block user">
+                  <span class="massage">${content}</span>
+                </div>`;
+  
+      case 'model':
+        return `<div class="chat__block model">
+                   <svg class="icon model__logo">
+                     <use href="#stars-icon" />
+                   </svg>
+                   <div class="response_wrapper">
+                     <div class="response">
+                       ${content}
+                     </div>
+                     <div class="actions__wrapper">
+                       
+                     </div>
+                   </div>
+                </div>`;
+  
+      case 'system':
+        return `<div class="chat__block system">
+                  ${content} 
+                </div>`;
+    }
+  }
+
+  scrollToBottom() {
+    this.contentScrollContainer.scrollTo({
+      top: this.contentScrollContainer.scrollHeight,
+      behavior: 'smooth'
+    });
+  }
 }
 
 
 
 const ui = new ChatUI();
 
-const contentBlocks = {
-  block: {
-    content: `What is LayX framework?`,
-    role: 'user'
+// Replace contentBlocks with messageHistory array
+const messageHistory = [
+  {
+    content: "What is LayX framework?",
+    role: "user"
   },
-
-  block: {
-    content:
-      `<div class="text__block">
+  {
+    content: `<div class="text__block">
        <p>LayX is a next-generation CSS framework that revolutionizes how developers
          approach web layouts. Built with modern web standards in mind, it combines the
          power of CSS Grid, Flexbox, and Custom Properties to deliver a flexible,
@@ -151,45 +203,36 @@ const contentBlocks = {
           <li>Component-driven development</li>
         </ul>
     </div>`,
-    role: 'model'
-  },
-
-  block: {
-    content: ``,
-    role: 'system'
+    role: "model"
   }
-};
-
-function genChatBlock(content, role) {
-  switch (role) {
-    case 'user':
-      return `<div class="chat__block user">
-                <span class="massage">${content}</span>
-              </div>`;
-
-    case 'model':
-      return `<div class="chat__block model">
-                 <svg class="icon model__logo">
-                   <use href="#stars-icon" />
-                 </svg>
-                 <div class="response_wrapper">
-                   <div class="response">
-                     ${content}
-                   </div>
-                   <div class="actions__wrapper">
-                     
-                   </div>
-                 </div>
-              </div>`;
-
-    case 'system':
-      return `<div class="chat__block system">
-                ${content} 
-              </div>`;
-  }
-}
+];
 
 ui.chatButton.addEventListener('click', () => {
-  ui.root.classList.remove('initial');
-  ui.chatTextarea.value = '';
+  example();
 });
+
+ui.chatTextarea.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    example();
+  }
+});
+
+// Replace example function
+function example() {
+  ui.root.classList.remove('initial');
+  const userContent = ui.chatTextarea.value;
+  ui.chatTextarea.value = '';
+  if (!userContent) return;
+
+  // Add user message
+  ui.addMessage(userContent, 'user');
+
+  // Simulate response delay
+  setTimeout(() => {
+    // For demo purposes, just show the first model response from messageHistory
+    const modelResponse = messageHistory[1];
+    ui.addMessage(modelResponse.content, modelResponse.role);
+    ui.scrollToBottom();
+  }, 500);
+}
