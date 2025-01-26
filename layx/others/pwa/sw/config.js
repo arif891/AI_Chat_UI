@@ -13,11 +13,10 @@ export const CONFIG = {
             name: 'offline-cache',
             version: 1,
             urls: [
-                '/pages/pwa/offline_activity.html',
-                '/pages/pwa/fallback.html',
-                '/assets/css/pwa/pwa.css',
-                '/assets/js/pwa/pwa.js',
-                '/assets/pwa/caches/fallback.webp'
+                '/assets/css/base.css',
+                '/assets/css/pages/chat_app.css',
+                '/assets/js/base.js',
+                '/assets/js/pages/chat_app.js'
             ],
             priority: 'reliability'
         },
@@ -41,7 +40,6 @@ export const CONFIG = {
             name: 'runtime-cache',
             version: 1,
             exclude: {
-                urls: ['/form/*'],
                 types: ['video', 'audio']
             },
             maxItems: 200,
@@ -72,7 +70,7 @@ export const CONFIG = {
     },
 
     form: {
-        enabled: true,
+        enabled: false,
         syncInterval: 5 * 60 * 1000, // 5 minutes
         maxRetries: 3,
         queueName: 'form-sync-queue',
