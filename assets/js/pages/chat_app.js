@@ -123,5 +123,81 @@ class ChatUI {
     }
 }
 
-// Export for module usage
-export default ChatUI;
+
+
+const ui = new ChatUI();
+
+const contentBlocks = {
+  block: {
+    content: `What is LayX framework?`,
+    role: 'user'
+  },
+
+  block: {
+   content:
+   `<div class="text__block">
+       <p>LayX is a next-generation CSS framework that revolutionizes how developers
+         approach web layouts. Built with modern web standards in mind, it combines the
+         power of CSS Grid, Flexbox, and Custom Properties to deliver a flexible,
+         maintainable, and performant solution for web development.</p>
+    </div>
+    <div class="text__block">
+        <h6>Core Features</h6>
+        <ul>
+          <li>Zero-dependency architecture</li>
+          <li>Modern CSS Grid and Flexbox based layout system</li>
+          <li>Built-in responsive design capabilities</li>
+          <li>Performance-first approach</li>
+          <li>Component-driven development</li>
+        </ul>
+    </div>`,
+    role: 'model'
+  },
+
+  block: {
+    content: ``,
+    role: 'system'
+  }
+}
+
+function genChatBlock(content, role) {
+  switch (role) {
+    case 'user':
+      return `<div class="chat__block user">
+                <span class="massage">${content}</span>
+              </div>`
+
+      break;
+
+    case 'model':
+      return
+      `<div class="chat__block model">
+          <svg class="icon model__logo">
+            <use href="#stars-icon" />
+          </svg>
+          <div class="response_wrapper">
+            <div class="response">
+              ${content}
+            </div>
+            <div class="actions__wrapper">
+              
+            </div>
+          </div>
+      </div>`
+
+      break;
+
+    case 'system':
+      return
+      `<div class="chat__block system">
+         ${content} 
+       </div>`
+
+      break;
+  }
+}
+
+ui.chatButton.addEventListener('click', () => {
+  ui.root.classList.remove('initial');
+  ui.chatTextarea.value = '';
+});
