@@ -1,14 +1,14 @@
 {
-  "name": "My PWA",
-  "short_name": "MyPWA",
-  "description": "A comprehensive example of a Progressive Web App",
+  "name": "AI Chat",
+  "short_name": "AI",
+  "description": "A comprehensive example of a AI Chat Web App",
   "categories": [
     "productivity",
     "utilities"
   ],
   "start_url": "/",
   "scope": "/",
-  "id": "com.example.pwa",
+  "id": "com.example.ai",
   "version": "1.0.0",
   "theme_color": "#fff",
   "background_color": "#fff",
@@ -19,34 +19,10 @@
   
   "icons": [
     {
-      "src": "assets/brand/logo.svg",
+      "src": "/assets/brand/logo.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
-    },
-    {
-      "src": "assets/brand/icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "assets/brand/icons/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "assets/brand/icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "assets/brand/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
     }
   ]
 }
