@@ -158,7 +158,7 @@ const contentBlocks = {
     content: ``,
     role: 'system'
   }
-};
+}
 
 function genChatBlock(content, role) {
   switch (role) {
