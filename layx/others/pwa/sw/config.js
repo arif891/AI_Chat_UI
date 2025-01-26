@@ -2,7 +2,7 @@ export const CONFIG = {
     version: '1.0.0',
     navigationPreload: true,
     debug: {
-        enabled: true,
+        enabled: false,
         level: 'debug', // 'error' | 'warn' | 'info' | 'debug'
         logToServer: false,
         serverEndpoint: '/api/logs'
@@ -67,38 +67,5 @@ export const CONFIG = {
             'X-API-Version': 'v1',
             'X-Client-Type': 'pwa'
         }
-    },
-
-    form: {
-        enabled: false,
-        syncInterval: 5 * 60 * 1000, // 5 minutes
-        maxRetries: 3,
-        queueName: 'form-sync-queue',
-    },
-
-    fallback: {
-        document: '/pages/pwa/fallback.html',
-        image: '/assets/pwa/caches/fallback.webp'
-    },
-
-    performance: {
-       
-    },
-
-    notifications: {
-        enabled: true,
-        defaultIcon: '/assets/icons/notification.png',
-        defaultBadge: '/assets/icons/badge.png',
-        requireInteraction: false,
-        defaultVibrate: [200, 100, 200]
-    },
-
-    offline: {
-        autoSync: true,
-        syncPriority: ['notifications', 'forms'],
-        connectionChecks: {
-            interval: 30000,
-            timeout: 5000
-        }
-    },
+    }
 };
