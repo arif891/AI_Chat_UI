@@ -165,8 +165,7 @@ function genChatBlock(content, role) {
     case 'user':
       return `<div class="chat__block user">
                 <span class="massage">${content}</span>
-              </div>`
-      break;
+              </div>`;
 
     case 'model':
       return `<div class="chat__block model">
@@ -181,14 +180,12 @@ function genChatBlock(content, role) {
                      
                    </div>
                  </div>
-              </div>`
-      break;
+              </div>`;
 
     case 'system':
       return `<div class="chat__block system">
                 ${content} 
-              </div>`
-      break;
+              </div>`;
   }
 }
 
