@@ -134,12 +134,16 @@
                   <use href="#sidebar-icon" />
                 </svg>
               </button>
-              <button class="icon__btn model__selector">
+              <div class="btn icon__btn model__selector" tabindex="0">
                 <span>Model</span>
                 <svg class="icon">
                   <use href="#down-icon" />
                 </svg>
-              </button>
+                <div class="model__menu">
+                  <button class="model">Model X</button>
+                  <button class="model">Model Y</button>
+                </div>
+              </div>
             </div>
             <div class="end__wrapper">
               <button class="activity">
@@ -147,7 +151,7 @@
                   <use href="#activity-icon" />
                 </svg>
               </button>
-              <button class="dark r">Login</button>
+              <button class="dark r" style="display: none;">Login</button>
             </div>
           </div>
           <div class="scroll__container">

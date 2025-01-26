@@ -19,7 +19,8 @@
             --sidebar-width: 1px;
         }
 
-        &.sidebar-open, &.sidebar-hover-open:has(.side__nav:hover) {
+        &.sidebar-open,
+        &.sidebar-hover-open:has(.side__nav:hover) {
             --sidebar-width: 20rem !important;
         }
     }
@@ -271,6 +272,7 @@
                         display: flex;
                         align-items: center;
                         gap: var(--space);
+                        position: relative;
 
                         span {
                             font-weight: 500;
@@ -279,6 +281,36 @@
 
                         .icon {
                             height: 1em;
+                        }
+
+                        .model__menu {
+                            display: flex;
+                            flex-direction: column;
+                            padding: var(--space);
+                            position: absolute;
+                            top: calc(100% + var(--space));
+                            left: 0;
+                            min-width: 200px;
+                            border-radius: var(--radius);
+                            background-color: var(--surface-3-color);
+                            opacity: 0;
+                            visibility: hidden;
+                            transition: .3s;
+
+                            .model__selector:is(:hover, :focus, :focus-within) &, &.open {
+                                opacity: 1;
+                                visibility: visible;
+                            }
+
+                            .model {
+                                --padding-y: 1rem;
+                                text-align: left;
+                                background-color: transparent;
+
+                                &:hover {
+                                    background-color: var(--bg-color);
+                                }
+                            }
                         }
                     }
 
@@ -307,9 +339,10 @@
                     padding-inline: var(--space);
                     line-height: 1.5;
 
-                    &, p {
-                    font-size: min(calc(.9rem + .3vw), 1.05rem);
-                    color: var(--paragraph-color);
+                    &,
+                    p {
+                        font-size: min(calc(.9rem + .3vw), 1.05rem);
+                        color: var(--paragraph-color);
                     }
 
                     > :not(:last-child) {
@@ -357,9 +390,7 @@
                                     }
                                 }
 
-                                .actions__wrapper {
-
-                                }
+                                .actions__wrapper {}
                             }
                         }
 
@@ -371,7 +402,8 @@
                 }
             }
 
-            .initial__content_wrapper, .offline__content_wrapper {
+            .initial__content_wrapper,
+            .offline__content_wrapper {
                 position: absolute;
                 inset: 0;
                 visibility: hidden;
@@ -384,20 +416,20 @@
                         visibility: visible;
                         opacity: 1;
                     }
-    
+
                     .content__wrapper {
                         height: 100%;
                         display: grid;
                         place-content: center;
                         padding-inline: var(--space-2);
-    
+
                         .new__chat_text {
                             opacity: .6;
                             text-align: center;
                         }
                     }
                 }
-                
+
                 &.offline__content_wrapper {
 
                     .offline.initial & {
@@ -410,7 +442,7 @@
                         display: grid;
                         place-content: center;
                         padding-inline: var(--space-2);
-    
+
                         .offline__chat_text {
                             opacity: .6;
                             text-align: center;
@@ -420,6 +452,7 @@
             }
 
             :not(.initial) & {
+
                 &::before,
                 &::after {
                     content: '';
@@ -518,7 +551,9 @@
                     }
                 }
 
-                .offline &, &.disabled, &[disabled] {
+                .offline &,
+                &.disabled,
+                &[disabled] {
                     opacity: .6;
                     pointer-events: none;
                 }
