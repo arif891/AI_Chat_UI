@@ -340,8 +340,7 @@
                     padding-inline: var(--space);
                     line-height: 1.5;
 
-                    &,
-                    p {
+                    &, p {
                         font-size: min(calc(.9rem + .3vw), 1.05rem);
                         color: var(--paragraph-color);
                     }
@@ -356,14 +355,19 @@
 
                         &.user {
                             justify-content: end;
-                            max-width: 80%;
+                            max-width: 90%;
                             margin-left: auto;
+
+                            @media (width >=992px) {
+                                max-width: 80%;
+                            }
 
                             .massage {
                                 padding: .75rem 1.25rem;
                                 border-radius: 1lh 0 1lh 1lh;
                                 background-color: var(--surface-3-color);
                                 white-space: pre-wrap;
+                                max-width: 100%;
                             }
                         }
 
