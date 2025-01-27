@@ -368,11 +368,13 @@
                         gap: var(--space);
 
                         &.user {
-                            justify-content: end;
-                            padding-left: 15%;
+                            &:not(.editing) {
+                                justify-content: end;
+                                padding-left: 15%;
 
-                            @media (width >=992px) {
-                                padding-left: 20%;
+                                @media (width >=992px) {
+                                    padding-left: 20%;
+                                }
                             }
 
                             .massage {
@@ -382,6 +384,43 @@
                                 white-space: pre-wrap;
                                 overflow-wrap: break-word;
                                 max-width: 100%;
+                            }
+
+                            &.editing {
+
+                                .actions__wrapper,
+                                .massage {
+                                    display: none;
+                                }
+                            }
+
+                            .edit__wrapper {
+                                display: flex;
+                                flex-direction: column;
+                                gap: var(--space);
+                                width: 100%;
+
+                                .edit-textarea {
+                                    field-sizing: content;
+                                    resize: none;
+                                    font: inherit;
+                                    max-width: 100%;
+                                    max-block-size: 10lh;
+                                    padding: var(--space-2);
+                                    border: 0;
+                                    border-radius: var(--radius-2);
+                                    background-color: var(--surface-color);
+
+                                    &:focus {
+                                        outline-color: var(--accent-color);
+                                    }
+                                }
+
+                                .edit__actions {
+                                    display: flex;
+                                    gap: var(--space);
+                                    justify-content: end;
+                                }
                             }
                         }
 
@@ -447,7 +486,7 @@
 
                         .actions__wrapper {
                             display: flex;
-                            flex-wrap: wrap; 
+                            flex-wrap: wrap;
                             align-items: center;
                             opacity: 0;
                             transition: opacity .3s;

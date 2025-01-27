@@ -39,6 +39,7 @@ class ChatUI {
     this.chatHistoryItems = this.chatHistoryContainer.querySelectorAll('.item');
     this.contentScrollContainer = this.root.querySelector(this.options.contentScrollContainer);
     this.contentContainer = this.root.querySelector(this.options.contentContainer);
+    this.editMode = null; // Track which message is being edited
 
     this.init();
   }
@@ -102,6 +103,15 @@ class ChatUI {
     document.addEventListener('DOMContentLoaded', () => {
       this.updateNetworkStatus();
       this.root.classList.add('loaded');
+    });
+
+    // Add event delegation for edit buttons
+    this.contentContainer.addEventListener('click', (e) => {
+      const editButton = e.target.closest('.action__button.edit');
+      if (editButton) {
+        const messageBlock = editButton.closest('.chat__block');
+        this.startEditMode(messageBlock);
+      }
     });
   }
 
@@ -222,6 +232,78 @@ class ChatUI {
       top: this.contentScrollContainer.scrollHeight,
       behavior: 'smooth'
     });
+  }
+
+  startEditMode(messageBlock) {
+    if (this.editMode) return; // Prevent multiple edits
+    
+    const messageSpan = messageBlock.querySelector('.massage');
+    const originalText = messageSpan.textContent;
+    
+    const editUI = `
+    <div class="edit__wrapper">
+      <textarea class="edit-textarea">${originalText}</textarea>
+      <div class="edit__actions">
+        <button class="dark r save-edit">Save</button>
+        <button class="r cancel-edit">Cancel</button>
+      </div> 
+    </div>
+    `;
+    
+    messageBlock.classList.add('editing');
+    messageBlock.insertAdjacentHTML('beforeend', editUI);
+
+    const textarea = messageBlock.querySelector('.edit-textarea');
+    textarea.focus();
+    
+    this.editMode = {
+      block: messageBlock,
+      messageSpan: messageSpan,
+      original: originalText,
+      textarea: textarea
+    };
+
+    // Add event listeners for save/cancel
+    messageBlock.querySelector('.save-edit').addEventListener('click', () => this.saveEdit());
+    messageBlock.querySelector('.cancel-edit').addEventListener('click', () => this.cancelEdit());
+    
+    textarea.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        this.saveEdit();
+      }
+      if (e.key === 'Escape') {
+        this.cancelEdit();
+      }
+    });
+  }
+
+  saveEdit() {
+    if (!this.editMode) return;
+    
+    const newText = this.editMode.textarea.value.trim();
+    if (newText && newText !== this.editMode.original) {
+      this.editMode.messageSpan.textContent = newText;
+    } else {
+      this.cancelEdit();
+    }
+    
+    this.cleanupEditMode();
+  }
+
+  cancelEdit() {
+    if (!this.editMode) return;
+    this.cleanupEditMode();
+  }
+
+  cleanupEditMode() {
+    if (!this.editMode) return;
+
+    this.editMode.block.classList.remove('editing');
+    const editUI = this.editMode.block.querySelector('.edit__wrapper');
+    if (editUI) editUI.remove();
+    
+    this.editMode = null;
   }
 }
 
