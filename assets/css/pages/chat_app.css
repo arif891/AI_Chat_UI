@@ -85,6 +85,11 @@
                 .icon {
                     height: 1lh;
                 }
+
+                .offline & {
+                    opacity: .6;
+                    pointer-events: none;
+                }
             }
 
             .history__text {
@@ -114,7 +119,8 @@
                         text-overflow: ellipsis;
                         background-color: transparent;
 
-                        &:hover, .active {
+                        &:hover,
+                        .active {
                             background-color: var(--surface-color);
                         }
                     }
@@ -340,7 +346,8 @@
                     padding-inline: var(--space);
                     line-height: 1.5;
 
-                    &, p {
+                    &,
+                    p {
                         font-size: min(calc(.9rem + .3vw), 1.05rem);
                         color: var(--paragraph-color);
                     }
@@ -528,6 +535,8 @@
                     field-sizing: content;
                     min-block-size: calc(1lh * var(--min-line));
                     max-block-size: calc(1lh * var(--max-line));
+                    white-space: pre-wrap;
+                    overflow-wrap: anywhere;
 
                     &::placeholder {
                         color: inherit;
