@@ -107,14 +107,14 @@
                     .item {
                         color: inherit;
                         opacity: .8;
-                        padding: .5rem .75rem;
-                        text-decoration: none;
+                        padding: .65rem .75rem;
+                        text-align: left;
                         border-radius: 50px;
                         overflow: hidden;
                         text-overflow: ellipsis;
+                        background-color: transparent;
 
-                        &:hover,
-                        .active {
+                        &:hover, .active {
                             background-color: var(--surface-color);
                         }
                     }

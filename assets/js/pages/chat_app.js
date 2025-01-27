@@ -1,8 +1,8 @@
 /**
  * @typedef {Object} ChatUIOptions
  * @property {string} sidebarTogglers - Selector for sidebar toggle buttons
- * @property {string} chatTextarea - Selector for chat textarea
- * @property {string} chatButton - Selector for send button
+ * @property {string} textarea - Selector for chat textarea
+ * @property {string} sendButton - Selector for send button
  * @property {string} chatHistoryContainer - Selector for chat history container
  * @property {string} contentContainer - Selector for main content container
  * @property {string} sidebarStateName - Name for localStorage sidebar state
@@ -20,8 +20,9 @@ class ChatUI {
 
     this.options = {
       sidebarTogglers: '.sidebar-toggler',
-      chatTextarea: '#chat-massage',
-      chatButton: '#chat-send-button',
+      textarea: '#chat-massage',
+      sendButton: '#chat-send-button',
+      newChatButton: '#new-chat-button',
       chatHistoryContainer: '#chat-history-container',
       contentScrollContainer: '#content-scroll-container',
       contentContainer: '#content-container',
@@ -31,8 +32,9 @@ class ChatUI {
     };
 
     this.sidebarTogglers = document.querySelectorAll(this.options.sidebarTogglers);
-    this.chatTextarea = document.querySelector(this.options.chatTextarea);
-    this.chatButton = document.querySelector(this.options.chatButton);
+    this.textarea = document.querySelector(this.options.textarea);
+    this.sendButton = document.querySelector(this.options.sendButton);
+    this.newChatButton = document.querySelector(this.options.newChatButton);
     this.chatHistoryContainer = document.querySelector(this.options.chatHistoryContainer);
     this.chatHistoryItems = this.chatHistoryContainer.querySelectorAll('.item');
     this.contentScrollContainer = document.querySelector(this.options.contentScrollContainer);
@@ -64,9 +66,28 @@ class ChatUI {
       }
     });
 
+    this.sendButton.addEventListener('click', () => {
+      exampleChat();
+    });
+    
+    this.textarea.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        exampleChat();
+      }
+    });
+
+    // New chat button
+    this.newChatButton.addEventListener('click', () => {
+      this.root.classList.add('initial');
+      this.contentContainer.innerHTML = '';
+    });
+
     this.chatHistoryItems.forEach((item) => {
       item.addEventListener('click', () => {
         this.root.classList.remove('initial');
+        this.contentContainer.innerHTML = '';
+        showChatHistory();
       });
     });
 
@@ -207,22 +228,12 @@ const messageHistory = [
   }
 ];
 
-ui.chatButton.addEventListener('click', () => {
-  example();
-});
-
-ui.chatTextarea.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    example();
-  }
-});
 
 // Replace example function
-function example() {
+function exampleChat() {
   ui.root.classList.remove('initial');
-  const userContent = ui.chatTextarea.value;
-  ui.chatTextarea.value = '';
+  const userContent = ui.textarea.value;
+  ui.textarea.value = '';
   if (!userContent) return;
 
   // Add user message
@@ -236,4 +247,10 @@ function example() {
     ui.contentContainer.lastElementChild.classList.add('new');
     ui.scrollToBottom();
   }, 500);
+}
+
+function showChatHistory() {
+  messageHistory.forEach((message) => {
+    ui.addMessage(message.content, message.role);
+  });
 }
