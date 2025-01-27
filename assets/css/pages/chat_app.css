@@ -344,7 +344,7 @@
                 .chat__block__wrapper {
                     max-width: 50rem;
                     margin-inline: auto;
-                    padding-inline: var(--space);
+                    padding-inline: var(--space-2);
                     line-height: 1.5;
 
                     &,
@@ -354,7 +354,13 @@
                     }
 
                     > :not(:last-child) {
-                        padding-bottom: var(--space-3);
+                        &.user {
+                            padding-bottom: var(--space-3);
+                        }
+                       
+                        &.model {
+                            padding-bottom: var(--space-6);
+                        }
                     }
 
                     .chat__block {
@@ -363,7 +369,7 @@
 
                         &.user {
                             justify-content: end;
-                            max-width: calc(100% - 3rem);
+                            max-width: 90%;
                             margin-left: auto;
 
                             @media (width >=992px) {
@@ -381,6 +387,11 @@
                         }
 
                         &.model {
+                            flex-direction: column;
+
+                            @media (width >=992px) {
+                                flex-direction: row;
+                            }
 
                             &.new {
                                 transition: opacity .3s;
