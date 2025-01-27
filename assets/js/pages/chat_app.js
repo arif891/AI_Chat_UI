@@ -31,14 +31,14 @@ class ChatUI {
       ...options
     };
 
-    this.sidebarTogglers = document.querySelectorAll(this.options.sidebarTogglers);
-    this.textarea = document.querySelector(this.options.textarea);
-    this.sendButton = document.querySelector(this.options.sendButton);
-    this.newChatButton = document.querySelector(this.options.newChatButton);
-    this.chatHistoryContainer = document.querySelector(this.options.chatHistoryContainer);
+    this.sidebarTogglers = this.root.querySelectorAll(this.options.sidebarTogglers);
+    this.textarea = this.root.querySelector(this.options.textarea);
+    this.sendButton = this.root.querySelector(this.options.sendButton);
+    this.newChatButton = this.root.querySelector(this.options.newChatButton);
+    this.chatHistoryContainer = this.root.querySelector(this.options.chatHistoryContainer);
     this.chatHistoryItems = this.chatHistoryContainer.querySelectorAll('.item');
-    this.contentScrollContainer = document.querySelector(this.options.contentScrollContainer);
-    this.contentContainer = document.querySelector(this.options.contentContainer);
+    this.contentScrollContainer = this.root.querySelector(this.options.contentScrollContainer);
+    this.contentContainer = this.root.querySelector(this.options.contentContainer);
 
     this.init();
   }
