@@ -357,8 +357,7 @@
                         }
                     }
 
-                    &,
-                    p {
+                    &, p {
                         font-size: min(calc(.9rem + .3vw), 1.05rem);
                         color: var(--paragraph-color);
                     }
@@ -370,10 +369,9 @@
                         &.user {
                             &:not(.editing) {
                                 justify-content: end;
-                                padding-left: 15%;
 
                                 @media (width >=992px) {
-                                    padding-left: 20%;
+                                    padding-left: 15%;
                                 }
                             }
 
@@ -405,7 +403,7 @@
                                     resize: none;
                                     font: inherit;
                                     max-width: 100%;
-                                    max-block-size: 10lh;
+                                    max-block-size: calc(6lh + var(--space-2) * 2);
                                     padding: var(--space-2);
                                     border: 0;
                                     border-radius: var(--radius-2);
@@ -487,7 +485,6 @@
                         .actions__wrapper {
                             display: flex;
                             flex-wrap: wrap;
-                            align-items: center;
                             opacity: 0;
                             transition: opacity .3s;
 
