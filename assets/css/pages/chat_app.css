@@ -367,6 +367,7 @@
                                 border-radius: 1lh 0 1lh 1lh;
                                 background-color: var(--surface-3-color);
                                 white-space: pre-wrap;
+                                overflow-wrap: break-word;
                                 max-width: 100%;
                             }
                         }

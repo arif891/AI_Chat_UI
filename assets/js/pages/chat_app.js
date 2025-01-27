@@ -231,10 +231,10 @@ const messageHistory = [
 
 // Replace example function
 function exampleChat() {
-  ui.root.classList.remove('initial');
   const userContent = ui.textarea.value;
   ui.textarea.value = '';
   if (!userContent) return;
+  ui.root.classList.remove('initial');
 
   // Add user message
   ui.addMessage(userContent, 'user');
