@@ -347,20 +347,20 @@
                     padding-inline: var(--space-2);
                     line-height: 1.5;
 
-                    &,
-                    p {
-                        font-size: min(calc(.9rem + .3vw), 1.05rem);
-                        color: var(--paragraph-color);
-                    }
-
                     > :not(:last-child) {
                         &.user {
                             padding-bottom: var(--space-3);
                         }
-                       
+
                         &.model {
                             padding-bottom: var(--space-6);
                         }
+                    }
+
+                    &,
+                    p {
+                        font-size: min(calc(.9rem + .3vw), 1.05rem);
+                        color: var(--paragraph-color);
                     }
 
                     .chat__block {
@@ -369,11 +369,10 @@
 
                         &.user {
                             justify-content: end;
-                            max-width: 90%;
-                            margin-left: auto;
+                            padding-left: 15%;
 
                             @media (width >=992px) {
-                                max-width: 80%;
+                                padding-left: 20%;
                             }
 
                             .massage {
@@ -425,14 +424,49 @@
                                         }
                                     }
                                 }
+                            }
 
-                                .actions__wrapper {}
+                            .actions__wrapper {
+
+                                .action__button {
+                                    padding: .5rem;
+                                    height: 2.25rem;
+                                    width: 2.25rem;
+
+                                    .icon {
+                                        opacity: .8;
+                                    }
+                                }
                             }
                         }
 
                         &.system {
                             justify-content: center;
                             padding-inline: 5%;
+                        }
+
+                        .actions__wrapper {
+                            display: flex;
+                            flex-wrap: wrap; 
+                            align-items: center;
+                            opacity: 0;
+                            transition: opacity .3s;
+
+                            .chat__block:hover & {
+                                opacity: 1;
+                            }
+
+                            .action__button {
+                                height: 2.5rem;
+                                width: 2.5rem;
+                                padding: .75rem;
+                                border-radius: 50%;
+                                background-color: transparent;
+
+                                &:hover {
+                                    background-color: var(--surface-2-color);
+                                }
+                            }
                         }
                     }
                 }

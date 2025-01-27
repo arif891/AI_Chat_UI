@@ -69,7 +69,7 @@ class ChatUI {
     this.sendButton.addEventListener('click', () => {
       exampleChat();
     });
-    
+
     this.textarea.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -166,9 +166,16 @@ class ChatUI {
     switch (role) {
       case 'user':
         return `<div class="chat__block user">
+                  <div class="actions__wrapper">
+                      <button class="action__button edit" title="Edit message">
+                      <svg class="icon">
+                        <use href="#edit-icon" />
+                      </svg>
+                      </button>
+                  </div>
                   <span class="massage">${content}</span>
                 </div>`;
-  
+
       case 'model':
         return `<div class="chat__block model">
                    <svg class="icon model__logo">
@@ -179,11 +186,30 @@ class ChatUI {
                        ${content}
                      </div>
                      <div class="actions__wrapper">
-                       
+                      <button class="action__button copy" title="Copy message">
+                      <svg class="icon">
+                        <use href="#copy-icon" />
+                      </svg>
+                      </button>
+                      <button class="action__button repeat" title="Regenerate response">
+                      <svg class="icon">
+                        <use href="#repeat-icon" />
+                      </svg>
+                      </button>
+                      <button class="action__button like" title="Good response">
+                      <svg class="icon">
+                        <use href="#like-icon" />
+                      </svg>
+                      </button>
+                      <button class="action__button dislike" title="Bad response">
+                      <svg class="icon">
+                        <use href="#dislike-icon" />
+                      </svg>
+                      </button>
                      </div>
                    </div>
                 </div>`;
-  
+
       case 'system':
         return `<div class="chat__block system">
                   ${content} 
