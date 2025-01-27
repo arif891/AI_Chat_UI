@@ -81,6 +81,7 @@
                 align-items: center;
                 gap: var(--space);
                 margin-bottom: var(--space-2);
+                transition: opacity .3s;
 
                 .icon {
                     height: 1lh;
@@ -332,7 +333,7 @@
 
             .scroll__container {
                 padding-block: 4rem;
-                transition: .3s;
+                transition: opacity .3s;
                 content-visibility: auto;
                 scrollbar-gutter: stable both-edges;
 
