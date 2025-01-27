@@ -1,29 +1,5 @@
 {
-  "name": "AI Chat",
-  "short_name": "AI",
-  "description": "A comprehensive example of a AI Chat Web App",
-  "categories": [
-    "productivity",
-    "utilities"
-  ],
-  "start_url": "/",
-  "scope": "/",
-  "id": "com.example.ai",
-  "version": "1.0.0",
-  "theme_color": "#fff",
-  "background_color": "#fff",
-  "display": "standalone",
-  "display_override": [
-    "window-controls-overlay"
-  ],
-  
   "icons": [
-    {
-      "src": "/assets/brand/logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
     {
       "src": "/assets/brand/icons/windows11/SmallTile.scale-100.png",
       "sizes": "71x71"

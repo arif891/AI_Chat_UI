@@ -601,15 +601,11 @@
     }
 
     .scroll__container {
-        scrollbar-color: rgba(var(--color-rgb), .1) transparent;
+        scrollbar-color: rgba(var(--color-rgb), .15) transparent;
         position: absolute;
         inset: 0;
         overflow-y: auto;
         overscroll-behavior: contain;
-
-        [theme=dark] & {
-            scrollbar-color: rgba(var(--color-rgb), .3) transparent;
-        }
     }
 
     .chat-backdrop {
