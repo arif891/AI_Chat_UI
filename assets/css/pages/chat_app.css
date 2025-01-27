@@ -355,7 +355,7 @@
 
                         &.user {
                             justify-content: end;
-                            max-width: 90%;
+                            max-width: calc(100% - 3rem);
                             margin-left: auto;
 
                             @media (width >=992px) {
