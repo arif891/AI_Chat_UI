@@ -606,6 +606,10 @@
         inset: 0;
         overflow-y: auto;
         overscroll-behavior: contain;
+
+        [theme=dark] & {
+            scrollbar-color: rgba(var(--color-rgb), .3) transparent;
+        }
     }
 
     .chat-backdrop {
