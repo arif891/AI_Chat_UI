@@ -92,17 +92,15 @@ class ChatUI {
     });
 
     window.addEventListener('offline', () => {
-      this.root.classList.add('offline');
+      this.updateNetworkStatus();
     });
 
     window.addEventListener('online', () => {
-      this.root.classList.remove('offline');
+      this.updateNetworkStatus();
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-      if (navigator.offline) {
-        this.root.classList.add('offline');
-      }
+      this.updateNetworkStatus();
       this.root.classList.add('loaded');
     });
   }
@@ -143,6 +141,10 @@ class ChatUI {
     if (backdrop) {
       backdrop.classList.toggle('open');
     }
+  }
+
+  updateNetworkStatus() {
+    this.root.classList.toggle('offline', !navigator.onLine);
   }
 
   sanitizeInput(input) {
