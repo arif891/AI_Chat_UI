@@ -233,6 +233,7 @@ function example() {
     // For demo purposes, just show the first model response from messageHistory
     const modelResponse = messageHistory[1];
     ui.addMessage(modelResponse.content, modelResponse.role);
+    ui.contentContainer.lastElementChild.classList.add('new');
     ui.scrollToBottom();
   }, 500);
 }

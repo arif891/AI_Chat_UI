@@ -297,7 +297,8 @@
                             visibility: hidden;
                             transition: .3s;
 
-                            .model__selector:is(:hover, :focus, :focus-within) &, &.open {
+                            .model__selector:is(:hover, :focus, :focus-within) &,
+                            &.open {
                                 opacity: 1;
                                 visibility: visible;
                             }
@@ -367,11 +368,14 @@
                         }
 
                         &.model {
-                            transition: opacity .3s;
-                            opacity: 1;
 
-                            @starting-style {
-                                opacity: 0;
+                            &.new {
+                                transition: opacity .3s;
+                                opacity: 1;
+
+                                @starting-style {
+                                    opacity: 0;
+                                }
                             }
 
                             .model__logo {
