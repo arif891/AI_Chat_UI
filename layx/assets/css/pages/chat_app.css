@@ -355,8 +355,12 @@
 
                         &.user {
                             justify-content: end;
-                            max-width: 80%;
+                            max-width: calc(100% - 2.5rem);
                             margin-left: auto;
+
+                            @media (width >=992px) {
+                                max-width: 80%;
+                            }
 
                             .massage {
                                 padding: .75rem 1.25rem;
