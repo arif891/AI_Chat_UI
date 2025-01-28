@@ -4,7 +4,26 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+    
+    <!-- Primary Meta Tags -->
     <title>AI Chat</title>
+ 
+    <meta name="description" content="Powerful AI chat application built with LayX framework. Experience seamless conversations with advanced AI models in a modern, responsive interface.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aichatui.layx.xyz/">
+    <meta property="og:title" content="AI Chat UI - LayX Framework">
+    <meta property="og:description" content="Powerful AI chat application built with LayX framework. Experience seamless conversations with advanced AI models in a modern, responsive interface.">
+    <meta property="og:image" content="/assets/brand/social_preview.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://aichatui.layx.xyz/">
+    <meta property="twitter:title" content="AI Chat UI - LayX Framework">
+    <meta property="twitter:description" content="Powerful AI chat application built with LayX framework. Experience seamless conversations with advanced AI models in a modern, responsive interface.">
+    <meta property="twitter:image" content="/assets/brand/social_preview.png">
+
 
     <link rel="stylesheet" href="/layx/layx.css">
 
@@ -218,6 +237,17 @@
     <script src="/assets/js/pages/chat_app.js"></script>
 
     <!-- <script src="/layx/others/pwa/sw/register.js"></script> -->
+
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/layx/others/pwa/sw/service-worker.js')
+            .then(registration => console.log('ServiceWorker registration successful'))
+            .catch(err => console.log('ServiceWorker registration failed: ', err));
+        });
+      }
+    </script>
   </body>
 
 </html>
