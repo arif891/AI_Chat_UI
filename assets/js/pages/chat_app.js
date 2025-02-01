@@ -67,28 +67,30 @@ class ChatUI {
       }
     });
 
-    this.sendButton.addEventListener('click', () => {
-      exampleChat();
+    this.sendButton.addEventListener('click', async () => {
+      await Chat();
     });
 
     this.textarea.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        exampleChat();
+        Chat();
       }
     });
 
     // New chat button
     this.newChatButton.addEventListener('click', () => {
       this.root.classList.add('initial');
+      this.root.removeAttribute('data-chat-id')
       this.contentContainer.innerHTML = '';
+      this.textarea.value = '';
     });
 
     this.chatHistoryItems.forEach((item) => {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', (e) => {
         this.root.classList.remove('initial');
         this.contentContainer.innerHTML = '';
-        showChatHistory();
+        showChatHistory(e.target);
       });
     });
 
@@ -113,26 +115,6 @@ class ChatUI {
         this.startEditMode(messageBlock);
       }
     });
-  }
-
-  initWindowControls() {
-    if ('windowControlsOverlay' in navigator) {
-      const updateTitlebarArea = (e) => {
-        const isOverlayVisible = navigator.windowControlsOverlay.visible;
-        const { x, y, width, height } = e?.titlebarAreaRect ||
-          navigator.windowControlsOverlay.getTitlebarAreaRect();
-
-        this.root.style.setProperty('--title-bar-height', `${height}px`);
-        this.root.style.setProperty('--title-bar-width', `${width}px`);
-        this.root.style.setProperty('--title-bar-x', `${x}px`);
-        this.root.style.setProperty('--title-bar-y', `${y}px`);
-        this.root.classList.toggle('overlay-visible', isOverlayVisible);
-      };
-
-      navigator.windowControlsOverlay.addEventListener('geometrychange', updateTitlebarArea);
-      // Initial update
-      updateTitlebarArea();
-    }
   }
 
   toggleSidebar() {
@@ -170,6 +152,12 @@ class ChatUI {
     const sanitizedContent = role === 'user' ? this.sanitizeInput(content) : content;
     const messageBlock = this.genContentBlock(sanitizedContent, role);
     this.contentContainer.insertAdjacentHTML('beforeend', messageBlock);
+  }
+
+  addHistoryItem(title, id) {
+    this.chatHistoryContainer.insertAdjacentElement('beforeend',
+       ` <button class="item" data-chat-id="${id}">${title}</button>`
+      );
   }
 
   genContentBlock(content, role) {
@@ -236,10 +224,10 @@ class ChatUI {
 
   startEditMode(messageBlock) {
     if (this.editMode) return; // Prevent multiple edits
-    
+
     const messageSpan = messageBlock.querySelector('.massage');
     const originalText = messageSpan.textContent;
-    
+
     const editUI = `
     <div class="edit__wrapper">
       <textarea class="edit-textarea">${originalText}</textarea>
@@ -249,13 +237,13 @@ class ChatUI {
       </div> 
     </div>
     `;
-    
+
     messageBlock.classList.add('editing');
     messageBlock.insertAdjacentHTML('beforeend', editUI);
 
     const textarea = messageBlock.querySelector('.edit-textarea');
     textarea.focus();
-    
+
     this.editMode = {
       block: messageBlock,
       messageSpan: messageSpan,
@@ -266,7 +254,7 @@ class ChatUI {
     // Add event listeners for save/cancel
     messageBlock.querySelector('.save-edit').addEventListener('click', () => this.saveEdit());
     messageBlock.querySelector('.cancel-edit').addEventListener('click', () => this.cancelEdit());
-    
+
     textarea.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -280,14 +268,14 @@ class ChatUI {
 
   saveEdit() {
     if (!this.editMode) return;
-    
+
     const newText = this.editMode.textarea.value.trim();
     if (newText && newText !== this.editMode.original) {
       this.editMode.messageSpan.textContent = newText;
     } else {
       this.cancelEdit();
     }
-    
+
     this.cleanupEditMode();
   }
 
@@ -302,8 +290,28 @@ class ChatUI {
     this.editMode.block.classList.remove('editing');
     const editUI = this.editMode.block.querySelector('.edit__wrapper');
     if (editUI) editUI.remove();
-    
+
     this.editMode = null;
+  }
+
+  initWindowControls() {
+    if ('windowControlsOverlay' in navigator) {
+      const updateTitlebarArea = (e) => {
+        const isOverlayVisible = navigator.windowControlsOverlay.visible;
+        const { x, y, width, height } = e?.titlebarAreaRect ||
+          navigator.windowControlsOverlay.getTitlebarAreaRect();
+
+        this.root.style.setProperty('--title-bar-height', `${height}px`);
+        this.root.style.setProperty('--title-bar-width', `${width}px`);
+        this.root.style.setProperty('--title-bar-x', `${x}px`);
+        this.root.style.setProperty('--title-bar-y', `${y}px`);
+        this.root.classList.toggle('overlay-visible', isOverlayVisible);
+      };
+
+      navigator.windowControlsOverlay.addEventListener('geometrychange', updateTitlebarArea);
+      // Initial update
+      updateTitlebarArea();
+    }
   }
 }
 
@@ -311,56 +319,47 @@ class ChatUI {
 
 const ui = new ChatUI();
 
-// Replace contentBlocks with messageHistory array
-const messageHistory = [
-  {
-    content: "What is LayX framework?",
-    role: "user"
-  },
-  {
-    content: `<div class="text__block">
-       <p>LayX is a next-generation CSS framework that revolutionizes how developers
-         approach web layouts. Built with modern web standards in mind, it combines the
-         power of CSS Grid, Flexbox, and Custom Properties to deliver a flexible,
-         maintainable, and performant solution for web development.</p>
-    </div>
-    <div class="text__block">
-        <h6>Core Features</h6>
-        <ul>
-          <li>Zero-dependency architecture</li>
-          <li>Modern CSS Grid and Flexbox based layout system</li>
-          <li>Built-in responsive design capabilities</li>
-          <li>Performance-first approach</li>
-          <li>Component-driven development</li>
-        </ul>
-    </div>`,
-    role: "model"
-  }
-];
+// import ollama from 'ollama/browser';
+// import { marked } from 'marked';
+
+// const STORAGE_KEY = 'chat_history';
+// let chatHistory = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+// // Replace example function
+// async function Chat() {
+//   const userContent = ui.textarea.value;
+//   ui.textarea.value = '';
+//   if (!userContent) return;
+//   ui.root.classList.remove('initial');
+
+//   ui.addMessage(userContent, 'user');
+//   ui.addMessage('', 'model');
+//   ui.scrollToBottom();
+
+//    // Add user's message to history
+//   chatHistory.push({ role: 'user', content: userContent });
+
+//   const lastContentBlock = ui.contentContainer.querySelector('.chat__block.model:last-child .response_wrapper .response');
+
+//   const response = await ollama.chat({ model: 'xAI', messages: chatHistory, stream: true });
+
+//   let content = '';
+//   for await (const part of response) {
+//     content += part.message.content;
+//     lastContentBlock.innerHTML = marked.parse(content);
+//     ui.scrollToBottom();
+//   }
+
+//   // Save AI response in history
+//   chatHistory.push({ role: 'assistant', content: content });
 
 
-// Replace example function
-function exampleChat() {
-  const userContent = ui.textarea.value;
-  ui.textarea.value = '';
-  if (!userContent) return;
-  ui.root.classList.remove('initial');
+//   // Store updated history
+//   localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory));
 
-  // Add user message
-  ui.addMessage(userContent, 'user');
+// }
 
-  // Simulate response delay
-  setTimeout(() => {
-    // For demo purposes, just show the first model response from messageHistory
-    const modelResponse = messageHistory[1];
-    ui.addMessage(modelResponse.content, modelResponse.role);
-    ui.contentContainer.lastElementChild.classList.add('new');
-    ui.scrollToBottom();
-  }, 500);
-}
-
-function showChatHistory() {
-  messageHistory.forEach((message) => {
-    ui.addMessage(message.content, message.role);
-  });
+function showChatHistory(target) {
+  let attributeValue = target.getAttribute('data-chat-id');
+  ui.root.setAttribute('data-chat-id', attributeValue);
 }

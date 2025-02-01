@@ -129,8 +129,8 @@
           <p class="history__text">Recent</p>
         </div>
         <div class="history__wrapper">
-          <div class="scroll__container" id="chat-history-container">
-            <div class="items__wrapper">
+          <div class="scroll__container">
+            <div class="items__wrapper" id="chat-history-container">
               <button class="item" data-chat-id="01">What is LayX framework?</button>
               <button class="item" data-chat-id="02">Other Chat history example</button>
               <button class="item" data-chat-id="03">Other Chat history example</button>
@@ -240,7 +240,7 @@
     <!-- <script src="/layx/others/pwa/sw/register.js"></script> -->
 
     <!-- Service Worker Registration -->
-    <script>
+    <!-- <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/layx/others/pwa/sw/service-worker.js')
@@ -248,7 +248,7 @@
             .catch(err => console.log('ServiceWorker registration failed: ', err));
         });
       }
-    </script>
+    </script> -->
   </body>
 
 </html>
