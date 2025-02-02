@@ -426,7 +426,7 @@ async function addMessageToDB(sessionId, message) {
     sessionInfo.updateTime = Date.now();
 
     await db.put(config.stores.conversations.name, conversation);
-    await db.put(config.stores.sessions.name, sessionInfo); // Ensure sessionInfo is updated
+    await db.put(config.stores.sessions.name, sessionInfo);
     console.log(`Message added successfully to conversation: ${sessionId}`);
   } catch (error) {
     console.error(`Error adding message to conversation: ${error.message}`);
@@ -500,11 +500,11 @@ async function Chat() {
     ui.scrollToBottom();
   }
 
-  addMessageToDB(session, { role: 'assistant', content: content, model: model });
-
   if (isNew) {
-    updateHistoryItem(session, `Updated Chat ${session}`);
+    await updateHistoryItem(session, `Updated Chat ${session}`);
   }
+
+  await addMessageToDB(session, { role: 'assistant', content: content, model: model });
 }
 
 function newChat() {
@@ -521,7 +521,7 @@ async function updateHistoryItem(sessionId, updatedTitle) {
   }
   const sessionInfo = await db.get(config.stores.sessions.name, sessionId);
   sessionInfo.title = updatedTitle;
-  await db.put(config.stores.sessions.name, sessionInfo); // Ensure sessionInfo is updated
+  await db.put(config.stores.sessions.name, sessionInfo);
   console.log(`History item updated: ${updatedTitle}`);
 }
 
@@ -529,7 +529,7 @@ async function showChatHistory(target) {
   const attributeValue = target.getAttribute('data-session-id');
   if (!attributeValue) return;
   ui.root.classList.remove('initial');
-  ui.contentContainer.innerHTML ='';
+  ui.contentContainer.innerHTML = '';
   ui.root.setAttribute('data-session-id', attributeValue);
   session = Number(attributeValue);
   let conversation = await db.get(config.stores.conversations.name, session);

@@ -3600,9 +3600,9 @@ ${text}</tr>
       lastContentBlock.innerHTML = marked.parse(content);
       ui.scrollToBottom();
     }
-    addMessageToDB(session, { role: "assistant", content, model });
+    await addMessageToDB(session, { role: "assistant", content, model });
     if (isNew) {
-      updateHistoryItem(session, `Updated Chat ${session}`);
+      await updateHistoryItem(session, `Updated Chat ${session}`);
     }
   }
   function newChat() {
