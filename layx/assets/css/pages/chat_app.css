@@ -268,7 +268,7 @@
                         }
                     }
 
-                    .model__selector {
+                    .assistant__selector {
                         display: flex;
                         align-items: center;
                         gap: var(--space);
@@ -283,7 +283,7 @@
                             height: 1em;
                         }
 
-                        .model__menu {
+                        .assistant__menu {
                             display: flex;
                             flex-direction: column;
                             padding: var(--space);
@@ -297,12 +297,12 @@
                             visibility: hidden;
                             transition: .3s;
 
-                            .model__selector:is(:hover, :focus, :focus-within) &, &.open {
+                            .assistant__selector:is(:hover, :focus, :focus-within) &, &.open {
                                 opacity: 1;
                                 visibility: visible;
                             }
 
-                            .model {
+                            .assistant {
                                 --padding-y: 1rem;
                                 text-align: left;
                                 background-color: transparent;
@@ -369,8 +369,8 @@
                             }
                         }
 
-                        &.model {
-                            .model__logo {
+                        &.assistant {
+                            .assistant__logo {
                                 height: 2.5rem;
                                 width: 2.5rem;
                                 padding: .65rem;

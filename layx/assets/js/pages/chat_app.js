@@ -151,7 +151,7 @@ const contentBlocks = {
           <li>Component-driven development</li>
         </ul>
     </div>`,
-    role: 'model'
+    role: 'assistant'
   },
 
   block: {
@@ -167,9 +167,9 @@ function genChatBlock(content, role) {
                 <span class="massage">${content}</span>
               </div>`
 
-    case 'model':
-      return `<div class="chat__block model">
-                 <svg class="icon model__logo">
+    case 'assistant':
+      return `<div class="chat__block assistant">
+                 <svg class="icon assistant__logo">
                    <use href="#stars-icon" />
                  </svg>
                  <div class="response_wrapper">

@@ -1,4 +1,150 @@
 (() => {
+  // layx/others/idb/idb.js
+  var IDB = class {
+    constructor(dbName, version2 = 1, upgradeCallback) {
+      this.dbName = dbName;
+      this.version = version2;
+      this.upgradeCallback = upgradeCallback;
+      this.db = null;
+      this.openPromise = null;
+    }
+    async open() {
+      if (this.db) return this.db;
+      if (this.openPromise) return this.openPromise;
+      this.openPromise = new Promise((resolve, reject) => {
+        const request = indexedDB.open(this.dbName, this.version);
+        request.onupgradeneeded = (event) => {
+          this.db = event.target.result;
+          if (this.upgradeCallback) {
+            this.upgradeCallback(this.db, event.oldVersion, event.newVersion);
+          }
+        };
+        request.onsuccess = (event) => {
+          this.db = event.target.result;
+          resolve(this.db);
+          this.openPromise = null;
+        };
+        request.onerror = (event) => {
+          reject(new Error(`Error opening database: ${event.target.error.message}`));
+          this.openPromise = null;
+        };
+      });
+      return this.openPromise;
+    }
+    async transaction(storeNames, mode = "readonly") {
+      const db2 = await this.open();
+      return db2.transaction(storeNames, mode);
+    }
+    async store(storeName, mode = "readonly") {
+      const tx = await this.transaction(storeName, mode);
+      return tx.objectStore(storeName);
+    }
+    async add(storeName, value, key) {
+      try {
+        const store = await this.store(storeName, "readwrite");
+        return await this.request(store.add(value, key));
+      } catch (error) {
+        throw new Error(`Add operation failed: ${error.message}`);
+      }
+    }
+    async get(storeName, keyOrIndex, key) {
+      try {
+        const store = await this.store(storeName);
+        const request = key !== void 0 ? store.index(keyOrIndex).get(key) : store.get(keyOrIndex);
+        return await this.request(request);
+      } catch (error) {
+        throw new Error(`Get operation failed: ${error.message}`);
+      }
+    }
+    async getAll(storeName, query) {
+      try {
+        const store = await this.store(storeName);
+        const results = [];
+        return new Promise((resolve, reject) => {
+          const request = query ? store.openCursor(query) : store.openCursor();
+          request.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+              results.push(cursor.value);
+              cursor.continue();
+            } else {
+              resolve(results);
+            }
+          };
+          request.onerror = (event) => reject(new Error(`GetAll operation failed: ${event.target.error.message}`));
+        });
+      } catch (error) {
+        throw new Error(`GetAll operation failed: ${error.message}`);
+      }
+    }
+    async forEach(storeName, query, callback) {
+      try {
+        const store = await this.store(storeName);
+        return new Promise((resolve, reject) => {
+          const request = query ? store.openCursor(query) : store.openCursor();
+          request.onsuccess = async (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+              await callback(cursor.value, cursor);
+              cursor.continue();
+            } else {
+              resolve();
+            }
+          };
+          request.onerror = (event) => reject(new Error(`ForEach operation failed: ${event.target.error.message}`));
+        });
+      } catch (error) {
+        throw new Error(`ForEach operation failed: ${error.message}`);
+      }
+    }
+    async put(storeName, value, key) {
+      try {
+        const store = await this.store(storeName, "readwrite");
+        return await this.request(store.put(value, key));
+      } catch (error) {
+        throw new Error(`Put operation failed: ${error.message}`);
+      }
+    }
+    async delete(storeName, key) {
+      try {
+        const store = await this.store(storeName, "readwrite");
+        return await this.request(store.delete(key));
+      } catch (error) {
+        throw new Error(`Delete operation failed: ${error.message}`);
+      }
+    }
+    async clear(storeName) {
+      try {
+        const store = await this.store(storeName, "readwrite");
+        return await this.request(store.clear());
+      } catch (error) {
+        throw new Error(`Clear operation failed: ${error.message}`);
+      }
+    }
+    close() {
+      if (this.db) {
+        this.db.close();
+        this.db = null;
+        this.openPromise = null;
+      }
+    }
+    async deleteDatabase() {
+      this.close();
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.deleteDatabase(this.dbName);
+        request.onsuccess = resolve;
+        request.onerror = (event) => reject(new Error(`DeleteDatabase operation failed: ${event.target.error.message}`));
+      });
+    }
+    // Utility function for handling indexedDB requests
+    request(request) {
+      return new Promise((resolve, reject) => {
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = (event) => reject(new Error(event.target.error.message));
+      });
+    }
+  };
+
   // node_modules/whatwg-fetch/fetch.js
   var g = typeof globalThis !== "undefined" && globalThis || typeof self !== "undefined" && self || // eslint-disable-next-line no-undef
   typeof global !== "undefined" && global || {};
@@ -428,9 +574,9 @@
     DOMException.prototype = Object.create(Error.prototype);
     DOMException.prototype.constructor = DOMException;
   }
-  function fetch2(input, init) {
+  function fetch2(input, init2) {
     return new Promise(function(resolve, reject) {
-      var request = new Request(input, init);
+      var request = new Request(input, init2);
       if (request.signal && request.signal.aborted) {
         return reject(new DOMException("Aborted", "AbortError"));
       }
@@ -489,11 +635,11 @@
           xhr.responseType = "arraybuffer";
         }
       }
-      if (init && typeof init.headers === "object" && !(init.headers instanceof Headers || g.Headers && init.headers instanceof g.Headers)) {
+      if (init2 && typeof init2.headers === "object" && !(init2.headers instanceof Headers || g.Headers && init2.headers instanceof g.Headers)) {
         var names = [];
-        Object.getOwnPropertyNames(init.headers).forEach(function(name) {
+        Object.getOwnPropertyNames(init2.headers).forEach(function(name) {
           names.push(normalizeName(name));
-          xhr.setRequestHeader(name, normalizeValue(init.headers[name]));
+          xhr.setRequestHeader(name, normalizeValue(init2.headers[name]));
         });
         request.headers.forEach(function(value, name) {
           if (names.indexOf(name) === -1) {
@@ -711,18 +857,18 @@
     return value;
   };
   var Ollama$1 = class Ollama {
-    constructor(config) {
+    constructor(config2) {
       __publicField(this, "config");
       __publicField(this, "fetch");
       __publicField(this, "ongoingStreamedRequests", []);
       this.config = {
         host: "",
-        headers: config?.headers
+        headers: config2?.headers
       };
-      if (!config?.proxy) {
-        this.config.host = formatHost(config?.host ?? "http://127.0.0.1:11434");
+      if (!config2?.proxy) {
+        this.config.host = formatHost(config2?.host ?? "http://127.0.0.1:11434");
       }
-      this.fetch = config?.fetch ?? fetch;
+      this.fetch = config2?.fetch ?? fetch;
     }
     // Abort any ongoing streamed requests to Ollama
     abort() {
@@ -3103,7 +3249,6 @@ ${text}</tr>
       this.sendButton = this.root.querySelector(this.options.sendButton);
       this.newChatButton = this.root.querySelector(this.options.newChatButton);
       this.chatHistoryContainer = this.root.querySelector(this.options.chatHistoryContainer);
-      this.chatHistoryItems = this.chatHistoryContainer.querySelectorAll(".item");
       this.contentScrollContainer = this.root.querySelector(this.options.contentScrollContainer);
       this.contentContainer = this.root.querySelector(this.options.contentContainer);
       this.editMode = null;
@@ -3125,24 +3270,19 @@ ${text}</tr>
         }
       });
       this.sendButton.addEventListener("click", async () => {
-        await exampleChat();
+        await Chat();
       });
       this.textarea.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
-          exampleChat();
+          Chat();
         }
       });
-      this.newChatButton.addEventListener("click", () => {
-        this.root.classList.add("initial");
-        this.contentContainer.innerHTML = "";
+      this.chatHistoryContainer.addEventListener("click", (e) => {
+        showChatHistory(e.target);
       });
-      this.chatHistoryItems.forEach((item) => {
-        item.addEventListener("click", () => {
-          this.root.classList.remove("initial");
-          this.contentContainer.innerHTML = "";
-          showChatHistory();
-        });
+      this.newChatButton.addEventListener("click", () => {
+        newChat();
       });
       window.addEventListener("offline", () => {
         this.updateNetworkStatus();
@@ -3161,21 +3301,6 @@ ${text}</tr>
           this.startEditMode(messageBlock);
         }
       });
-    }
-    initWindowControls() {
-      if ("windowControlsOverlay" in navigator) {
-        const updateTitlebarArea = (e) => {
-          const isOverlayVisible = navigator.windowControlsOverlay.visible;
-          const { x, y, width, height } = e?.titlebarAreaRect || navigator.windowControlsOverlay.getTitlebarAreaRect();
-          this.root.style.setProperty("--title-bar-height", `${height}px`);
-          this.root.style.setProperty("--title-bar-width", `${width}px`);
-          this.root.style.setProperty("--title-bar-x", `${x}px`);
-          this.root.style.setProperty("--title-bar-y", `${y}px`);
-          this.root.classList.toggle("overlay-visible", isOverlayVisible);
-        };
-        navigator.windowControlsOverlay.addEventListener("geometrychange", updateTitlebarArea);
-        updateTitlebarArea();
-      }
     }
     toggleSidebar() {
       const isOpen = this.root.classList.toggle("sidebar-open");
@@ -3197,15 +3322,21 @@ ${text}</tr>
     sanitizeInput(input) {
       return input.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
-    addMessage(content, role, stream = false) {
+    addMessage(content, role) {
       const sanitizedContent = role === "user" ? this.sanitizeInput(content) : content;
       const messageBlock = this.genContentBlock(sanitizedContent, role);
       this.contentContainer.insertAdjacentHTML("beforeend", messageBlock);
     }
+    addHistoryItem(title, id) {
+      this.chatHistoryContainer.insertAdjacentHTML(
+        "beforeend",
+        ` <button class="item" data-session-id="${id}">${title}</button>`
+      );
+    }
     genContentBlock(content, role) {
       switch (role) {
         case "user":
-          return `<div class="chat__block user">
+          return `<div class="chat__block user" data-role="${role}">
                   <div class="actions__wrapper">
                       <button class="action__button edit" title="Edit message">
                       <svg class="icon">
@@ -3215,9 +3346,9 @@ ${text}</tr>
                   </div>
                   <span class="massage">${content}</span>
                 </div>`;
-        case "model":
-          return `<div class="chat__block model">
-                   <svg class="icon model__logo">
+        case "assistant":
+          return `<div class="chat__block assistant" data-role="${role}">
+                   <svg class="icon assistant__logo">
                      <use href="#stars-icon" />
                    </svg>
                    <div class="response_wrapper">
@@ -3316,54 +3447,192 @@ ${text}</tr>
       if (editUI) editUI.remove();
       this.editMode = null;
     }
+    initWindowControls() {
+      if ("windowControlsOverlay" in navigator) {
+        const updateTitlebarArea = (e) => {
+          const isOverlayVisible = navigator.windowControlsOverlay.visible;
+          const { x, y, width, height } = e?.titlebarAreaRect || navigator.windowControlsOverlay.getTitlebarAreaRect();
+          this.root.style.setProperty("--title-bar-height", `${height}px`);
+          this.root.style.setProperty("--title-bar-width", `${width}px`);
+          this.root.style.setProperty("--title-bar-x", `${x}px`);
+          this.root.style.setProperty("--title-bar-y", `${y}px`);
+          this.root.classList.toggle("overlay-visible", isOverlayVisible);
+        };
+        navigator.windowControlsOverlay.addEventListener("geometrychange", updateTitlebarArea);
+        updateTitlebarArea();
+      }
+    }
   };
   var ui = new ChatUI();
-  var messageHistory = [
-    {
-      content: "What is LayX framework?",
-      role: "user"
+  var config = {
+    database: {
+      name: "chatHistoryDB",
+      version: 1
     },
-    {
-      content: `<div class="text__block">
-       <p>LayX is a next-generation CSS framework that revolutionizes how developers
-         approach web layouts. Built with modern web standards in mind, it combines the
-         power of CSS Grid, Flexbox, and Custom Properties to deliver a flexible,
-         maintainable, and performant solution for web development.</p>
-    </div>
-    <div class="text__block">
-        <h6>Core Features</h6>
-        <ul>
-          <li>Zero-dependency architecture</li>
-          <li>Modern CSS Grid and Flexbox based layout system</li>
-          <li>Built-in responsive design capabilities</li>
-          <li>Performance-first approach</li>
-          <li>Component-driven development</li>
-        </ul>
-    </div>`,
-      role: "model"
+    stores: {
+      sessions: {
+        name: "sessions",
+        options: { keyPath: "sessionId", autoIncrement: false },
+        indexes: [
+          { name: "updateTime", keyPath: "updateTime", options: { unique: false } },
+          { name: "title", keyPath: "title", options: { unique: false } }
+        ]
+      },
+      conversations: {
+        name: "conversations",
+        options: { keyPath: "sessionId", autoIncrement: false }
+      }
+    },
+    context: {}
+  };
+  var upgradeDatabase = (db2, oldVersion, newVersion) => {
+    console.log(`Upgrading database from version ${oldVersion} to ${newVersion}...`);
+    const { stores } = config;
+    Object.values(stores).forEach((storeConfig) => {
+      const { name, options: options2, indexes } = storeConfig;
+      if (!db2.objectStoreNames.contains(name)) {
+        const objectStore = db2.createObjectStore(name, options2);
+        indexes?.forEach(({ name: name2, keyPath, options: options3 }) => {
+          objectStore.createIndex(name2, keyPath, options3);
+        });
+        console.log(`Created store: ${name}`);
+      }
+    });
+  };
+  var db = new IDB(config.database.name, config.database.version, upgradeDatabase);
+  async function initDatabase() {
+    try {
+      await db.open();
+      localStorage.setItem("chatDB", true);
+      console.log("Database initialized successfully!");
+    } catch (error) {
+      localStorage.setItem("chatDB", false);
+      console.error("Database initialization failed:", error);
     }
-  ];
-  var STORAGE_KEY = "chat_history";
-  var chatHistory = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  async function exampleChat() {
+  }
+  if (!localStorage.getItem("chatDB")) {
+    initDatabase();
+  }
+  async function getLastItems(storeName, items = 10, indexName) {
+    try {
+      const store = await db.store(storeName);
+      const index = indexName ? store.index(indexName) : null;
+      return new Promise((resolve, reject) => {
+        const results = [];
+        let count = 0;
+        const request = index ? index.openCursor(null, "prev") : store.openCursor(null, "prev");
+        request.onsuccess = (event) => {
+          const cursor = event.target.result;
+          if (cursor && count < items) {
+            results.push(cursor.value);
+            count++;
+            cursor.continue();
+          } else {
+            resolve(results);
+          }
+        };
+        request.onerror = (event) => {
+          console.error("Error getting last items:", event.target.error);
+          reject(event.target.error);
+        };
+      });
+    } catch (error) {
+      console.error("Error in getLastItems:", error);
+      throw error;
+    }
+  }
+  async function addMessageToDB(sessionId, message) {
+    try {
+      let conversation = await db.get(config.stores.conversations.name, sessionId);
+      let sessionInfo = await db.get(config.stores.sessions.name, sessionId);
+      conversation.messages.push(message);
+      sessionInfo.updateTime = Date.now();
+      await db.put(config.stores.conversations.name, conversation);
+      await db.put(config.stores.sessions.name, sessionInfo);
+      console.log(`Message added successfully to conversation: ${sessionId}`);
+    } catch (error) {
+      console.error(`Error adding message to conversation: ${error.message}`);
+    }
+  }
+  async function updateSession() {
+    session = Number(localStorage.getItem("chatSessions")) || 0;
+    session += 1;
+    ui.root.setAttribute("data-session-id", session);
+    await db.add(config.stores.conversations.name, { sessionId: session, messages: [] });
+    await db.add(
+      config.stores.sessions.name,
+      { sessionId: session, creationTime: Date.now(), title: `New Chat ${session}`, updateTime: Date.now() }
+    );
+    localStorage.setItem("chatSessions", session);
+  }
+  async function init() {
+    if (localStorage.getItem("chatDB")) {
+      const chatHistoryItems = await getLastItems(config.stores.sessions.name, 50, "updateTime");
+      if (chatHistoryItems.length) {
+        chatHistoryItems.forEach((item) => {
+          ui.addHistoryItem(item.title, item.sessionId);
+        });
+      }
+    }
+  }
+  init();
+  var model = "xAI";
+  var session;
+  async function Chat() {
     const userContent = ui.textarea.value;
     ui.textarea.value = "";
     if (!userContent) return;
+    const isNew = !ui.root.hasAttribute("data-session-id");
+    if (isNew) {
+      await updateSession();
+      ui.addHistoryItem(`New Chat ${session}`, session);
+    }
     ui.root.classList.remove("initial");
     ui.addMessage(userContent, "user");
-    ui.addMessage("", "model");
+    ui.addMessage("", "assistant");
     ui.scrollToBottom();
-    const lastBlock = ui.contentContainer.querySelector(".chat__block.model:last-child .response_wrapper .response");
-    chatHistory.push({ role: "user", content: userContent });
-    const response = await browser.chat({ model: "xAI", messages: chatHistory, stream: false });
-    lastBlock.innerHTML = marked.parse(response.message.content);
-    chatHistory.push({ role: "assistant", content: response.message.content });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory));
-    console.log(response);
+    addMessageToDB(session, { role: "user", content: userContent });
+    const lastContentBlock = ui.contentContainer.querySelector(".chat__block.assistant:last-child .response_wrapper .response");
+    const response = await browser.chat({ model, messages: [{ role: "user", content: userContent }], stream: true });
+    let content = "";
+    for await (const part of response) {
+      content += part.message.content;
+      lastContentBlock.innerHTML = marked.parse(content);
+      ui.scrollToBottom();
+    }
+    addMessageToDB(session, { role: "assistant", content, model });
+    if (isNew) {
+      updateHistoryItem(session, `Updated Chat ${session}`);
+    }
   }
-  function showChatHistory() {
-    messageHistory.forEach((message) => {
-      ui.addMessage(message.content, message.role);
-    });
+  function newChat() {
+    ui.root.classList.add("initial");
+    ui.contentContainer.innerHTML = "";
+    ui.textarea.value = "";
+    ui.root.removeAttribute("data-session-id");
+  }
+  async function updateHistoryItem(sessionId, updatedTitle) {
+    const historyItem = ui.chatHistoryContainer.querySelector(`.item[data-session-id="${sessionId}"]`);
+    if (historyItem) {
+      historyItem.textContent = updatedTitle;
+    }
+    const sessionInfo = await db.get(config.stores.sessions.name, sessionId);
+    sessionInfo.title = updatedTitle;
+    await db.put(config.stores.sessions.name, sessionInfo);
+    console.log(`History item updated: ${updatedTitle}`);
+  }
+  async function showChatHistory(target) {
+    const attributeValue = target.getAttribute("data-session-id");
+    if (!attributeValue) return;
+    ui.root.classList.remove("initial");
+    ui.contentContainer.innerHTML = "";
+    ui.root.setAttribute("data-session-id", attributeValue);
+    session = Number(attributeValue);
+    let conversation = await db.get(config.stores.conversations.name, session);
+    if (conversation.messages.length) {
+      conversation.messages.forEach((message) => {
+        ui.addMessage(message.content, message.role);
+      });
+    }
   }
 })();

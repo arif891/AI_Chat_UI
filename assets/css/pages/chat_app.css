@@ -352,7 +352,7 @@
                             padding-bottom: var(--space-3);
                         }
 
-                        &.model {
+                        &.assistant {
                             padding-bottom: var(--space-6);
                         }
                     }
@@ -422,7 +422,7 @@
                             }
                         }
 
-                        &.model {
+                        &.assistant {
                             flex-direction: column;
 
                             @media (width >=992px) {
@@ -438,7 +438,7 @@
                                 }
                             }
 
-                            .model__logo {
+                            .assistant__logo {
                                 height: 2.5rem;
                                 width: 2.5rem;
                                 padding: .65rem;

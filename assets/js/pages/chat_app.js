@@ -36,7 +36,6 @@ class ChatUI {
     this.sendButton = this.root.querySelector(this.options.sendButton);
     this.newChatButton = this.root.querySelector(this.options.newChatButton);
     this.chatHistoryContainer = this.root.querySelector(this.options.chatHistoryContainer);
-    this.chatHistoryItems = this.chatHistoryContainer.querySelectorAll('.item');
     this.contentScrollContainer = this.root.querySelector(this.options.contentScrollContainer);
     this.contentContainer = this.root.querySelector(this.options.contentContainer);
     this.editMode = null; // Track which message is being edited
@@ -78,20 +77,13 @@ class ChatUI {
       }
     });
 
-    // New chat button
-    this.newChatButton.addEventListener('click', () => {
-      this.root.classList.add('initial');
-      this.root.removeAttribute('data-chat-id')
-      this.contentContainer.innerHTML = '';
-      this.textarea.value = '';
+    this.chatHistoryContainer.addEventListener('click', (e) => {
+      showChatHistory(e.target);
     });
 
-    this.chatHistoryItems.forEach((item) => {
-      item.addEventListener('click', (e) => {
-        this.root.classList.remove('initial');
-        this.contentContainer.innerHTML = '';
-        showChatHistory(e.target);
-      });
+    // New chat button
+    this.newChatButton.addEventListener('click', () => {
+      newChat();
     });
 
     window.addEventListener('offline', () => {
@@ -155,15 +147,15 @@ class ChatUI {
   }
 
   addHistoryItem(title, id) {
-    this.chatHistoryContainer.insertAdjacentElement('beforeend',
-       ` <button class="item" data-chat-id="${id}">${title}</button>`
-      );
+    this.chatHistoryContainer.insertAdjacentHTML('beforeend',
+      ` <button class="item" data-session-id="${id}">${title}</button>`
+    );
   }
 
   genContentBlock(content, role) {
     switch (role) {
       case 'user':
-        return `<div class="chat__block user">
+        return `<div class="chat__block user" data-role="${role}">
                   <div class="actions__wrapper">
                       <button class="action__button edit" title="Edit message">
                       <svg class="icon">
@@ -174,9 +166,9 @@ class ChatUI {
                   <span class="massage">${content}</span>
                 </div>`;
 
-      case 'model':
-        return `<div class="chat__block model">
-                   <svg class="icon model__logo">
+      case 'assistant':
+        return `<div class="chat__block assistant" data-role="${role}">
+                   <svg class="icon assistant__logo">
                      <use href="#stars-icon" />
                    </svg>
                    <div class="response_wrapper">
@@ -315,51 +307,235 @@ class ChatUI {
   }
 }
 
-
-
 const ui = new ChatUI();
 
-// import ollama from 'ollama/browser';
-// import { marked } from 'marked';
-
-// const STORAGE_KEY = 'chat_history';
-// let chatHistory = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-
-// // Replace example function
-// async function Chat() {
-//   const userContent = ui.textarea.value;
-//   ui.textarea.value = '';
-//   if (!userContent) return;
-//   ui.root.classList.remove('initial');
-
-//   ui.addMessage(userContent, 'user');
-//   ui.addMessage('', 'model');
-//   ui.scrollToBottom();
-
-//    // Add user's message to history
-//   chatHistory.push({ role: 'user', content: userContent });
-
-//   const lastContentBlock = ui.contentContainer.querySelector('.chat__block.model:last-child .response_wrapper .response');
-
-//   const response = await ollama.chat({ model: 'xAI', messages: chatHistory, stream: true });
-
-//   let content = '';
-//   for await (const part of response) {
-//     content += part.message.content;
-//     lastContentBlock.innerHTML = marked.parse(content);
-//     ui.scrollToBottom();
-//   }
-
-//   // Save AI response in history
-//   chatHistory.push({ role: 'assistant', content: content });
 
 
-//   // Store updated history
-//   localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory));
+import { IDB } from '../../../layx/others/idb/idb.js';
 
-// }
+const config = {
+  database: {
+    name: 'chatHistoryDB',
+    version: 1
+  },
+  stores: {
+    sessions: {
+      name: 'sessions',
+      options: { keyPath: 'sessionId', autoIncrement: false },
+      indexes: [
+        { name: 'updateTime', keyPath: 'updateTime', options: { unique: false } },
+        { name: 'title', keyPath: 'title', options: { unique: false } }
+      ]
+    },
+    conversations: {
+      name: 'conversations',
+      options: { keyPath: 'sessionId', autoIncrement: false }
+    }
+  },
+  context: {
 
-function showChatHistory(target) {
-  let attributeValue = target.getAttribute('data-chat-id');
-  ui.root.setAttribute('data-chat-id', attributeValue);
+  }
+};
+
+const upgradeDatabase = (db, oldVersion, newVersion) => {
+  console.log(`Upgrading database from version ${oldVersion} to ${newVersion}...`);
+
+  const { stores } = config;
+
+  Object.values(stores).forEach(storeConfig => {
+    const { name, options, indexes } = storeConfig;
+
+    // Check if the store already exists
+    if (!db.objectStoreNames.contains(name)) {
+      const objectStore = db.createObjectStore(name, options);
+
+      // Create indexes
+      indexes?.forEach(({ name, keyPath, options }) => {
+        objectStore.createIndex(name, keyPath, options);
+      });
+
+      console.log(`Created store: ${name}`);
+    }
+  });
+};
+
+
+const db = new IDB(config.database.name, config.database.version, upgradeDatabase);
+
+async function initDatabase() {
+  try {
+    await db.open();
+    localStorage.setItem('chatDB', true);
+    console.log('Database initialized successfully!');
+  } catch (error) {
+    localStorage.setItem('chatDB', false);
+    console.error('Database initialization failed:', error);
+  }
+}
+
+
+if (!localStorage.getItem('chatDB')) {
+  initDatabase();
+}
+
+
+async function getLastItems(storeName, items = 10, indexName) { // indexName is optional, for filtering/indexing
+  try {
+    const store = await db.store(storeName);
+    const index = indexName ? store.index(indexName) : null; // Use index if provided
+
+    return new Promise((resolve, reject) => {
+      const results = [];
+      let count = 0;
+
+      // Open a reverse cursor (from highest key to lowest) on the index or store
+      const request = index
+        ? index.openCursor(null, "prev") // Reverse on index
+        : store.openCursor(null, "prev"); // Reverse on store
+
+      request.onsuccess = (event) => {
+        const cursor = event.target.result;
+        if (cursor && count < items) {
+          results.push(cursor.value);
+          count++;
+          cursor.continue();
+        } else {
+          resolve(results);
+        }
+      };
+
+      request.onerror = (event) => {
+        console.error('Error getting last items:', event.target.error);
+        reject(event.target.error);
+      };
+    });
+  } catch (error) {
+    console.error("Error in getLastItems:", error);
+    throw error;
+  }
+}
+
+async function addMessageToDB(sessionId, message) {
+  try {
+    // Try to get the existing conversation record from the 'conversations' store
+    let conversation = await db.get(config.stores.conversations.name, sessionId);
+    let sessionInfo = await db.get(config.stores.sessions.name, sessionId);
+
+    // Add the new message to the messages array
+    conversation.messages.push(message);
+    sessionInfo.updateTime = Date.now();
+
+    await db.put(config.stores.conversations.name, conversation);
+    await db.put(config.stores.sessions.name, sessionInfo); // Ensure sessionInfo is updated
+    console.log(`Message added successfully to conversation: ${sessionId}`);
+  } catch (error) {
+    console.error(`Error adding message to conversation: ${error.message}`);
+  }
+}
+
+async function updateSession() {
+  session = Number(localStorage.getItem('chatSessions')) || 0;
+  session += 1;
+  ui.root.setAttribute('data-session-id', session);
+  await db.add(config.stores.conversations.name, { sessionId: session, messages: [] });
+  await db.add(config.stores.sessions.name,
+    { sessionId: session, creationTime: Date.now(), title: `New Chat ${session}`, updateTime: Date.now() }
+  );
+  localStorage.setItem('chatSessions', session);
+}
+
+async function init() {
+
+  if (localStorage.getItem('chatDB')) {
+    const chatHistoryItems = await getLastItems(config.stores.sessions.name, 50, 'updateTime');
+    if (chatHistoryItems.length) {
+      chatHistoryItems.forEach(item => {
+        ui.addHistoryItem(item.title, item.sessionId);
+      })
+    }
+  }
+}
+
+init();
+
+
+
+let model = 'xAI';
+let context = [];
+let session;
+
+import ollama from 'ollama/browser';
+import { marked } from 'marked';
+
+
+
+async function Chat() {
+  const userContent = ui.textarea.value;
+  ui.textarea.value = '';
+  if (!userContent) return;
+
+  const isNew = !ui.root.hasAttribute('data-session-id');
+
+  if (isNew) {
+    await updateSession();
+    ui.addHistoryItem(`New Chat ${session}`, session);
+  }
+
+  ui.root.classList.remove('initial');
+
+  ui.addMessage(userContent, 'user');
+  ui.addMessage('', 'assistant');
+  ui.scrollToBottom();
+
+  addMessageToDB(session, { role: 'user', content: userContent });
+
+  const lastContentBlock = ui.contentContainer.querySelector('.chat__block.assistant:last-child .response_wrapper .response');
+
+  const response = await ollama.chat({ model: model, messages: [{ role: 'user', content: userContent }], stream: true });
+
+  let content = '';
+  for await (const part of response) {
+    content += part.message.content;
+    lastContentBlock.innerHTML = marked.parse(content);
+    ui.scrollToBottom();
+  }
+
+  addMessageToDB(session, { role: 'assistant', content: content, model: model });
+
+  if (isNew) {
+    updateHistoryItem(session, `Updated Chat ${session}`);
+  }
+}
+
+function newChat() {
+  ui.root.classList.add('initial');
+  ui.contentContainer.innerHTML = '';
+  ui.textarea.value = '';
+  ui.root.removeAttribute('data-session-id');
+}
+
+async function updateHistoryItem(sessionId, updatedTitle) {
+  const historyItem = ui.chatHistoryContainer.querySelector(`.item[data-session-id="${sessionId}"]`);
+  if (historyItem) {
+    historyItem.textContent = updatedTitle;
+  }
+  const sessionInfo = await db.get(config.stores.sessions.name, sessionId);
+  sessionInfo.title = updatedTitle;
+  await db.put(config.stores.sessions.name, sessionInfo); // Ensure sessionInfo is updated
+  console.log(`History item updated: ${updatedTitle}`);
+}
+
+async function showChatHistory(target) {
+  const attributeValue = target.getAttribute('data-session-id');
+  if (!attributeValue) return;
+  ui.root.classList.remove('initial');
+  ui.contentContainer.innerHTML ='';
+  ui.root.setAttribute('data-session-id', attributeValue);
+  session = Number(attributeValue);
+  let conversation = await db.get(config.stores.conversations.name, session);
+  if (conversation.messages.length) {
+    conversation.messages.forEach(message => {
+      ui.addMessage(message.content, message.role);
+    });
+  }
 }
