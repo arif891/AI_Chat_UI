@@ -574,9 +574,9 @@
     DOMException.prototype = Object.create(Error.prototype);
     DOMException.prototype.constructor = DOMException;
   }
-  function fetch2(input, init2) {
+  function fetch2(input, init) {
     return new Promise(function(resolve, reject) {
-      var request = new Request(input, init2);
+      var request = new Request(input, init);
       if (request.signal && request.signal.aborted) {
         return reject(new DOMException("Aborted", "AbortError"));
       }
@@ -635,11 +635,11 @@
           xhr.responseType = "arraybuffer";
         }
       }
-      if (init2 && typeof init2.headers === "object" && !(init2.headers instanceof Headers || g.Headers && init2.headers instanceof g.Headers)) {
+      if (init && typeof init.headers === "object" && !(init.headers instanceof Headers || g.Headers && init.headers instanceof g.Headers)) {
         var names = [];
-        Object.getOwnPropertyNames(init2.headers).forEach(function(name) {
+        Object.getOwnPropertyNames(init.headers).forEach(function(name) {
           names.push(normalizeName(name));
-          xhr.setRequestHeader(name, normalizeValue(init2.headers[name]));
+          xhr.setRequestHeader(name, normalizeValue(init.headers[name]));
         });
         request.headers.forEach(function(value, name) {
           if (names.indexOf(name) === -1) {
@@ -3224,13 +3224,13 @@ ${text}</tr>
   var lexer = _Lexer.lex;
 
   // assets/js/pages/chat_app.js
-  var ChatUI = class {
-    /**
-     * @param {string} selector 
-     * @param {ChatUIOptions} options 
-     */
-    constructor(selector = "#chat-app-root", options2 = {}) {
-      this.root = document.querySelector(selector);
+  var ChatApp = class {
+    constructor(options2 = {}) {
+      this.initializeElements(options2);
+      this.initializeEventListeners();
+    }
+    initializeElements(options2) {
+      this.root = document.querySelector("#chat-app-root");
       if (!this.root) throw new Error("Root element not found");
       this.options = {
         sidebarTogglers: ".sidebar-toggler",
@@ -3252,13 +3252,8 @@ ${text}</tr>
       this.contentScrollContainer = this.root.querySelector(this.options.contentScrollContainer);
       this.contentContainer = this.root.querySelector(this.options.contentContainer);
       this.editMode = null;
-      this.init();
     }
-    init() {
-      this.initEventListeners();
-      this.initWindowControls();
-    }
-    initEventListeners() {
+    initializeEventListeners() {
       this.sidebarTogglers.forEach((toggler) => {
         toggler.addEventListener("click", () => this.toggleSidebar());
       });
@@ -3270,19 +3265,19 @@ ${text}</tr>
         }
       });
       this.sendButton.addEventListener("click", async () => {
-        await Chat();
+        await this.chat();
       });
       this.textarea.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
-          Chat();
+          this.chat();
         }
       });
       this.chatHistoryContainer.addEventListener("click", (e) => {
-        showChatHistory(e.target);
+        this.showChatHistory(e.target);
       });
       this.newChatButton.addEventListener("click", () => {
-        newChat();
+        this.newChat();
       });
       window.addEventListener("offline", () => {
         this.updateNetworkStatus();
@@ -3447,6 +3442,140 @@ ${text}</tr>
       if (editUI) editUI.remove();
       this.editMode = null;
     }
+    async chat() {
+      const userContent = this.textarea.value;
+      this.textarea.value = "";
+      if (!userContent) return;
+      const isNew = !this.root.hasAttribute("data-session-id");
+      if (isNew) {
+        await this.updateSession();
+        this.addHistoryItem(`New Chat ${session}`, session, "afterbegin");
+      }
+      this.root.classList.remove("initial");
+      this.addMessage(userContent, "user");
+      this.addMessage("", "assistant");
+      this.scrollToBottom();
+      this.addMessageToDB(session, { role: "user", content: userContent });
+      const lastContentBlock = this.contentContainer.querySelector(".chat__block.assistant:last-child .response_wrapper .response");
+      const response = await browser.chat({ model, messages: [{ role: "user", content: userContent }], stream: true });
+      let content = "";
+      for await (const part of response) {
+        content += part.message.content;
+        lastContentBlock.innerHTML = marked.parse(content);
+        this.scrollToBottom();
+      }
+      if (isNew) {
+        await this.updateHistoryItem(session, `Updated Chat ${session}`);
+      }
+      await this.addMessageToDB(session, { role: "assistant", content, model });
+    }
+    newChat() {
+      this.root.classList.add("initial");
+      this.contentContainer.innerHTML = "";
+      this.textarea.value = "";
+      this.root.removeAttribute("data-session-id");
+    }
+    async updateHistoryItem(sessionId, updatedTitle) {
+      const historyItem = this.chatHistoryContainer.querySelector(`.item[data-session-id="${sessionId}"]`);
+      if (historyItem) {
+        historyItem.textContent = updatedTitle;
+      }
+      const sessionInfo = await db.get(config.stores.sessions.name, sessionId);
+      sessionInfo.title = updatedTitle;
+      await db.put(config.stores.sessions.name, sessionInfo);
+      console.log(`History item updated: ${updatedTitle}`);
+    }
+    async showChatHistory(target) {
+      const attributeValue = target.getAttribute("data-session-id");
+      if (!attributeValue) return;
+      this.root.classList.remove("initial");
+      this.contentContainer.innerHTML = "";
+      this.root.setAttribute("data-session-id", attributeValue);
+      session = Number(attributeValue);
+      let conversation = await db.get(config.stores.conversations.name, session);
+      if (conversation.messages.length) {
+        conversation.messages.forEach((message) => {
+          if (message.role == "assistant") {
+            this.addMessage(marked.parse(message.content), message.role);
+          } else {
+            this.addMessage(message.content, message.role);
+          }
+        });
+      }
+    }
+    async updateSession() {
+      session = Number(localStorage.getItem("chatSessions")) || 0;
+      session += 1;
+      this.root.setAttribute("data-session-id", session);
+      await db.add(config.stores.conversations.name, { sessionId: session, messages: [] });
+      await db.add(
+        config.stores.sessions.name,
+        { sessionId: session, creationTime: Date.now(), title: `New Chat ${session}`, updateTime: Date.now() }
+      );
+      localStorage.setItem("chatSessions", session);
+    }
+    async addMessageToDB(sessionId, message) {
+      try {
+        let conversation = await db.get(config.stores.conversations.name, sessionId);
+        let sessionInfo = await db.get(config.stores.sessions.name, sessionId);
+        conversation.messages.push(message);
+        sessionInfo.updateTime = Date.now();
+        await db.put(config.stores.conversations.name, conversation);
+        await db.put(config.stores.sessions.name, sessionInfo);
+        console.log(`Message added successfully to conversation: ${sessionId}`);
+      } catch (error) {
+        console.error(`Error adding message to conversation: ${error.message}`);
+      }
+    }
+    async getLastItems(storeName, items = 10, indexName) {
+      try {
+        const store = await db.store(storeName);
+        const index = indexName ? store.index(indexName) : null;
+        return new Promise((resolve, reject) => {
+          const results = [];
+          let count = 0;
+          const request = index ? index.openCursor(null, "prev") : store.openCursor(null, "prev");
+          request.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor && count < items) {
+              results.push(cursor.value);
+              count++;
+              cursor.continue();
+            } else {
+              resolve(results);
+            }
+          };
+          request.onerror = (event) => {
+            console.error("Error getting last items:", event.target.error);
+            reject(event.target.error);
+          };
+        });
+      } catch (error) {
+        console.error("Error in getLastItems:", error);
+        throw error;
+      }
+    }
+    async initDatabase() {
+      try {
+        await db.open();
+        localStorage.setItem("chatDB", true);
+        console.log("Database initialized successfully!");
+      } catch (error) {
+        localStorage.setItem("chatDB", false);
+        console.error("Database initialization failed:", error);
+      }
+    }
+    init() {
+      if (localStorage.getItem("chatDB")) {
+        this.getLastItems(config.stores.sessions.name, 50, "updateTime").then((chatHistoryItems) => {
+          if (chatHistoryItems.length) {
+            chatHistoryItems.forEach((item) => {
+              this.addHistoryItem(item.title, item.sessionId);
+            });
+          }
+        });
+      }
+    }
     initWindowControls() {
       if ("windowControlsOverlay" in navigator) {
         const updateTitlebarArea = (e) => {
@@ -3463,7 +3592,7 @@ ${text}</tr>
       }
     }
   };
-  var ui = new ChatUI();
+  var chatApp = new ChatApp();
   var config = {
     database: {
       name: "chatHistoryDB",
@@ -3500,143 +3629,10 @@ ${text}</tr>
     });
   };
   var db = new IDB(config.database.name, config.database.version, upgradeDatabase);
-  async function initDatabase() {
-    try {
-      await db.open();
-      localStorage.setItem("chatDB", true);
-      console.log("Database initialized successfully!");
-    } catch (error) {
-      localStorage.setItem("chatDB", false);
-      console.error("Database initialization failed:", error);
-    }
-  }
   if (!localStorage.getItem("chatDB")) {
-    initDatabase();
+    chatApp.initDatabase();
   }
-  async function getLastItems(storeName, items = 10, indexName) {
-    try {
-      const store = await db.store(storeName);
-      const index = indexName ? store.index(indexName) : null;
-      return new Promise((resolve, reject) => {
-        const results = [];
-        let count = 0;
-        const request = index ? index.openCursor(null, "prev") : store.openCursor(null, "prev");
-        request.onsuccess = (event) => {
-          const cursor = event.target.result;
-          if (cursor && count < items) {
-            results.push(cursor.value);
-            count++;
-            cursor.continue();
-          } else {
-            resolve(results);
-          }
-        };
-        request.onerror = (event) => {
-          console.error("Error getting last items:", event.target.error);
-          reject(event.target.error);
-        };
-      });
-    } catch (error) {
-      console.error("Error in getLastItems:", error);
-      throw error;
-    }
-  }
-  async function addMessageToDB(sessionId, message) {
-    try {
-      let conversation = await db.get(config.stores.conversations.name, sessionId);
-      let sessionInfo = await db.get(config.stores.sessions.name, sessionId);
-      conversation.messages.push(message);
-      sessionInfo.updateTime = Date.now();
-      await db.put(config.stores.conversations.name, conversation);
-      await db.put(config.stores.sessions.name, sessionInfo);
-      console.log(`Message added successfully to conversation: ${sessionId}`);
-    } catch (error) {
-      console.error(`Error adding message to conversation: ${error.message}`);
-    }
-  }
-  async function updateSession() {
-    session = Number(localStorage.getItem("chatSessions")) || 0;
-    session += 1;
-    ui.root.setAttribute("data-session-id", session);
-    await db.add(config.stores.conversations.name, { sessionId: session, messages: [] });
-    await db.add(
-      config.stores.sessions.name,
-      { sessionId: session, creationTime: Date.now(), title: `New Chat ${session}`, updateTime: Date.now() }
-    );
-    localStorage.setItem("chatSessions", session);
-  }
-  async function init() {
-    if (localStorage.getItem("chatDB")) {
-      const chatHistoryItems = await getLastItems(config.stores.sessions.name, 50, "updateTime");
-      if (chatHistoryItems.length) {
-        chatHistoryItems.forEach((item) => {
-          ui.addHistoryItem(item.title, item.sessionId);
-        });
-      }
-    }
-  }
-  init();
+  chatApp.init();
   var model = "xAI";
   var session;
-  async function Chat() {
-    const userContent = ui.textarea.value;
-    ui.textarea.value = "";
-    if (!userContent) return;
-    const isNew = !ui.root.hasAttribute("data-session-id");
-    if (isNew) {
-      await updateSession();
-      ui.addHistoryItem(`New Chat ${session}`, session, "afterbegin");
-    }
-    ui.root.classList.remove("initial");
-    ui.addMessage(userContent, "user");
-    ui.addMessage("", "assistant");
-    ui.scrollToBottom();
-    addMessageToDB(session, { role: "user", content: userContent });
-    const lastContentBlock = ui.contentContainer.querySelector(".chat__block.assistant:last-child .response_wrapper .response");
-    const response = await browser.chat({ model, messages: [{ role: "user", content: userContent }], stream: true });
-    let content = "";
-    for await (const part of response) {
-      content += part.message.content;
-      lastContentBlock.innerHTML = marked.parse(content);
-      ui.scrollToBottom();
-    }
-    if (isNew) {
-      await updateHistoryItem(session, `Updated Chat ${session}`);
-    }
-    await addMessageToDB(session, { role: "assistant", content, model });
-  }
-  function newChat() {
-    ui.root.classList.add("initial");
-    ui.contentContainer.innerHTML = "";
-    ui.textarea.value = "";
-    ui.root.removeAttribute("data-session-id");
-  }
-  async function updateHistoryItem(sessionId, updatedTitle) {
-    const historyItem = ui.chatHistoryContainer.querySelector(`.item[data-session-id="${sessionId}"]`);
-    if (historyItem) {
-      historyItem.textContent = updatedTitle;
-    }
-    const sessionInfo = await db.get(config.stores.sessions.name, sessionId);
-    sessionInfo.title = updatedTitle;
-    await db.put(config.stores.sessions.name, sessionInfo);
-    console.log(`History item updated: ${updatedTitle}`);
-  }
-  async function showChatHistory(target) {
-    const attributeValue = target.getAttribute("data-session-id");
-    if (!attributeValue) return;
-    ui.root.classList.remove("initial");
-    ui.contentContainer.innerHTML = "";
-    ui.root.setAttribute("data-session-id", attributeValue);
-    session = Number(attributeValue);
-    let conversation = await db.get(config.stores.conversations.name, session);
-    if (conversation.messages.length) {
-      conversation.messages.forEach((message) => {
-        if (message.role == "assistant") {
-          ui.addMessage(marked.parse(message.content), message.role);
-        } else {
-          ui.addMessage(message.content, message.role);
-        }
-      });
-    }
-  }
 })();
