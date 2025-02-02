@@ -146,8 +146,8 @@ class ChatUI {
     this.contentContainer.insertAdjacentHTML('beforeend', messageBlock);
   }
 
-  addHistoryItem(title, id) {
-    this.chatHistoryContainer.insertAdjacentHTML('beforeend',
+  addHistoryItem(title, id, position = 'beforeend') {
+    this.chatHistoryContainer.insertAdjacentHTML(position,
       ` <button class="item" data-session-id="${id}">${title}</button>`
     );
   }
@@ -478,7 +478,7 @@ async function Chat() {
 
   if (isNew) {
     await updateSession();
-    ui.addHistoryItem(`New Chat ${session}`, session);
+    ui.addHistoryItem(`New Chat ${session}`, session, 'afterbegin');
   }
 
   ui.root.classList.remove('initial');
