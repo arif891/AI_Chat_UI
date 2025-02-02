@@ -535,7 +535,11 @@ async function showChatHistory(target) {
   let conversation = await db.get(config.stores.conversations.name, session);
   if (conversation.messages.length) {
     conversation.messages.forEach(message => {
-      ui.addMessage(message.content, message.role);
+      if (message.role == 'assistant') {
+        ui.addMessage(marked.parse(message.content), message.role);
+      } else {
+        ui.addMessage(message.content, message.role);
+      }
     });
   }
 }

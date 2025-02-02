@@ -3327,9 +3327,9 @@ ${text}</tr>
       const messageBlock = this.genContentBlock(sanitizedContent, role);
       this.contentContainer.insertAdjacentHTML("beforeend", messageBlock);
     }
-    addHistoryItem(title, id) {
+    addHistoryItem(title, id, position = "beforeend") {
       this.chatHistoryContainer.insertAdjacentHTML(
-        "beforeend",
+        position,
         ` <button class="item" data-session-id="${id}">${title}</button>`
       );
     }
@@ -3585,7 +3585,7 @@ ${text}</tr>
     const isNew = !ui.root.hasAttribute("data-session-id");
     if (isNew) {
       await updateSession();
-      ui.addHistoryItem(`New Chat ${session}`, session);
+      ui.addHistoryItem(`New Chat ${session}`, session, "afterbegin");
     }
     ui.root.classList.remove("initial");
     ui.addMessage(userContent, "user");
@@ -3600,10 +3600,10 @@ ${text}</tr>
       lastContentBlock.innerHTML = marked.parse(content);
       ui.scrollToBottom();
     }
-    await addMessageToDB(session, { role: "assistant", content, model });
     if (isNew) {
       await updateHistoryItem(session, `Updated Chat ${session}`);
     }
+    await addMessageToDB(session, { role: "assistant", content, model });
   }
   function newChat() {
     ui.root.classList.add("initial");
@@ -3631,7 +3631,11 @@ ${text}</tr>
     let conversation = await db.get(config.stores.conversations.name, session);
     if (conversation.messages.length) {
       conversation.messages.forEach((message) => {
-        ui.addMessage(message.content, message.role);
+        if (message.role == "assistant") {
+          ui.addMessage(marked.parse(message.content), message.role);
+        } else {
+          ui.addMessage(message.content, message.role);
+        }
       });
     }
   }
