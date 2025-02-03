@@ -24,10 +24,10 @@ class ChatApp {
         }
       },
       ai: {
-        model: 'xAI'
+        model: 'llama3.2:1b'
       },
       context: {
-       max: 20,
+        max: 20,
       },
       ...config
     };
@@ -359,11 +359,25 @@ class ChatApp {
       this.context.shift();
     }
 
-    this.context.push({role: 'user', content: userContent});
+    this.context.push({ role: 'user', content: userContent });
 
     const lastContentBlock = this.contentContainer.querySelector('.chat__block.assistant:last-child .response_wrapper .response');
 
-    const response = await ollama.chat({ model: this.model, messages: [...this.context], stream: true });
+    const response = await ollama.chat({
+      model: this.model, messages:
+        [
+          {
+            role: 'system',
+            content: `
+            You are Meta AI, a friendly AI assistant. Your responses should be helpful, informative, and engaging.
+             You can use markdown to format your responses. Your model name is ${this.model}.
+             You know realtime Date Time, here is user: ${Date()}.
+            `
+          },
+          ...this.context
+        ],
+      stream: true
+    });
     let content = '';
     for await (const part of response) {
       content += part.message.content;
@@ -371,15 +385,31 @@ class ChatApp {
       this.scrollToBottom();
     }
 
-    if (isNew) {
-      await this.updateHistoryItem(this.sessionId, `Updated Chat ${this.sessionId}`);
-    }
-
     await this.addMessageToDB(this.sessionId, { role: 'assistant', content: content });
     if (this.context.length >= this.config.context.max) {
       this.context.shift();
     }
     this.context.push({ role: 'assistant', content: content });
+
+    if (isNew) {
+      const response = await ollama.chat({
+        model: this.model,
+        messages: [
+          {
+            "role": "system",
+            "content": "Your a AI assistant. Generate a concise, engaging, and relevant title under 6 words based on the user's first message to you based on user prospective. Which should represent user query and help to find this conversion. Respond with only the title—no extra text"
+          },
+          {
+            "role": "user",
+            "content": `Generate a fitting title for user based on this user first message: '${userContent}' to you.`
+          }
+        ]
+      });
+
+      if (response.message.content) {
+        await this.updateHistoryItem(this.sessionId, response.message.content);
+      }
+    }
 
     console.log(this.context);
   }
@@ -389,6 +419,7 @@ class ChatApp {
     this.contentContainer.innerHTML = '';
     this.textarea.value = '';
     this.root.removeAttribute('data-session-id');
+    this.context = [];
   }
 
   async updateHistoryItem(sessionId, updatedTitle) {
@@ -438,15 +469,15 @@ class ChatApp {
   async updateContext(messages, max = 10) {
     if (messages.length > max) {
       const halfMax = Math.floor(max / 2);
-      
+
       // Get first half (user messages only)
       const firstHalf = messages
         .filter(msg => msg.role === 'user')
         .slice(0, halfMax);
-  
+
       // Get last half (maintaining conversation flow with both user and assistant)
       const lastHalf = messages.slice(-halfMax);
-  
+
       this.context = [...firstHalf, ...lastHalf];
     } else if (messages.length) {
       this.context = messages;
