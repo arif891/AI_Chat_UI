@@ -407,7 +407,7 @@ class ChatApp {
       });
 
       if (response.message.content) {
-        await this.updateHistoryItem(this.sessionId, response.message.content);
+        await this.updateHistoryItem(this.sessionId, response.message.content.replaceAll('"', ''));
       }
     }
 

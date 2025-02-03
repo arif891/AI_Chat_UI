@@ -3546,16 +3546,16 @@ ${text}</tr>
           messages: [
             {
               "role": "system",
-              "content": "Your a AI assistant. Generate a concise, engaging, and relevant title under 6 words based on the user's first message to you based on user prospective. Which should represent user query and help to find this conversion. Respond with only the title\u2014no extra text and don't wrap hole title with quotes."
+              "content": "Your a AI assistant. Generate a concise, engaging, and relevant title under 6 words based on the user's first message to you based on user prospective. Which should represent user query and help to find this conversion. Respond with only the title\u2014no extra text"
             },
             {
               "role": "user",
-              "content": `Generate a fitting title for user based on this user first message: "${userContent}" to you.`
+              "content": `Generate a fitting title for user based on this user first message: '${userContent}' to you.`
             }
           ]
         });
         if (response2.message.content) {
-          await this.updateHistoryItem(this.sessionId, response2.message.content);
+          await this.updateHistoryItem(this.sessionId, response2.message.content.replaceAll('"', ""));
         }
       }
       console.log(this.context);
@@ -3565,6 +3565,7 @@ ${text}</tr>
       this.contentContainer.innerHTML = "";
       this.textarea.value = "";
       this.root.removeAttribute("data-session-id");
+      this.context = [];
     }
     async updateHistoryItem(sessionId, updatedTitle) {
       const historyItem = this.chatHistoryContainer.querySelector(`.item[data-session-id="${sessionId}"]`);
