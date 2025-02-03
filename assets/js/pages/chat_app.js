@@ -27,7 +27,7 @@ class ChatApp {
         model: 'xAI'
       },
       context: {
-       max: 15,
+       max: 20,
       },
       ...config
     };
@@ -355,9 +355,10 @@ class ChatApp {
     this.scrollToBottom();
 
     this.addMessageToDB(this.sessionId, { role: 'user', content: userContent });
-    if (this.context.length >= 10) {
+    if (this.context.length >= this.config.context.max) {
       this.context.shift();
     }
+
     this.context.push({role: 'user', content: userContent});
 
     const lastContentBlock = this.contentContainer.querySelector('.chat__block.assistant:last-child .response_wrapper .response');
@@ -375,7 +376,7 @@ class ChatApp {
     }
 
     await this.addMessageToDB(this.sessionId, { role: 'assistant', content: content });
-    if (this.context.length >= 10) {
+    if (this.context.length >= this.config.context.max) {
       this.context.shift();
     }
     this.context.push({ role: 'assistant', content: content });
@@ -418,7 +419,8 @@ class ChatApp {
         }
       });
       this.scrollToBottom();
-      this.updateContext(conversation.messages);
+      this.updateContext(conversation.messages, this.config.context.max);
+      console.log(this.context);
     }
   }
 
@@ -435,11 +437,19 @@ class ChatApp {
 
   async updateContext(messages, max = 10) {
     if (messages.length > max) {
-      let lastHalf = messages.slice(5);  
-      this.context = messages.slice(Math.max(messages.length - max, 0));
-      console.log(this.context);
-    } else {
-      this.context = messages.slice(Math.max(messages.length - max, 0));
+      const halfMax = Math.floor(max / 2);
+      
+      // Get first half (user messages only)
+      const firstHalf = messages
+        .filter(msg => msg.role === 'user')
+        .slice(0, halfMax);
+  
+      // Get last half (maintaining conversation flow with both user and assistant)
+      const lastHalf = messages.slice(-halfMax);
+  
+      this.context = [...firstHalf, ...lastHalf];
+    } else if (messages.length) {
+      this.context = messages;
     }
   }
 

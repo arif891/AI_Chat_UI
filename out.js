@@ -3248,6 +3248,9 @@ ${text}</tr>
         ai: {
           model: "xAI"
         },
+        context: {
+          max: 20
+        },
         ...config
       };
       this.db = new IDB(
@@ -3506,7 +3509,7 @@ ${text}</tr>
       this.addMessage("", "assistant");
       this.scrollToBottom();
       this.addMessageToDB(this.sessionId, { role: "user", content: userContent });
-      if (this.context.length >= 10) {
+      if (this.context.length >= this.config.context.max) {
         this.context.shift();
       }
       this.context.push({ role: "user", content: userContent });
@@ -3522,7 +3525,7 @@ ${text}</tr>
         await this.updateHistoryItem(this.sessionId, `Updated Chat ${this.sessionId}`);
       }
       await this.addMessageToDB(this.sessionId, { role: "assistant", content });
-      if (this.context.length >= 10) {
+      if (this.context.length >= this.config.context.max) {
         this.context.shift();
       }
       this.context.push({ role: "assistant", content });
@@ -3561,7 +3564,8 @@ ${text}</tr>
           }
         });
         this.scrollToBottom();
-        this.getContext(conversation.messages);
+        this.updateContext(conversation.messages, this.config.context.max);
+        console.log(this.context);
       }
     }
     async updateSession() {
@@ -3575,10 +3579,14 @@ ${text}</tr>
       );
       localStorage.setItem("chatSessions", this.sessionId);
     }
-    async getContext(messages, max = 10) {
-      if (messages.length) {
-        this.context = messages.slice(Math.max(messages.length - max, 0));
-        console.log(this.context);
+    async updateContext(messages, max = 10) {
+      if (messages.length > max) {
+        const halfMax = Math.floor(max / 2);
+        const firstHalf = messages.filter((msg) => msg.role === "user").slice(0, halfMax);
+        const lastHalf = messages.slice(-halfMax);
+        this.context = [...firstHalf, ...lastHalf];
+      } else if (messages.length) {
+        this.context = messages;
       }
     }
     async addMessageToDB(sessionId, message) {
