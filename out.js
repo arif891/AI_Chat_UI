@@ -32,8 +32,8 @@
       return this.openPromise;
     }
     async transaction(storeNames, mode = "readonly") {
-      const db2 = await this.open();
-      return db2.transaction(storeNames, mode);
+      const db = await this.open();
+      return db.transaction(storeNames, mode);
     }
     async store(storeName, mode = "readonly") {
       const tx = await this.transaction(storeName, mode);
@@ -857,18 +857,18 @@
     return value;
   };
   var Ollama$1 = class Ollama {
-    constructor(config2) {
+    constructor(config) {
       __publicField(this, "config");
       __publicField(this, "fetch");
       __publicField(this, "ongoingStreamedRequests", []);
       this.config = {
         host: "",
-        headers: config2?.headers
+        headers: config?.headers
       };
-      if (!config2?.proxy) {
-        this.config.host = formatHost(config2?.host ?? "http://127.0.0.1:11434");
+      if (!config?.proxy) {
+        this.config.host = formatHost(config?.host ?? "http://127.0.0.1:11434");
       }
-      this.fetch = config2?.fetch ?? fetch;
+      this.fetch = config?.fetch ?? fetch;
     }
     // Abort any ongoing streamed requests to Ollama
     abort() {
@@ -3225,9 +3225,45 @@ ${text}</tr>
 
   // assets/js/pages/chat_app.js
   var ChatApp = class {
-    constructor(options2 = {}) {
-      this.initializeElements(options2);
+    constructor(config = {}) {
+      this.config = {
+        database: {
+          name: "chatHistoryDB",
+          version: 1
+        },
+        stores: {
+          sessions: {
+            name: "sessions",
+            options: { keyPath: "sessionId", autoIncrement: false },
+            indexes: [
+              { name: "updateTime", keyPath: "updateTime", options: { unique: false } },
+              { name: "title", keyPath: "title", options: { unique: false } }
+            ]
+          },
+          conversations: {
+            name: "conversations",
+            options: { keyPath: "sessionId", autoIncrement: false }
+          }
+        },
+        ai: {
+          model: "xAI"
+        },
+        ...config
+      };
+      this.db = new IDB(
+        this.config.database.name,
+        this.config.database.version,
+        this.upgradeDatabase
+      );
+      this.model = this.config.ai.model;
+      this.sessionId = 0;
+      this.context = [];
+      this.initializeElements();
       this.initializeEventListeners();
+      if (!localStorage.getItem("chatDB")) {
+        this.initDatabase();
+      }
+      this.init();
     }
     initializeElements(options2) {
       this.root = document.querySelector("#chat-app-root");
@@ -3449,13 +3485,13 @@ ${text}</tr>
       const isNew = !this.root.hasAttribute("data-session-id");
       if (isNew) {
         await this.updateSession();
-        this.addHistoryItem(`New Chat ${session}`, session, "afterbegin");
+        this.addHistoryItem(`New Chat ${this.sessionId}`, this.sessionId, "afterbegin");
       }
       this.root.classList.remove("initial");
       this.addMessage(userContent, "user");
       this.addMessage("", "assistant");
       this.scrollToBottom();
-      this.addMessageToDB(session, { role: "user", content: userContent });
+      this.addMessageToDB(this.sessionId, { role: "user", content: userContent });
       const lastContentBlock = this.contentContainer.querySelector(".chat__block.assistant:last-child .response_wrapper .response");
       const response = await browser.chat({ model, messages: [{ role: "user", content: userContent }], stream: true });
       let content = "";
@@ -3465,9 +3501,9 @@ ${text}</tr>
         this.scrollToBottom();
       }
       if (isNew) {
-        await this.updateHistoryItem(session, `Updated Chat ${session}`);
+        await this.updateHistoryItem(this.sessionId`Updated Chat ${this.sessionId}`);
       }
-      await this.addMessageToDB(session, { role: "assistant", content, model });
+      await this.addMessageToDB(this.sessionId, { role: "assistant", content, model });
     }
     newChat() {
       this.root.classList.add("initial");
@@ -3480,9 +3516,9 @@ ${text}</tr>
       if (historyItem) {
         historyItem.textContent = updatedTitle;
       }
-      const sessionInfo = await db.get(config.stores.sessions.name, sessionId);
+      const sessionInfo = await this.db.get(this.config.stores.sessions.name, sessionId);
       sessionInfo.title = updatedTitle;
-      await db.put(config.stores.sessions.name, sessionInfo);
+      await this.db.put(this.config.stores.sessions.name, sessionInfo);
       console.log(`History item updated: ${updatedTitle}`);
     }
     async showChatHistory(target) {
@@ -3491,8 +3527,8 @@ ${text}</tr>
       this.root.classList.remove("initial");
       this.contentContainer.innerHTML = "";
       this.root.setAttribute("data-session-id", attributeValue);
-      session = Number(attributeValue);
-      let conversation = await db.get(config.stores.conversations.name, session);
+      this.sessionId = Number(attributeValue);
+      let conversation = await this.db.get(this.config.stores.conversations.name, this.sessionId);
       if (conversation.messages.length) {
         conversation.messages.forEach((message) => {
           if (message.role == "assistant") {
@@ -3504,24 +3540,24 @@ ${text}</tr>
       }
     }
     async updateSession() {
-      session = Number(localStorage.getItem("chatSessions")) || 0;
-      session += 1;
-      this.root.setAttribute("data-session-id", session);
-      await db.add(config.stores.conversations.name, { sessionId: session, messages: [] });
-      await db.add(
-        config.stores.sessions.name,
-        { sessionId: session, creationTime: Date.now(), title: `New Chat ${session}`, updateTime: Date.now() }
+      this.sessionId = Number(localStorage.getItem("chatSessions")) || 0;
+      this.sessionId += 1;
+      this.root.setAttribute("data-session-id", this.sessionId);
+      await this.db.add(this.config.stores.conversations.name, { sessionId: this.sessionId, messages: [] });
+      await this.db.add(
+        this.config.stores.sessions.name,
+        { sessionId: this.sessionId, creationTime: Date.now(), title: `New Chat ${this.sessionId}`, updateTime: Date.now() }
       );
-      localStorage.setItem("chatSessions", session);
+      localStorage.setItem("chatSessions", this.sessionId);
     }
     async addMessageToDB(sessionId, message) {
       try {
-        let conversation = await db.get(config.stores.conversations.name, sessionId);
-        let sessionInfo = await db.get(config.stores.sessions.name, sessionId);
+        let conversation = await this.db.get(this.config.stores.conversations.name, sessionId);
+        let sessionInfo = await this.db.get(this.config.stores.sessions.name, sessionId);
         conversation.messages.push(message);
         sessionInfo.updateTime = Date.now();
-        await db.put(config.stores.conversations.name, conversation);
-        await db.put(config.stores.sessions.name, sessionInfo);
+        await this.db.put(this.config.stores.conversations.name, conversation);
+        await this.db.put(this.config.stores.sessions.name, sessionInfo);
         console.log(`Message added successfully to conversation: ${sessionId}`);
       } catch (error) {
         console.error(`Error adding message to conversation: ${error.message}`);
@@ -3529,7 +3565,7 @@ ${text}</tr>
     }
     async getLastItems(storeName, items = 10, indexName) {
       try {
-        const store = await db.store(storeName);
+        const store = await this.db.store(storeName);
         const index = indexName ? store.index(indexName) : null;
         return new Promise((resolve, reject) => {
           const results = [];
@@ -3557,7 +3593,7 @@ ${text}</tr>
     }
     async initDatabase() {
       try {
-        await db.open();
+        await this.db.open();
         localStorage.setItem("chatDB", true);
         console.log("Database initialized successfully!");
       } catch (error) {
@@ -3567,7 +3603,7 @@ ${text}</tr>
     }
     init() {
       if (localStorage.getItem("chatDB")) {
-        this.getLastItems(config.stores.sessions.name, 50, "updateTime").then((chatHistoryItems) => {
+        this.getLastItems(this.config.stores.sessions.name, 50, "updateTime").then((chatHistoryItems) => {
           if (chatHistoryItems.length) {
             chatHistoryItems.forEach((item) => {
               this.addHistoryItem(item.title, item.sessionId);
@@ -3593,46 +3629,4 @@ ${text}</tr>
     }
   };
   var chatApp = new ChatApp();
-  var config = {
-    database: {
-      name: "chatHistoryDB",
-      version: 1
-    },
-    stores: {
-      sessions: {
-        name: "sessions",
-        options: { keyPath: "sessionId", autoIncrement: false },
-        indexes: [
-          { name: "updateTime", keyPath: "updateTime", options: { unique: false } },
-          { name: "title", keyPath: "title", options: { unique: false } }
-        ]
-      },
-      conversations: {
-        name: "conversations",
-        options: { keyPath: "sessionId", autoIncrement: false }
-      }
-    },
-    context: {}
-  };
-  var upgradeDatabase = (db2, oldVersion, newVersion) => {
-    console.log(`Upgrading database from version ${oldVersion} to ${newVersion}...`);
-    const { stores } = config;
-    Object.values(stores).forEach((storeConfig) => {
-      const { name, options: options2, indexes } = storeConfig;
-      if (!db2.objectStoreNames.contains(name)) {
-        const objectStore = db2.createObjectStore(name, options2);
-        indexes?.forEach(({ name: name2, keyPath, options: options3 }) => {
-          objectStore.createIndex(name2, keyPath, options3);
-        });
-        console.log(`Created store: ${name}`);
-      }
-    });
-  };
-  var db = new IDB(config.database.name, config.database.version, upgradeDatabase);
-  if (!localStorage.getItem("chatDB")) {
-    chatApp.initDatabase();
-  }
-  chatApp.init();
-  var model = "xAI";
-  var session;
 })();

@@ -1,7 +1,50 @@
+import { IDB } from '../../../layx/others/idb/idb.js';
+import ollama from 'ollama/browser';
+import { marked } from 'marked';
+
 class ChatApp {
-  constructor(options = {}) {
-    this.initializeElements(options);
+  constructor(config = {}) {
+    this.config = {
+      database: {
+        name: 'chatHistoryDB',
+        version: 1
+      },
+      stores: {
+        sessions: {
+          name: 'sessions',
+          options: { keyPath: 'sessionId', autoIncrement: false },
+          indexes: [
+            { name: 'updateTime', keyPath: 'updateTime', options: { unique: false } },
+            { name: 'title', keyPath: 'title', options: { unique: false } }
+          ]
+        },
+        conversations: {
+          name: 'conversations',
+          options: { keyPath: 'sessionId', autoIncrement: false }
+        }
+      },
+      ai: {
+        model: 'xAI'
+      },
+      ...config
+    };
+    this.db = new IDB(
+      this.config.database.name,
+      this.config.database.version,
+      this.upgradeDatabase
+    );
+
+    this.model = this.config.ai.model;
+    this.sessionId = 0;
+    this.context = [];
+
+    this.initializeElements();
     this.initializeEventListeners();
+
+    if (!localStorage.getItem('chatDB')) {
+      this.initDatabase();
+    }
+    this.init();
   }
 
   initializeElements(options) {
@@ -28,7 +71,7 @@ class ChatApp {
     this.chatHistoryContainer = this.root.querySelector(this.options.chatHistoryContainer);
     this.contentScrollContainer = this.root.querySelector(this.options.contentScrollContainer);
     this.contentContainer = this.root.querySelector(this.options.contentContainer);
-    this.editMode = null; // Track which message is being edited
+    this.editMode = null;
   }
 
   initializeEventListeners() {
@@ -277,7 +320,7 @@ class ChatApp {
 
     if (isNew) {
       await this.updateSession();
-      this.addHistoryItem(`New Chat ${session}`, session, 'afterbegin');
+      this.addHistoryItem(`New Chat ${this.sessionId}`, this.sessionId, 'afterbegin');
     }
 
     this.root.classList.remove('initial');
@@ -286,7 +329,7 @@ class ChatApp {
     this.addMessage('', 'assistant');
     this.scrollToBottom();
 
-    this.addMessageToDB(session, { role: 'user', content: userContent });
+    this.addMessageToDB(this.sessionId, { role: 'user', content: userContent });
 
     const lastContentBlock = this.contentContainer.querySelector('.chat__block.assistant:last-child .response_wrapper .response');
 
@@ -300,10 +343,10 @@ class ChatApp {
     }
 
     if (isNew) {
-      await this.updateHistoryItem(session, `Updated Chat ${session}`);
+      await this.updateHistoryItem(this.sessionId`Updated Chat ${this.sessionId}`);
     }
 
-    await this.addMessageToDB(session, { role: 'assistant', content: content, model: model });
+    await this.addMessageToDB(this.sessionId, { role: 'assistant', content: content, model: model });
   }
 
   newChat() {
@@ -318,9 +361,9 @@ class ChatApp {
     if (historyItem) {
       historyItem.textContent = updatedTitle;
     }
-    const sessionInfo = await db.get(config.stores.sessions.name, sessionId);
+    const sessionInfo = await this.db.get(this.config.stores.sessions.name, sessionId);
     sessionInfo.title = updatedTitle;
-    await db.put(config.stores.sessions.name, sessionInfo);
+    await this.db.put(this.config.stores.sessions.name, sessionInfo);
     console.log(`History item updated: ${updatedTitle}`);
   }
 
@@ -330,8 +373,8 @@ class ChatApp {
     this.root.classList.remove('initial');
     this.contentContainer.innerHTML = '';
     this.root.setAttribute('data-session-id', attributeValue);
-    session = Number(attributeValue);
-    let conversation = await db.get(config.stores.conversations.name, session);
+    this.sessionId = Number(attributeValue);
+    let conversation = await this.db.get(this.config.stores.conversations.name, this.sessionId);
     if (conversation.messages.length) {
       conversation.messages.forEach(message => {
         if (message.role == 'assistant') {
@@ -344,28 +387,28 @@ class ChatApp {
   }
 
   async updateSession() {
-    session = Number(localStorage.getItem('chatSessions')) || 0;
-    session += 1;
-    this.root.setAttribute('data-session-id', session);
-    await db.add(config.stores.conversations.name, { sessionId: session, messages: [] });
-    await db.add(config.stores.sessions.name,
-      { sessionId: session, creationTime: Date.now(), title: `New Chat ${session}`, updateTime: Date.now() }
+    this.sessionId = Number(localStorage.getItem('chatSessions')) || 0;
+    this.sessionId += 1;
+    this.root.setAttribute('data-session-id', this.sessionId);
+    await this.db.add(this.config.stores.conversations.name, { sessionId: this.sessionId, messages: [] });
+    await this.db.add(this.config.stores.sessions.name,
+      { sessionId: this.sessionId, creationTime: Date.now(), title: `New Chat ${this.sessionId}`, updateTime: Date.now() }
     );
-    localStorage.setItem('chatSessions', session);
+    localStorage.setItem('chatSessions', this.sessionId);
   }
 
   async addMessageToDB(sessionId, message) {
     try {
       // Try to get the existing conversation record from the 'conversations' store
-      let conversation = await db.get(config.stores.conversations.name, sessionId);
-      let sessionInfo = await db.get(config.stores.sessions.name, sessionId);
+      let conversation = await this.db.get(this.config.stores.conversations.name, sessionId);
+      let sessionInfo = await this.db.get(this.config.stores.sessions.name, sessionId);
 
       // Add the new message to the messages array
       conversation.messages.push(message);
       sessionInfo.updateTime = Date.now();
 
-      await db.put(config.stores.conversations.name, conversation);
-      await db.put(config.stores.sessions.name, sessionInfo);
+      await this.db.put(this.config.stores.conversations.name, conversation);
+      await this.db.put(this.config.stores.sessions.name, sessionInfo);
       console.log(`Message added successfully to conversation: ${sessionId}`);
     } catch (error) {
       console.error(`Error adding message to conversation: ${error.message}`);
@@ -374,7 +417,7 @@ class ChatApp {
 
   async getLastItems(storeName, items = 10, indexName) { // indexName is optional, for filtering/indexing
     try {
-      const store = await db.store(storeName);
+      const store = await this.db.store(storeName);
       const index = indexName ? store.index(indexName) : null; // Use index if provided
 
       return new Promise((resolve, reject) => {
@@ -410,7 +453,7 @@ class ChatApp {
 
   async initDatabase() {
     try {
-      await db.open();
+      await this.db.open();
       localStorage.setItem('chatDB', true);
       console.log('Database initialized successfully!');
     } catch (error) {
@@ -421,7 +464,7 @@ class ChatApp {
 
   init() {
     if (localStorage.getItem('chatDB')) {
-      this.getLastItems(config.stores.sessions.name, 50, 'updateTime').then(chatHistoryItems => {
+      this.getLastItems(this.config.stores.sessions.name, 50, 'updateTime').then(chatHistoryItems => {
         if (chatHistoryItems.length) {
           chatHistoryItems.forEach(item => {
             this.addHistoryItem(item.title, item.sessionId);
@@ -452,66 +495,5 @@ class ChatApp {
   }
 }
 
-// Initialize the chat application
+// Initialize with default or custom config
 const chatApp = new ChatApp();
-
-import { IDB } from '../../../layx/others/idb/idb.js';
-
-const config = {
-  database: {
-    name: 'chatHistoryDB',
-    version: 1
-  },
-  stores: {
-    sessions: {
-      name: 'sessions',
-      options: { keyPath: 'sessionId', autoIncrement: false },
-      indexes: [
-        { name: 'updateTime', keyPath: 'updateTime', options: { unique: false } },
-        { name: 'title', keyPath: 'title', options: { unique: false } }
-      ]
-    },
-    conversations: {
-      name: 'conversations',
-      options: { keyPath: 'sessionId', autoIncrement: false }
-    }
-  },
-  context: {}
-};
-
-const upgradeDatabase = (db, oldVersion, newVersion) => {
-  console.log(`Upgrading database from version ${oldVersion} to ${newVersion}...`);
-
-  const { stores } = config;
-
-  Object.values(stores).forEach(storeConfig => {
-    const { name, options, indexes } = storeConfig;
-
-    // Check if the store already exists
-    if (!db.objectStoreNames.contains(name)) {
-      const objectStore = db.createObjectStore(name, options);
-
-      // Create indexes
-      indexes?.forEach(({ name, keyPath, options }) => {
-        objectStore.createIndex(name, keyPath, options);
-      });
-
-      console.log(`Created store: ${name}`);
-    }
-  });
-};
-
-const db = new IDB(config.database.name, config.database.version, upgradeDatabase);
-
-if (!localStorage.getItem('chatDB')) {
-  chatApp.initDatabase();
-}
-
-chatApp.init();
-
-let model = 'xAI';
-let context = [];
-let session;
-
-import ollama from 'ollama/browser';
-import { marked } from 'marked';
