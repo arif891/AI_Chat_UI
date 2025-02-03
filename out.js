@@ -3493,7 +3493,7 @@ ${text}</tr>
       this.scrollToBottom();
       this.addMessageToDB(this.sessionId, { role: "user", content: userContent });
       const lastContentBlock = this.contentContainer.querySelector(".chat__block.assistant:last-child .response_wrapper .response");
-      const response = await browser.chat({ model, messages: [{ role: "user", content: userContent }], stream: true });
+      const response = await browser.chat({ model: this.model, messages: [{ role: "user", content: userContent }], stream: true });
       let content = "";
       for await (const part of response) {
         content += part.message.content;
@@ -3530,13 +3530,14 @@ ${text}</tr>
       this.sessionId = Number(attributeValue);
       let conversation = await this.db.get(this.config.stores.conversations.name, this.sessionId);
       if (conversation.messages.length) {
-        conversation.messages.forEach((message) => {
+        await conversation.messages.forEach((message) => {
           if (message.role == "assistant") {
             this.addMessage(marked.parse(message.content), message.role);
           } else {
             this.addMessage(message.content, message.role);
           }
         });
+        this.scrollToBottom();
       }
     }
     async updateSession() {

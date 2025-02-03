@@ -333,7 +333,7 @@ class ChatApp {
 
     const lastContentBlock = this.contentContainer.querySelector('.chat__block.assistant:last-child .response_wrapper .response');
 
-    const response = await ollama.chat({ model: model, messages: [{ role: 'user', content: userContent }], stream: true });
+    const response = await ollama.chat({ model: this.model, messages: [{ role: 'user', content: userContent }], stream: true });
 
     let content = '';
     for await (const part of response) {
@@ -376,13 +376,14 @@ class ChatApp {
     this.sessionId = Number(attributeValue);
     let conversation = await this.db.get(this.config.stores.conversations.name, this.sessionId);
     if (conversation.messages.length) {
-      conversation.messages.forEach(message => {
+      await conversation.messages.forEach(message => {
         if (message.role == 'assistant') {
           this.addMessage(marked.parse(message.content), message.role);
         } else {
           this.addMessage(message.content, message.role);
         }
       });
+      this.scrollToBottom();
     }
   }
 
