@@ -26,12 +26,15 @@ class ChatApp {
       ai: {
         model: 'xAI'
       },
+      context: {
+       max: 15,
+      },
       ...config
     };
     this.db = new IDB(
       this.config.database.name,
       this.config.database.version,
-      this.upgradeDatabase
+      this.upgradeDatabase.bind(this)
     );
 
     this.model = this.config.ai.model;
@@ -45,6 +48,28 @@ class ChatApp {
       this.initDatabase();
     }
     this.init();
+  }
+
+  upgradeDatabase(db, oldVersion, newVersion) {
+    console.log(`Upgrading database from version ${oldVersion} to ${newVersion}...`);
+
+    const { stores } = this.config;
+
+    Object.values(stores).forEach(storeConfig => {
+      const { name, options, indexes } = storeConfig;
+
+      // Check if the store already exists
+      if (!db.objectStoreNames.contains(name)) {
+        const objectStore = db.createObjectStore(name, options);
+
+        // Create indexes
+        indexes?.forEach(({ name, keyPath, options }) => {
+          objectStore.createIndex(name, keyPath, options);
+        });
+
+        console.log(`Created store: ${name}`);
+      }
+    });
   }
 
   initializeElements(options) {
@@ -330,11 +355,14 @@ class ChatApp {
     this.scrollToBottom();
 
     this.addMessageToDB(this.sessionId, { role: 'user', content: userContent });
+    if (this.context.length >= 10) {
+      this.context.shift();
+    }
+    this.context.push({role: 'user', content: userContent});
 
     const lastContentBlock = this.contentContainer.querySelector('.chat__block.assistant:last-child .response_wrapper .response');
 
-    const response = await ollama.chat({ model: this.model, messages: [{ role: 'user', content: userContent }], stream: true });
-
+    const response = await ollama.chat({ model: this.model, messages: [...this.context], stream: true });
     let content = '';
     for await (const part of response) {
       content += part.message.content;
@@ -343,10 +371,16 @@ class ChatApp {
     }
 
     if (isNew) {
-      await this.updateHistoryItem(this.sessionId`Updated Chat ${this.sessionId}`);
+      await this.updateHistoryItem(this.sessionId, `Updated Chat ${this.sessionId}`);
     }
 
-    await this.addMessageToDB(this.sessionId, { role: 'assistant', content: content, model: model });
+    await this.addMessageToDB(this.sessionId, { role: 'assistant', content: content });
+    if (this.context.length >= 10) {
+      this.context.shift();
+    }
+    this.context.push({ role: 'assistant', content: content });
+
+    console.log(this.context);
   }
 
   newChat() {
@@ -384,6 +418,7 @@ class ChatApp {
         }
       });
       this.scrollToBottom();
+      this.updateContext(conversation.messages);
     }
   }
 
@@ -396,6 +431,16 @@ class ChatApp {
       { sessionId: this.sessionId, creationTime: Date.now(), title: `New Chat ${this.sessionId}`, updateTime: Date.now() }
     );
     localStorage.setItem('chatSessions', this.sessionId);
+  }
+
+  async updateContext(messages, max = 10) {
+    if (messages.length > max) {
+      let lastHalf = messages.slice(5);  
+      this.context = messages.slice(Math.max(messages.length - max, 0));
+      console.log(this.context);
+    } else {
+      this.context = messages.slice(Math.max(messages.length - max, 0));
+    }
   }
 
   async addMessageToDB(sessionId, message) {

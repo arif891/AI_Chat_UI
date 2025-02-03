@@ -3253,7 +3253,7 @@ ${text}</tr>
       this.db = new IDB(
         this.config.database.name,
         this.config.database.version,
-        this.upgradeDatabase
+        this.upgradeDatabase.bind(this)
       );
       this.model = this.config.ai.model;
       this.sessionId = 0;
@@ -3264,6 +3264,20 @@ ${text}</tr>
         this.initDatabase();
       }
       this.init();
+    }
+    upgradeDatabase(db, oldVersion, newVersion) {
+      console.log(`Upgrading database from version ${oldVersion} to ${newVersion}...`);
+      const { stores } = this.config;
+      Object.values(stores).forEach((storeConfig) => {
+        const { name, options: options2, indexes } = storeConfig;
+        if (!db.objectStoreNames.contains(name)) {
+          const objectStore = db.createObjectStore(name, options2);
+          indexes?.forEach(({ name: name2, keyPath, options: options3 }) => {
+            objectStore.createIndex(name2, keyPath, options3);
+          });
+          console.log(`Created store: ${name}`);
+        }
+      });
     }
     initializeElements(options2) {
       this.root = document.querySelector("#chat-app-root");
@@ -3492,8 +3506,12 @@ ${text}</tr>
       this.addMessage("", "assistant");
       this.scrollToBottom();
       this.addMessageToDB(this.sessionId, { role: "user", content: userContent });
+      if (this.context.length >= 10) {
+        this.context.shift();
+      }
+      this.context.push({ role: "user", content: userContent });
       const lastContentBlock = this.contentContainer.querySelector(".chat__block.assistant:last-child .response_wrapper .response");
-      const response = await browser.chat({ model: this.model, messages: [{ role: "user", content: userContent }], stream: true });
+      const response = await browser.chat({ model: this.model, messages: [...this.context], stream: true });
       let content = "";
       for await (const part of response) {
         content += part.message.content;
@@ -3501,9 +3519,14 @@ ${text}</tr>
         this.scrollToBottom();
       }
       if (isNew) {
-        await this.updateHistoryItem(this.sessionId`Updated Chat ${this.sessionId}`);
+        await this.updateHistoryItem(this.sessionId, `Updated Chat ${this.sessionId}`);
       }
-      await this.addMessageToDB(this.sessionId, { role: "assistant", content, model });
+      await this.addMessageToDB(this.sessionId, { role: "assistant", content });
+      if (this.context.length >= 10) {
+        this.context.shift();
+      }
+      this.context.push({ role: "assistant", content });
+      console.log(this.context);
     }
     newChat() {
       this.root.classList.add("initial");
@@ -3538,6 +3561,7 @@ ${text}</tr>
           }
         });
         this.scrollToBottom();
+        this.getContext(conversation.messages);
       }
     }
     async updateSession() {
@@ -3550,6 +3574,12 @@ ${text}</tr>
         { sessionId: this.sessionId, creationTime: Date.now(), title: `New Chat ${this.sessionId}`, updateTime: Date.now() }
       );
       localStorage.setItem("chatSessions", this.sessionId);
+    }
+    async getContext(messages, max = 10) {
+      if (messages.length) {
+        this.context = messages.slice(Math.max(messages.length - max, 0));
+        console.log(this.context);
+      }
     }
     async addMessageToDB(sessionId, message) {
       try {
