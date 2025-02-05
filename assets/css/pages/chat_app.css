@@ -224,6 +224,7 @@
         grid-template-rows: var(--main-height, 1fr) max-content;
         gap: var(--space);
         background-color: var(--surface-3-color);
+        overflow: clip;
         transition: grid-template-rows .6s;
 
         .initial & {
@@ -608,7 +609,6 @@
             position: relative;
             background: unset;
             padding: 0;
-            margin: 0 var(--space) var(--space);
 
 
             .chat__action {
@@ -618,9 +618,14 @@
                 margin-inline: auto;
                 max-width: 48rem;
                 padding: var(--padding-y) var(--padding-x);
-                border-radius: var(--radius-3);
+                border-radius: var(--radius-3) var(--radius-3) 0 0;
                 background-color: var(--bg-color);
-                transition: opacity .6s;
+                transition: .6s;
+
+                .initial & {
+                    border-radius: var(--radius-3);
+                    margin-inline: var(--space);
+                }
 
                 .chat__textarea {
                     --min-line: 1;
@@ -695,6 +700,8 @@
                 text-align: center;
                 opacity: .6;
                 margin-top: var(--space);
+                position: absolute;
+                inset: 100% 0 0;
             }
         }
     }

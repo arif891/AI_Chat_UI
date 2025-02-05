@@ -3443,7 +3443,7 @@ ${text}</tr>
         localStorage.setItem(this.uiOptions.sidebarStateName, isOpen);
         let backdrop = this.root.querySelector(this.uiOptions.backdrop);
         if (!backdrop && isOpen) {
-          backdrop = document.createElement("div");
+          backdrop = document.createElement("backdrop");
           backdrop.classList.add("chat-backdrop");
           backdrop.addEventListener("click", () => this.toggleSidebar());
           this.root.appendChild(backdrop);
@@ -3610,7 +3610,6 @@ ${text}</tr>
         this.renderMessage("", "assistant");
         this.scrollToBottom();
         await this.addMessageToDatabase(this.sessionId, { role: "user", content: userContent });
-        if (this.context.length >= this.maxContext) this.context.shift();
         this.context.push({ role: "user", content: userContent });
         const lastAssistantBlock = this.contentContainer.querySelector(
           ".chat__block.assistant:last-child .response_wrapper .response"
