@@ -3246,10 +3246,20 @@ ${text}</tr>
           }
         },
         ai: {
-          model: "qwen2.5:3b-instruct"
-        },
-        context: {
-          max: 20
+          system: `
+             You a friendly AI assistant. Follow user vibe, if needed do role play.
+             Your responses should be helpful, informative, and engaging.
+             You can use markdown to format your responses.
+             You know current dateTime, here is: ${(/* @__PURE__ */ new Date()).toLocaleString(void 0, {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZoneName: "long"
+          })}.
+            `
         },
         ...config
       };
@@ -3258,10 +3268,13 @@ ${text}</tr>
         this.config.database.version,
         this.upgradeDatabase.bind(this)
       );
-      this.modelList = [];
       this.model = "";
+      this.modelList = [];
       this.sessionId = 0;
       this.context = [];
+      this.maxContext = 20;
+      this.aiOptions = {};
+      this.systemPrompt = this.config.ai.system;
       this.initializeElements();
       this.initializeEventListeners();
       if (!localStorage.getItem("chatDB")) {
@@ -3515,7 +3528,7 @@ ${text}</tr>
       this.addMessage("", "assistant");
       this.scrollToBottom();
       this.addMessageToDB(this.sessionId, { role: "user", content: userContent });
-      if (this.context.length >= this.config.context.max) {
+      if (this.context.length >= this.maxContext) {
         this.context.shift();
       }
       this.context.push({ role: "user", content: userContent });
@@ -3525,27 +3538,11 @@ ${text}</tr>
         messages: [
           {
             role: "system",
-            content: `
-             You a friendly AI assistant. Follow user vibe, if needed do role play.
-             Your responses should be helpful, informative, and engaging.
-             You can use markdown to format your responses.
-             Your model name is ${this.model}.
-             You know current dateTime, here is: ${(/* @__PURE__ */ new Date()).toLocaleString(void 0, {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-              timeZoneName: "long"
-            })}, for realtime update don't look conversion history.
-            `
+            content: this.systemPrompt
           },
           ...this.context
         ],
-        options: {
-          temperature: 1
-        },
+        options: this.aiOptions,
         stream: true
       });
       let content = "";
@@ -3555,9 +3552,6 @@ ${text}</tr>
         this.scrollToBottom();
       }
       await this.addMessageToDB(this.sessionId, { role: "assistant", content });
-      if (this.context.length >= this.config.context.max) {
-        this.context.shift();
-      }
       this.context.push({ role: "assistant", content });
       if (isNew) {
         const response2 = await browser.chat({
@@ -3576,6 +3570,9 @@ ${text}</tr>
         if (response2.message.content) {
           await this.updateHistoryItem(this.sessionId, response2.message.content.replaceAll('"', ""));
         }
+      }
+      if (this.context.length >= this.maxContext) {
+        await this.updateContext(this.context);
       }
       console.log(this.context);
     }
@@ -3613,7 +3610,7 @@ ${text}</tr>
           }
         });
         this.scrollToBottom();
-        this.updateContext(conversation.messages, this.config.context.max);
+        this.updateContext(conversation.messages, this.maxContext);
         console.log(this.context);
       }
     }
@@ -3621,6 +3618,11 @@ ${text}</tr>
       const model = target.getAttribute("data-model");
       if (!model) return;
       localStorage.setItem("selectedModel", model);
+      this.model = model;
+      this.modelMenu.querySelectorAll(".model").forEach((mod) => {
+        mod.classList.remove("active");
+      });
+      this.modelMenu.querySelector(`[data-model="${model}"]`)?.classList.add("active");
     }
     async updateSession() {
       this.sessionId = Number(localStorage.getItem("chatSessions")) || 0;
@@ -3711,6 +3713,7 @@ ${text}</tr>
           localStorage.setItem("selectedModel", this.modelList[0].name);
         }
         ;
+        this.model = localStorage.getItem("selectedModel");
         this.modelList.forEach((model) => {
           let modelInfo = model.name.split(":");
           this.modelMenu.insertAdjacentHTML(
@@ -3718,6 +3721,9 @@ ${text}</tr>
             ` <button class="model" data-model="${model.name}"><span class="name">${modelInfo[0]}</span><span class="info">${modelInfo[1] || ""}</span></button>`
           );
         });
+        this.modelMenu.querySelector(`[data-model="${this.model}"]`)?.classList.add("active");
+      } else {
+        console.error("At last one model required");
       }
     }
     initWindowControls() {

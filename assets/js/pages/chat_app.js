@@ -24,10 +24,14 @@ class ChatApp {
         }
       },
       ai: {
-        model: 'qwen2.5:3b-instruct'
-      },
-      context: {
-        max: 20,
+        system: `
+             You a friendly AI assistant. Follow user vibe, if needed do role play.
+             Your responses should be helpful, informative, and engaging.
+             You can use markdown to format your responses.
+             You know current dateTime, here is: ${new Date().toLocaleString(undefined, {
+          weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "long"
+        })}.
+            `
       },
       ...config
     };
@@ -37,10 +41,15 @@ class ChatApp {
       this.upgradeDatabase.bind(this)
     );
 
-    this.modelList = [];
+
     this.model = '';
+    this.modelList = [];
     this.sessionId = 0;
     this.context = [];
+    this.maxContext = 20;
+    this.aiOptions = {};
+    this.systemPrompt = this.config.ai.system;
+
 
     this.initializeElements();
     this.initializeEventListeners();
@@ -362,7 +371,7 @@ class ChatApp {
     this.scrollToBottom();
 
     this.addMessageToDB(this.sessionId, { role: 'user', content: userContent });
-    if (this.context.length >= this.config.context.max) {
+    if (this.context.length >= this.maxContext) {
       this.context.shift();
     }
 
@@ -371,25 +380,16 @@ class ChatApp {
     const lastContentBlock = this.contentContainer.querySelector('.chat__block.assistant:last-child .response_wrapper .response');
 
     const response = await ollama.chat({
-      model: this.model, messages:
+      model: this.model,
+      messages:
         [
           {
             role: 'system',
-            content: `
-             You a friendly AI assistant. Follow user vibe, if needed do role play.
-             Your responses should be helpful, informative, and engaging.
-             You can use markdown to format your responses.
-             Your model name is ${this.model}.
-             You know current dateTime, here is: ${new Date().toLocaleString(undefined, {
-              weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "long"
-            })}, for realtime update don't look conversion history.
-            `
+            content: this.systemPrompt
           },
           ...this.context
         ],
-      options: {
-        temperature: 1
-      },
+      options: this.aiOptions,
       stream: true
     });
     let content = '';
@@ -400,9 +400,7 @@ class ChatApp {
     }
 
     await this.addMessageToDB(this.sessionId, { role: 'assistant', content: content });
-    if (this.context.length >= this.config.context.max) {
-      this.context.shift();
-    }
+
     this.context.push({ role: 'assistant', content: content });
 
     if (isNew) {
@@ -423,6 +421,10 @@ class ChatApp {
       if (response.message.content) {
         await this.updateHistoryItem(this.sessionId, response.message.content.replaceAll('"', ''));
       }
+    }
+
+    if (this.context.length >= this.maxContext) {
+      await this.updateContext(this.context);
     }
 
     console.log(this.context);
@@ -464,7 +466,7 @@ class ChatApp {
         }
       });
       this.scrollToBottom();
-      this.updateContext(conversation.messages, this.config.context.max);
+      this.updateContext(conversation.messages, this.maxContext);
       console.log(this.context);
     }
   }
@@ -473,6 +475,12 @@ class ChatApp {
     const model = target.getAttribute('data-model');
     if (!model) return;
     localStorage.setItem('selectedModel', model);
+    this.model = model;
+
+    this.modelMenu.querySelectorAll('.model').forEach(mod => {
+      mod.classList.remove('active');
+    });
+    this.modelMenu.querySelector(`[data-model="${model}"]`)?.classList.add('active');
   }
 
   async updateSession() {
@@ -587,12 +595,17 @@ class ChatApp {
         localStorage.setItem('selectedModel', this.modelList[0].name);
       };
 
+      this.model = localStorage.getItem('selectedModel');
+
       this.modelList.forEach(model => {
-         let modelInfo = model.name.split(':');
-         this.modelMenu.insertAdjacentHTML('beforeend',
-          ` <button class="model" data-model="${model.name}"><span class="name">${modelInfo[0]}</span><span class="info">${modelInfo[1]||''}</span></button>`
+        let modelInfo = model.name.split(':');
+        this.modelMenu.insertAdjacentHTML('beforeend',
+          ` <button class="model" data-model="${model.name}"><span class="name">${modelInfo[0]}</span><span class="info">${modelInfo[1] || ''}</span></button>`
         );
       });
+      this.modelMenu.querySelector(`[data-model="${this.model}"]`)?.classList.add('active');
+    } else {
+      console.error('At last one model required');
     }
   }
 

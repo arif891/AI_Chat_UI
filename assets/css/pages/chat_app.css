@@ -293,11 +293,12 @@
                         .model__menu {
                             display: flex;
                             flex-direction: column;
+                            gap: var(--space);
                             padding: var(--space);
                             position: absolute;
                             top: calc(100% + var(--space));
                             left: 0;
-                            min-width: 225px;
+                            min-width: 250px;
                             max-height: 20rem;
                             overflow: auto;
                             border-radius: var(--radius);
@@ -312,8 +313,13 @@
                                 visibility: visible;
                             }
 
+                            &:empty::before {
+                                content: 'No model Available!';
+                                padding-block: 1rem;
+                                font-size: 1.1rem;
+                            }
+
                             .model {
-                                --padding-y: 1rem;
 
                                 display: flex;
                                 flex-direction: column;
@@ -321,12 +327,13 @@
                                 text-align: left;
                                 background-color: transparent;
 
-                                &:hover {
+                                &:hover, &.active {
                                     background-color: var(--bg-color);
                                 }
 
                                 span {
                                     display: block;
+                                    pointer-events: none;
 
                                     &.info {
                                         font-size: .9rem;
