@@ -3224,7 +3224,7 @@ ${text}</tr>
   var lexer = _Lexer.lex;
 
   // assets/js/pages/chat_app.js
-  var ChatApp = class {
+  var ChatApplication = class {
     constructor(config = {}) {
       this.config = {
         database: {
@@ -3247,10 +3247,10 @@ ${text}</tr>
         },
         ai: {
           system: `
-             You a friendly AI assistant. Follow user vibe, if needed do role play.
-             Your responses should be helpful, informative, and engaging.
-             You can use markdown to format your responses.
-             You know current dateTime, here is: ${(/* @__PURE__ */ new Date()).toLocaleString(void 0, {
+          You are a friendly AI assistant. Follow the user's vibe, and if needed, do role play.
+          Your responses should be helpful, informative, and engaging.
+          You can use markdown to format your responses.
+          The current date and time is: ${(/* @__PURE__ */ new Date()).toLocaleString(void 0, {
             weekday: "long",
             year: "numeric",
             month: "long",
@@ -3259,7 +3259,8 @@ ${text}</tr>
             minute: "2-digit",
             timeZoneName: "long"
           })}.
-            `
+        `,
+          options: {}
         },
         ...config
       };
@@ -3268,20 +3269,24 @@ ${text}</tr>
         this.config.database.version,
         this.upgradeDatabase.bind(this)
       );
-      this.model = "";
-      this.modelList = [];
       this.sessionId = 0;
       this.context = [];
       this.maxContext = 20;
       this.aiOptions = {};
       this.systemPrompt = this.config.ai.system;
-      this.initializeElements();
-      this.initializeEventListeners();
+      this.model = "";
+      this.modelList = [];
+      this.editMode = null;
+      this.initializeUIElements();
+      this.registerEventListeners();
       if (!localStorage.getItem("chatDB")) {
-        this.initDatabase();
+        this.initializeDatabase();
       }
-      this.init();
+      this.initializeChat();
     }
+    /* ================================
+       Database and Storage Methods
+       ================================ */
     upgradeDatabase(db, oldVersion, newVersion) {
       console.log(`Upgrading database from version ${oldVersion} to ${newVersion}...`);
       const { stores } = this.config;
@@ -3296,10 +3301,64 @@ ${text}</tr>
         }
       });
     }
-    initializeElements(options2) {
+    async initializeDatabase() {
+      try {
+        await this.db.open();
+        localStorage.setItem("chatDB", true);
+        console.log("Database initialized successfully!");
+      } catch (error) {
+        localStorage.setItem("chatDB", false);
+        console.error("Database initialization failed:", error);
+      }
+    }
+    async addMessageToDatabase(sessionId, message) {
+      try {
+        const conversation = await this.db.get(this.config.stores.conversations.name, sessionId);
+        const sessionInfo = await this.db.get(this.config.stores.sessions.name, sessionId);
+        conversation.messages.push(message);
+        sessionInfo.updateTime = Date.now();
+        await this.db.put(this.config.stores.conversations.name, conversation);
+        await this.db.put(this.config.stores.sessions.name, sessionInfo);
+        console.log(`Message added successfully to conversation: ${sessionId}`);
+      } catch (error) {
+        console.error(`Error adding message to conversation: ${error.message}`);
+      }
+    }
+    async getRecentItems(storeName, count = 10, indexName) {
+      try {
+        const store = await this.db.store(storeName);
+        const index = indexName ? store.index(indexName) : null;
+        return new Promise((resolve, reject) => {
+          const results = [];
+          let counter = 0;
+          const request = index ? index.openCursor(null, "prev") : store.openCursor(null, "prev");
+          request.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor && counter < count) {
+              results.push(cursor.value);
+              counter++;
+              cursor.continue();
+            } else {
+              resolve(results);
+            }
+          };
+          request.onerror = (event) => {
+            console.error("Error getting recent items:", event.target.error);
+            reject(event.target.error);
+          };
+        });
+      } catch (error) {
+        console.error("Error in getRecentItems:", error);
+        throw error;
+      }
+    }
+    /* ================================
+       UI Initialization & Event Binding
+       ================================ */
+    initializeUIElements(options2) {
       this.root = document.querySelector("#chat-app-root");
       if (!this.root) throw new Error("Root element not found");
-      this.options = {
+      this.uiOptions = {
         sidebarTogglers: ".sidebar-toggler",
         textarea: "#chat-massage",
         sendButton: "#chat-send-button",
@@ -3312,51 +3371,60 @@ ${text}</tr>
         backdrop: ".chat-backdrop",
         ...options2
       };
-      this.sidebarTogglers = this.root.querySelectorAll(this.options.sidebarTogglers);
-      this.textarea = this.root.querySelector(this.options.textarea);
-      this.sendButton = this.root.querySelector(this.options.sendButton);
-      this.newChatButton = this.root.querySelector(this.options.newChatButton);
-      this.chatHistoryContainer = this.root.querySelector(this.options.chatHistoryContainer);
-      this.contentScrollContainer = this.root.querySelector(this.options.contentScrollContainer);
-      this.contentContainer = this.root.querySelector(this.options.contentContainer);
-      this.modelMenu = this.root.querySelector(this.options.modelMenu);
-      this.editMode = null;
+      this.sidebarTogglers = this.root.querySelectorAll(this.uiOptions.sidebarTogglers);
+      this.textarea = this.root.querySelector(this.uiOptions.textarea);
+      this.sendButton = this.root.querySelector(this.uiOptions.sendButton);
+      this.newChatButton = this.root.querySelector(this.uiOptions.newChatButton);
+      this.chatHistoryContainer = this.root.querySelector(this.uiOptions.chatHistoryContainer);
+      this.contentScrollContainer = this.root.querySelector(this.uiOptions.contentScrollContainer);
+      this.contentContainer = this.root.querySelector(this.uiOptions.contentContainer);
+      this.modelMenu = this.root.querySelector(this.uiOptions.modelMenu);
     }
-    initializeEventListeners() {
+    registerEventListeners() {
       this.sidebarTogglers.forEach((toggler) => {
-        toggler.addEventListener("click", () => this.toggleSidebar());
+        toggler.addEventListener("click", () => {
+          try {
+            this.toggleSidebar();
+          } catch (error) {
+            console.error("Error toggling sidebar:", error);
+          }
+        });
       });
-      const isOpen = localStorage.getItem(this.options.sidebarStateName) === "true";
-      if (isOpen) this.root.classList.add("sidebar-open");
+      const sidebarIsOpen = localStorage.getItem(this.uiOptions.sidebarStateName) === "true";
+      if (sidebarIsOpen) this.root.classList.add("sidebar-open");
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && this.root.classList.contains("sidebar-open")) {
-          this.toggleSidebar();
+          try {
+            this.toggleSidebar();
+          } catch (error) {
+            console.error("Error handling Escape key:", error);
+          }
         }
       });
       this.sendButton.addEventListener("click", async () => {
-        await this.chat();
+        await this.processChat();
       });
       this.textarea.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
-          this.chat();
+          this.processChat();
         }
       });
       this.chatHistoryContainer.addEventListener("click", (e) => {
-        this.showChatHistory(e.target);
+        try {
+          this.displayChatHistory(e.target);
+        } catch (error) {
+          console.error("Error showing chat history:", error);
+        }
       });
       this.newChatButton.addEventListener("click", () => {
-        this.newChat();
+        this.startNewChat();
       });
       this.modelMenu.addEventListener("click", (e) => {
-        this.updateModel(e.target);
+        this.selectModel(e.target);
       });
-      window.addEventListener("offline", () => {
-        this.updateNetworkStatus();
-      });
-      window.addEventListener("online", () => {
-        this.updateNetworkStatus();
-      });
+      window.addEventListener("offline", () => this.updateNetworkStatus());
+      window.addEventListener("online", () => this.updateNetworkStatus());
       document.addEventListener("DOMContentLoaded", () => {
         this.updateNetworkStatus();
         this.root.classList.add("loaded");
@@ -3365,91 +3433,100 @@ ${text}</tr>
         const editButton = e.target.closest(".action__button.edit");
         if (editButton) {
           const messageBlock = editButton.closest(".chat__block");
-          this.startEditMode(messageBlock);
+          this.enableEditMode(messageBlock);
         }
       });
     }
     toggleSidebar() {
-      const isOpen = this.root.classList.toggle("sidebar-open");
-      localStorage.setItem(this.options.sidebarStateName, isOpen);
-      let backdrop = this.root.querySelector(this.options.backdrop);
-      if (!backdrop && isOpen) {
-        backdrop = document.createElement("backdrop");
-        backdrop.classList.add("chat-backdrop");
-        backdrop.addEventListener("click", () => this.toggleSidebar());
-        this.root.appendChild(backdrop);
-      }
-      if (backdrop) {
-        backdrop.classList.toggle("open");
+      try {
+        const isOpen = this.root.classList.toggle("sidebar-open");
+        localStorage.setItem(this.uiOptions.sidebarStateName, isOpen);
+        let backdrop = this.root.querySelector(this.uiOptions.backdrop);
+        if (!backdrop && isOpen) {
+          backdrop = document.createElement("div");
+          backdrop.classList.add("chat-backdrop");
+          backdrop.addEventListener("click", () => this.toggleSidebar());
+          this.root.appendChild(backdrop);
+        }
+        if (backdrop) {
+          backdrop.classList.toggle("open");
+        }
+      } catch (error) {
+        console.error("Error in toggleSidebar:", error);
       }
     }
     updateNetworkStatus() {
       this.root.classList.toggle("offline", !navigator.onLine);
     }
+    /* ================================
+       UI Rendering Methods
+       ================================ */
     sanitizeInput(input) {
       return input.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
-    addMessage(content, role) {
-      const sanitizedContent = role === "user" ? this.sanitizeInput(content) : content;
-      const messageBlock = this.genContentBlock(sanitizedContent, role);
-      this.contentContainer.insertAdjacentHTML("beforeend", messageBlock);
+    renderMessage(content, role) {
+      const finalContent = role === "user" ? this.sanitizeInput(content) : content;
+      const messageHTML = this.generateMessageBlock(finalContent, role);
+      this.contentContainer.insertAdjacentHTML("beforeend", messageHTML);
     }
-    addHistoryItem(title, id, position = "beforeend") {
+    addChatHistoryItem(title, sessionId, position = "beforeend") {
       this.chatHistoryContainer.insertAdjacentHTML(
         position,
-        ` <button class="item" data-session-id="${id}">${title}</button>`
+        `<button class="item" data-session-id="${sessionId}">${title}</button>`
       );
     }
-    genContentBlock(content, role) {
+    generateMessageBlock(content, role) {
       switch (role) {
         case "user":
           return `<div class="chat__block user" data-role="${role}">
                   <div class="actions__wrapper">
-                      <button class="action__button edit" title="Edit message">
+                    <button class="action__button edit" title="Edit message">
                       <svg class="icon">
                         <use href="#edit-icon" />
                       </svg>
-                      </button>
+                    </button>
                   </div>
-                  <span class="massage">${content}</span>
+                  <span class="message">${content}</span>
                 </div>`;
         case "assistant":
           return `<div class="chat__block assistant" data-role="${role}">
-                   <svg class="icon assistant__logo">
-                     <use href="#stars-icon" />
-                   </svg>
-                   <div class="response_wrapper">
-                     <div class="response">
-                       ${content}
-                     </div>
-                     <div class="actions__wrapper">
+                  <svg class="icon assistant__logo">
+                    <use href="#stars-icon" />
+                  </svg>
+                  <div class="response_wrapper">
+                    <div class="response">
+                      ${content}
+                    </div>
+                    <div class="actions__wrapper">
                       <button class="action__button copy" title="Copy message">
-                      <svg class="icon">
-                        <use href="#copy-icon" />
-                      </svg>
+                        <svg class="icon">
+                          <use href="#copy-icon" />
+                        </svg>
                       </button>
                       <button class="action__button repeat" title="Regenerate response">
-                      <svg class="icon">
-                        <use href="#repeat-icon" />
-                      </svg>
+                        <svg class="icon">
+                          <use href="#repeat-icon" />
+                        </svg>
                       </button>
                       <button class="action__button like" title="Good response">
-                      <svg class="icon">
-                        <use href="#like-icon" />
-                      </svg>
+                        <svg class="icon">
+                          <use href="#like-icon" />
+                        </svg>
                       </button>
                       <button class="action__button dislike" title="Bad response">
-                      <svg class="icon">
-                        <use href="#dislike-icon" />
-                      </svg>
+                        <svg class="icon">
+                          <use href="#dislike-icon" />
+                        </svg>
                       </button>
-                     </div>
-                   </div>
+                    </div>
+                  </div>
                 </div>`;
         case "system":
           return `<div class="chat__block system">
                   ${content} 
                 </div>`;
+        default:
+          return "";
       }
     }
     scrollToBottom() {
@@ -3458,18 +3535,21 @@ ${text}</tr>
         behavior: "smooth"
       });
     }
-    startEditMode(messageBlock) {
+    /* ================================
+       Message Editing Methods
+       ================================ */
+    enableEditMode(messageBlock) {
       if (this.editMode) return;
-      const messageSpan = messageBlock.querySelector(".massage");
+      const messageSpan = messageBlock.querySelector(".message");
       const originalText = messageSpan.textContent;
       const editUI = `
-    <div class="edit__wrapper">
-      <textarea class="edit-textarea">${originalText}</textarea>
-      <div class="edit__actions">
-        <button class="dark r save-edit">Save</button>
-        <button class="r cancel-edit">Cancel</button>
-      </div> 
-    </div>
+      <div class="edit__wrapper">
+        <textarea class="edit-textarea">${originalText}</textarea>
+        <div class="edit__actions">
+          <button class="dark r save-edit">Save</button>
+          <button class="r cancel-edit">Cancel</button>
+        </div> 
+      </div>
     `;
       messageBlock.classList.add("editing");
       messageBlock.insertAdjacentHTML("beforeend", editUI);
@@ -3498,249 +3578,240 @@ ${text}</tr>
       const newText = this.editMode.textarea.value.trim();
       if (newText && newText !== this.editMode.original) {
         this.editMode.messageSpan.textContent = newText;
-      } else {
-        this.cancelEdit();
       }
-      this.cleanupEditMode();
+      this.exitEditMode();
     }
     cancelEdit() {
       if (!this.editMode) return;
-      this.cleanupEditMode();
+      this.exitEditMode();
     }
-    cleanupEditMode() {
+    exitEditMode() {
       if (!this.editMode) return;
       this.editMode.block.classList.remove("editing");
       const editUI = this.editMode.block.querySelector(".edit__wrapper");
       if (editUI) editUI.remove();
       this.editMode = null;
     }
-    async chat() {
-      const userContent = this.textarea.value;
-      this.textarea.value = "";
-      if (!userContent) return;
-      const isNew = !this.root.hasAttribute("data-session-id");
-      if (isNew) {
-        await this.updateSession();
-        this.addHistoryItem(`New Chat ${this.sessionId}`, this.sessionId, "afterbegin");
-      }
-      this.root.classList.remove("initial");
-      this.addMessage(userContent, "user");
-      this.addMessage("", "assistant");
-      this.scrollToBottom();
-      this.addMessageToDB(this.sessionId, { role: "user", content: userContent });
-      if (this.context.length >= this.maxContext) {
-        this.context.shift();
-      }
-      this.context.push({ role: "user", content: userContent });
-      const lastContentBlock = this.contentContainer.querySelector(".chat__block.assistant:last-child .response_wrapper .response");
-      const response = await browser.chat({
-        model: this.model,
-        messages: [
-          {
-            role: "system",
-            content: this.systemPrompt
-          },
-          ...this.context
-        ],
-        options: this.aiOptions,
-        stream: true
-      });
-      let content = "";
-      for await (const part of response) {
-        content += part.message.content;
-        lastContentBlock.innerHTML = marked.parse(content);
+    /* ================================
+       Chat Logic Methods
+       ================================ */
+    async processChat() {
+      try {
+        const userContent = this.textarea.value.trim();
+        this.textarea.value = "";
+        if (!userContent) return;
+        const isNewSession = !this.root.hasAttribute("data-session-id");
+        if (isNewSession) {
+          await this.createNewSession();
+          this.addChatHistoryItem(`New Chat ${this.sessionId}`, this.sessionId, "afterbegin");
+        }
+        this.root.classList.remove("initial");
+        this.renderMessage(userContent, "user");
+        this.renderMessage("", "assistant");
         this.scrollToBottom();
-      }
-      await this.addMessageToDB(this.sessionId, { role: "assistant", content });
-      this.context.push({ role: "assistant", content });
-      if (isNew) {
-        const response2 = await browser.chat({
+        await this.addMessageToDatabase(this.sessionId, { role: "user", content: userContent });
+        if (this.context.length >= this.maxContext) this.context.shift();
+        this.context.push({ role: "user", content: userContent });
+        const lastAssistantBlock = this.contentContainer.querySelector(
+          ".chat__block.assistant:last-child .response_wrapper .response"
+        );
+        const responseStream = await browser.chat({
           model: this.model,
           messages: [
-            {
-              "role": "system",
-              "content": "You are an AI assistant. Generate a concise, engaging title under 6 words that reflects the core intent of the user's first message, from their perspective. The title should summarize the query clearly to aid in future searchability. Respond *only* with the title\u2014no explanations."
-            },
-            {
-              "role": "user",
-              "content": `Generate a title for this message: '${userContent}'.`
-            }
-          ]
+            { role: "system", content: this.systemPrompt },
+            ...this.context
+          ],
+          options: this.aiOptions,
+          stream: true
         });
-        if (response2.message.content) {
-          await this.updateHistoryItem(this.sessionId, response2.message.content.replaceAll('"', ""));
+        let assistantContent = "";
+        for await (const part of responseStream) {
+          assistantContent += part.message.content;
+          lastAssistantBlock.innerHTML = marked.parse(assistantContent);
+          this.scrollToBottom();
         }
+        await this.addMessageToDatabase(this.sessionId, { role: "assistant", content: assistantContent });
+        this.context.push({ role: "assistant", content: assistantContent });
+        if (isNewSession) {
+          const titleResponse = await browser.chat({
+            model: this.model,
+            messages: [
+              {
+                role: "system",
+                content: "You are an AI assistant. Generate a concise, engaging title under 6 words that reflects the core intent of the user's first message, from their perspective. The title should summarize the query clearly to aid in future searchability. Respond *only* with the title\u2014no explanations."
+              },
+              {
+                role: "user",
+                content: `Generate a title for this message: '${userContent}'.`
+              }
+            ]
+          });
+          if (titleResponse.message.content) {
+            const updatedTitle = titleResponse.message.content.replaceAll('"', "");
+            await this.updateChatHistoryTitle(this.sessionId, updatedTitle);
+          }
+        }
+        if (this.context.length >= this.maxContext) {
+          await this.refreshContext(this.context, this.maxContext);
+        }
+        console.log(this.context);
+      } catch (error) {
+        console.error("Error processing chat:", error);
       }
-      if (this.context.length >= this.maxContext) {
-        await this.updateContext(this.context);
-      }
-      console.log(this.context);
     }
-    newChat() {
+    startNewChat() {
       this.root.classList.add("initial");
       this.contentContainer.innerHTML = "";
       this.textarea.value = "";
       this.root.removeAttribute("data-session-id");
       this.context = [];
     }
-    async updateHistoryItem(sessionId, updatedTitle) {
-      const historyItem = this.chatHistoryContainer.querySelector(`.item[data-session-id="${sessionId}"]`);
-      if (historyItem) {
-        historyItem.textContent = updatedTitle;
-      }
-      const sessionInfo = await this.db.get(this.config.stores.sessions.name, sessionId);
-      sessionInfo.title = updatedTitle;
-      await this.db.put(this.config.stores.sessions.name, sessionInfo);
-      console.log(`History item updated: ${updatedTitle}`);
-    }
-    async showChatHistory(target) {
-      const attributeValue = target.getAttribute("data-session-id");
-      if (!attributeValue) return;
-      this.root.classList.remove("initial");
-      this.contentContainer.innerHTML = "";
-      this.root.setAttribute("data-session-id", attributeValue);
-      this.sessionId = Number(attributeValue);
-      let conversation = await this.db.get(this.config.stores.conversations.name, this.sessionId);
-      if (conversation.messages.length) {
-        await conversation.messages.forEach((message) => {
-          if (message.role == "assistant") {
-            this.addMessage(marked.parse(message.content), message.role);
-          } else {
-            this.addMessage(message.content, message.role);
-          }
-        });
-        this.scrollToBottom();
-        this.updateContext(conversation.messages, this.maxContext);
-        console.log(this.context);
-      }
-    }
-    updateModel(target) {
-      const model = target.getAttribute("data-model");
-      if (!model) return;
-      localStorage.setItem("selectedModel", model);
-      this.model = model;
-      this.modelMenu.querySelectorAll(".model").forEach((mod) => {
-        mod.classList.remove("active");
-      });
-      this.modelMenu.querySelector(`[data-model="${model}"]`)?.classList.add("active");
-    }
-    async updateSession() {
-      this.sessionId = Number(localStorage.getItem("chatSessions")) || 0;
-      this.sessionId += 1;
-      this.root.setAttribute("data-session-id", this.sessionId);
-      await this.db.add(this.config.stores.conversations.name, { sessionId: this.sessionId, messages: [] });
-      await this.db.add(
-        this.config.stores.sessions.name,
-        { sessionId: this.sessionId, creationTime: Date.now(), title: `New Chat ${this.sessionId}`, updateTime: Date.now() }
-      );
-      localStorage.setItem("chatSessions", this.sessionId);
-    }
-    async updateContext(messages, max = 10) {
-      if (messages.length > max) {
-        const halfMax = Math.floor(max / 2);
-        const firstHalf = messages.filter((msg) => msg.role === "user").slice(0, halfMax);
-        const lastHalf = messages.slice(-halfMax);
-        this.context = [...firstHalf, ...lastHalf];
-      } else if (messages.length) {
-        this.context = messages;
-      }
-    }
-    async addMessageToDB(sessionId, message) {
+    async createNewSession() {
       try {
-        let conversation = await this.db.get(this.config.stores.conversations.name, sessionId);
-        let sessionInfo = await this.db.get(this.config.stores.sessions.name, sessionId);
-        conversation.messages.push(message);
-        sessionInfo.updateTime = Date.now();
-        await this.db.put(this.config.stores.conversations.name, conversation);
+        this.sessionId = Number(localStorage.getItem("chatSessions")) || 0;
+        this.sessionId += 1;
+        this.root.setAttribute("data-session-id", this.sessionId);
+        await this.db.add(this.config.stores.conversations.name, { sessionId: this.sessionId, messages: [] });
+        await this.db.add(this.config.stores.sessions.name, {
+          sessionId: this.sessionId,
+          creationTime: Date.now(),
+          title: `New Chat ${this.sessionId}`,
+          updateTime: Date.now()
+        });
+        localStorage.setItem("chatSessions", this.sessionId);
+      } catch (error) {
+        console.error("Error creating new session:", error);
+      }
+    }
+    async updateChatHistoryTitle(sessionId, newTitle) {
+      try {
+        const historyItem = this.chatHistoryContainer.querySelector(`.item[data-session-id="${sessionId}"]`);
+        if (historyItem) {
+          historyItem.textContent = newTitle;
+        }
+        const sessionInfo = await this.db.get(this.config.stores.sessions.name, sessionId);
+        sessionInfo.title = newTitle;
         await this.db.put(this.config.stores.sessions.name, sessionInfo);
-        console.log(`Message added successfully to conversation: ${sessionId}`);
+        console.log(`History item updated: ${newTitle}`);
       } catch (error) {
-        console.error(`Error adding message to conversation: ${error.message}`);
+        console.error("Error updating chat history title:", error);
       }
     }
-    async getLastItems(storeName, items = 10, indexName) {
+    async refreshContext(messages, maxCount = 10) {
       try {
-        const store = await this.db.store(storeName);
-        const index = indexName ? store.index(indexName) : null;
-        return new Promise((resolve, reject) => {
-          const results = [];
-          let count = 0;
-          const request = index ? index.openCursor(null, "prev") : store.openCursor(null, "prev");
-          request.onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (cursor && count < items) {
-              results.push(cursor.value);
-              count++;
-              cursor.continue();
+        if (messages.length > maxCount) {
+          const halfMax = Math.floor(maxCount / 2);
+          const firstHalf = messages.filter((msg) => msg.role === "user").slice(0, halfMax);
+          const lastHalf = messages.slice(-halfMax);
+          this.context = [...firstHalf, ...lastHalf];
+        } else if (messages.length) {
+          this.context = messages;
+        }
+      } catch (error) {
+        console.error("Error updating context:", error);
+      }
+    }
+    /* ================================
+       Chat History and Model Selection
+       ================================ */
+    async displayChatHistory(target) {
+      try {
+        const sessionIdAttribute = target.getAttribute("data-session-id");
+        if (!sessionIdAttribute) return;
+        this.root.classList.remove("initial");
+        this.contentContainer.innerHTML = "";
+        this.root.setAttribute("data-session-id", sessionIdAttribute);
+        this.sessionId = Number(sessionIdAttribute);
+        const conversation = await this.db.get(this.config.stores.conversations.name, this.sessionId);
+        if (conversation.messages.length) {
+          for (const message of conversation.messages) {
+            if (message.role === "assistant") {
+              this.renderMessage(marked.parse(message.content), message.role);
             } else {
-              resolve(results);
+              this.renderMessage(message.content, message.role);
             }
-          };
-          request.onerror = (event) => {
-            console.error("Error getting last items:", event.target.error);
-            reject(event.target.error);
-          };
-        });
+          }
+          this.scrollToBottom();
+          await this.refreshContext(conversation.messages, this.maxContext);
+          console.log(this.context);
+        }
       } catch (error) {
-        console.error("Error in getLastItems:", error);
-        throw error;
+        console.error("Error displaying chat history:", error);
       }
     }
-    async initDatabase() {
+    selectModel(target) {
       try {
-        await this.db.open();
-        localStorage.setItem("chatDB", true);
-        console.log("Database initialized successfully!");
+        const selectedModel = target.getAttribute("data-model");
+        if (!selectedModel) return;
+        localStorage.setItem("selectedModel", selectedModel);
+        this.model = selectedModel;
+        this.modelMenu.querySelectorAll(".model").forEach((modelBtn) => {
+          modelBtn.classList.remove("active");
+        });
+        this.modelMenu.querySelector(`[data-model="${selectedModel}"]`)?.classList.add("active");
       } catch (error) {
-        localStorage.setItem("chatDB", false);
-        console.error("Database initialization failed:", error);
+        console.error("Error selecting model:", error);
       }
     }
-    async init() {
-      if (localStorage.getItem("chatDB")) {
-        this.getLastItems(this.config.stores.sessions.name, 50, "updateTime").then((chatHistoryItems) => {
+    /* ================================
+       Initialization of Chat and Models
+       ================================ */
+    async initializeChat() {
+      try {
+        if (localStorage.getItem("chatDB")) {
+          const chatHistoryItems = await this.getRecentItems(this.config.stores.sessions.name, 50, "updateTime");
           if (chatHistoryItems.length) {
             chatHistoryItems.forEach((item) => {
-              this.addHistoryItem(item.title, item.sessionId);
+              this.addChatHistoryItem(item.title, item.sessionId);
             });
           }
-        });
-      }
-      const list2 = await browser.list();
-      if (list2.models.length) {
-        this.modelList = list2.models;
-        if (!localStorage.getItem("selectedModel")) {
-          localStorage.setItem("selectedModel", this.modelList[0].name);
         }
-        ;
-        this.model = localStorage.getItem("selectedModel");
-        this.modelList.forEach((model) => {
-          let modelInfo = model.name.split(":");
-          this.modelMenu.insertAdjacentHTML(
-            "beforeend",
-            ` <button class="model" data-model="${model.name}"><span class="name">${modelInfo[0]}</span><span class="info">${modelInfo[1] || ""}</span></button>`
-          );
-        });
-        this.modelMenu.querySelector(`[data-model="${this.model}"]`)?.classList.add("active");
-      } else {
-        console.error("At last one model required");
+        const modelListResponse = await browser.list();
+        if (modelListResponse.models.length) {
+          this.modelList = modelListResponse.models;
+          if (!localStorage.getItem("selectedModel")) {
+            localStorage.setItem("selectedModel", this.modelList[0].name);
+          }
+          this.model = localStorage.getItem("selectedModel");
+          this.modelList.forEach((model) => {
+            const [modelName, modelInfo] = model.name.split(":");
+            this.modelMenu.insertAdjacentHTML("beforeend", `
+            <button class="model" data-model="${model.name}">
+              <span class="name">${modelName}</span>
+              <span class="info">${modelInfo || ""}</span>
+            </button>
+          `);
+          });
+          this.modelMenu.querySelector(`[data-model="${this.model}"]`)?.classList.add("active");
+        } else {
+          console.error("At least one model is required");
+        }
+      } catch (error) {
+        console.error("Error initializing chat:", error);
       }
     }
+    /* ================================
+       Optional: Window Controls Overlay
+       ================================ */
     initWindowControls() {
       if ("windowControlsOverlay" in navigator) {
         const updateTitlebarArea = (e) => {
-          const isOverlayVisible = navigator.windowControlsOverlay.visible;
-          const { x, y, width, height } = e?.titlebarAreaRect || navigator.windowControlsOverlay.getTitlebarAreaRect();
-          this.root.style.setProperty("--title-bar-height", `${height}px`);
-          this.root.style.setProperty("--title-bar-width", `${width}px`);
-          this.root.style.setProperty("--title-bar-x", `${x}px`);
-          this.root.style.setProperty("--title-bar-y", `${y}px`);
-          this.root.classList.toggle("overlay-visible", isOverlayVisible);
+          try {
+            const isOverlayVisible = navigator.windowControlsOverlay.visible;
+            const { x, y, width, height } = e?.titlebarAreaRect || navigator.windowControlsOverlay.getTitlebarAreaRect();
+            this.root.style.setProperty("--title-bar-height", `${height}px`);
+            this.root.style.setProperty("--title-bar-width", `${width}px`);
+            this.root.style.setProperty("--title-bar-x", `${x}px`);
+            this.root.style.setProperty("--title-bar-y", `${y}px`);
+            this.root.classList.toggle("overlay-visible", isOverlayVisible);
+          } catch (error) {
+            console.error("Error updating titlebar area:", error);
+          }
         };
         navigator.windowControlsOverlay.addEventListener("geometrychange", updateTitlebarArea);
         updateTitlebarArea();
       }
     }
   };
-  var chatApp = new ChatApp();
+  var chatApp = new ChatApplication();
 })();

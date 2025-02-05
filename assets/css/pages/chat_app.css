@@ -396,7 +396,7 @@
                                 }
                             }
 
-                            .massage {
+                            .message {
                                 padding: .75rem 1.25rem;
                                 border-radius: 1lh 0 1lh 1lh;
                                 background-color: var(--surface-3-color);
@@ -408,7 +408,7 @@
                             &.editing {
 
                                 .actions__wrapper,
-                                .massage {
+                                .message {
                                     display: none;
                                 }
                             }
