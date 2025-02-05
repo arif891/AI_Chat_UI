@@ -328,7 +328,8 @@
                                 text-align: left;
                                 background-color: transparent;
 
-                                &:hover, &.active {
+                                &:hover,
+                                &.active {
                                     background-color: var(--bg-color);
                                 }
 
@@ -379,7 +380,8 @@
                         }
                     }
 
-                    &, p {
+                    &,
+                    p {
                         font-size: min(calc(.9rem + .3vw), 1.05rem);
                         color: var(--paragraph-color);
                     }
@@ -624,7 +626,10 @@
 
                 .initial & {
                     border-radius: var(--radius-3);
-                    margin-inline: var(--space);
+
+                    @media (width < 992px) {
+                        margin-inline: var(--space);
+                    }
                 }
 
                 .chat__textarea {
