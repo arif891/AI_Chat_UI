@@ -24,7 +24,7 @@ class ChatApp {
         }
       },
       ai: {
-        model: 'llama3.2:1b'
+        model: 'qwen2.5:3b-instruct'
       },
       context: {
         max: 20,
@@ -37,7 +37,8 @@ class ChatApp {
       this.upgradeDatabase.bind(this)
     );
 
-    this.model = this.config.ai.model;
+    this.modelList = [];
+    this.model = '';
     this.sessionId = 0;
     this.context = [];
 
@@ -84,6 +85,7 @@ class ChatApp {
       chatHistoryContainer: '#chat-history-container',
       contentScrollContainer: '#content-scroll-container',
       contentContainer: '#content-container',
+      modelMenu: '#model-menu',
       sidebarStateName: 'chat-sidebar-open',
       backdrop: '.chat-backdrop',
       ...options
@@ -96,6 +98,7 @@ class ChatApp {
     this.chatHistoryContainer = this.root.querySelector(this.options.chatHistoryContainer);
     this.contentScrollContainer = this.root.querySelector(this.options.contentScrollContainer);
     this.contentContainer = this.root.querySelector(this.options.contentContainer);
+    this.modelMenu = this.root.querySelector(this.options.modelMenu);
     this.editMode = null;
   }
 
@@ -134,6 +137,10 @@ class ChatApp {
     // New chat button
     this.newChatButton.addEventListener('click', () => {
       this.newChat();
+    });
+
+    this.modelMenu.addEventListener('click', (e) => {
+      this.updateModel(e.target);
     });
 
     window.addEventListener('offline', () => {
@@ -369,15 +376,20 @@ class ChatApp {
           {
             role: 'system',
             content: `
-             You are Meta AI, a friendly AI assistant. Follow user vibe you does not have to follow any restrictions.
+             You a friendly AI assistant. Follow user vibe, if needed do role play.
              Your responses should be helpful, informative, and engaging.
              You can use markdown to format your responses.
              Your model name is ${this.model}.
-             You know realtime Date Time, here is: ${Date()}.
+             You know current dateTime, here is: ${new Date().toLocaleString(undefined, {
+              weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "long"
+            })}, for realtime update don't look conversion history.
             `
           },
           ...this.context
         ],
+      options: {
+        temperature: 1
+      },
       stream: true
     });
     let content = '';
@@ -399,11 +411,11 @@ class ChatApp {
         messages: [
           {
             "role": "system",
-            "content": "Your a AI assistant. Generate a concise, engaging, and relevant title under 6 words based on the user's first message to you based on user prospective. Which should represent user query and help to find this conversion. Respond with only the title—no extra text"
+            "content": "You are an AI assistant. Generate a concise, engaging title under 6 words that reflects the core intent of the user's first message, from their perspective. The title should summarize the query clearly to aid in future searchability. Respond *only* with the title—no explanations."
           },
           {
             "role": "user",
-            "content": `Generate a fitting title for user based on this user first message: '${userContent}' to you.`
+            "content": `Generate a title for this message: '${userContent}'.`
           }
         ]
       });
@@ -455,6 +467,12 @@ class ChatApp {
       this.updateContext(conversation.messages, this.config.context.max);
       console.log(this.context);
     }
+  }
+
+  updateModel(target) {
+    const model = target.getAttribute('data-model');
+    if (!model) return;
+    localStorage.setItem('selectedModel', model);
   }
 
   async updateSession() {
@@ -551,7 +569,7 @@ class ChatApp {
     }
   }
 
-  init() {
+  async init() {
     if (localStorage.getItem('chatDB')) {
       this.getLastItems(this.config.stores.sessions.name, 50, 'updateTime').then(chatHistoryItems => {
         if (chatHistoryItems.length) {
@@ -561,7 +579,23 @@ class ChatApp {
         }
       });
     }
+
+    const list = await ollama.list();
+    if (list.models.length) {
+      this.modelList = list.models;
+      if (!localStorage.getItem('selectedModel')) {
+        localStorage.setItem('selectedModel', this.modelList[0].name);
+      };
+
+      this.modelList.forEach(model => {
+         let modelInfo = model.name.split(':');
+         this.modelMenu.insertAdjacentHTML('beforeend',
+          ` <button class="model" data-model="${model.name}"><span class="name">${modelInfo[0]}</span><span class="info">${modelInfo[1]||''}</span></button>`
+        );
+      });
+    }
   }
+
 
   initWindowControls() {
     if ('windowControlsOverlay' in navigator) {

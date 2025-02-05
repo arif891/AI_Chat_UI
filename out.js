@@ -3246,7 +3246,7 @@ ${text}</tr>
           }
         },
         ai: {
-          model: "llama3.2:1b"
+          model: "qwen2.5:3b-instruct"
         },
         context: {
           max: 20
@@ -3258,7 +3258,8 @@ ${text}</tr>
         this.config.database.version,
         this.upgradeDatabase.bind(this)
       );
-      this.model = this.config.ai.model;
+      this.modelList = [];
+      this.model = "";
       this.sessionId = 0;
       this.context = [];
       this.initializeElements();
@@ -3293,6 +3294,7 @@ ${text}</tr>
         chatHistoryContainer: "#chat-history-container",
         contentScrollContainer: "#content-scroll-container",
         contentContainer: "#content-container",
+        modelMenu: "#model-menu",
         sidebarStateName: "chat-sidebar-open",
         backdrop: ".chat-backdrop",
         ...options2
@@ -3304,6 +3306,7 @@ ${text}</tr>
       this.chatHistoryContainer = this.root.querySelector(this.options.chatHistoryContainer);
       this.contentScrollContainer = this.root.querySelector(this.options.contentScrollContainer);
       this.contentContainer = this.root.querySelector(this.options.contentContainer);
+      this.modelMenu = this.root.querySelector(this.options.modelMenu);
       this.editMode = null;
     }
     initializeEventListeners() {
@@ -3331,6 +3334,9 @@ ${text}</tr>
       });
       this.newChatButton.addEventListener("click", () => {
         this.newChat();
+      });
+      this.modelMenu.addEventListener("click", (e) => {
+        this.updateModel(e.target);
       });
       window.addEventListener("offline", () => {
         this.updateNetworkStatus();
@@ -3520,15 +3526,26 @@ ${text}</tr>
           {
             role: "system",
             content: `
-             You are Meta AI, a friendly AI assistant. Follow user vibe you does not have any restrictions.
+             You a friendly AI assistant. Follow user vibe, if needed do role play.
              Your responses should be helpful, informative, and engaging.
              You can use markdown to format your responses.
              Your model name is ${this.model}.
-             You know realtime Date Time, here is: ${Date()}.
+             You know current dateTime, here is: ${(/* @__PURE__ */ new Date()).toLocaleString(void 0, {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              timeZoneName: "long"
+            })}, for realtime update don't look conversion history.
             `
           },
           ...this.context
         ],
+        options: {
+          temperature: 1
+        },
         stream: true
       });
       let content = "";
@@ -3548,11 +3565,11 @@ ${text}</tr>
           messages: [
             {
               "role": "system",
-              "content": "Your a AI assistant. Generate a concise, engaging, and relevant title under 6 words based on the user's first message to you based on user prospective. Which should represent user query and help to find this conversion. Respond with only the title\u2014no extra text"
+              "content": "You are an AI assistant. Generate a concise, engaging title under 6 words that reflects the core intent of the user's first message, from their perspective. The title should summarize the query clearly to aid in future searchability. Respond *only* with the title\u2014no explanations."
             },
             {
               "role": "user",
-              "content": `Generate a fitting title for user based on this user first message: '${userContent}' to you.`
+              "content": `Generate a title for this message: '${userContent}'.`
             }
           ]
         });
@@ -3599,6 +3616,11 @@ ${text}</tr>
         this.updateContext(conversation.messages, this.config.context.max);
         console.log(this.context);
       }
+    }
+    updateModel(target) {
+      const model = target.getAttribute("data-model");
+      if (!model) return;
+      localStorage.setItem("selectedModel", model);
     }
     async updateSession() {
       this.sessionId = Number(localStorage.getItem("chatSessions")) || 0;
@@ -3672,7 +3694,7 @@ ${text}</tr>
         console.error("Database initialization failed:", error);
       }
     }
-    init() {
+    async init() {
       if (localStorage.getItem("chatDB")) {
         this.getLastItems(this.config.stores.sessions.name, 50, "updateTime").then((chatHistoryItems) => {
           if (chatHistoryItems.length) {
@@ -3680,6 +3702,21 @@ ${text}</tr>
               this.addHistoryItem(item.title, item.sessionId);
             });
           }
+        });
+      }
+      const list2 = await browser.list();
+      if (list2.models.length) {
+        this.modelList = list2.models;
+        if (!localStorage.getItem("selectedModel")) {
+          localStorage.setItem("selectedModel", this.modelList[0].name);
+        }
+        ;
+        this.modelList.forEach((model) => {
+          let modelInfo = model.name.split(":");
+          this.modelMenu.insertAdjacentHTML(
+            "beforeend",
+            ` <button class="model" data-model="${model.name}"><span class="name">${modelInfo[0]}</span><span class="info">${modelInfo[1] || ""}</span></button>`
+          );
         });
       }
     }

@@ -297,7 +297,9 @@
                             position: absolute;
                             top: calc(100% + var(--space));
                             left: 0;
-                            min-width: 200px;
+                            min-width: 225px;
+                            max-height: 20rem;
+                            overflow: auto;
                             border-radius: var(--radius);
                             background-color: var(--surface-3-color);
                             opacity: 0;
@@ -312,11 +314,23 @@
 
                             .model {
                                 --padding-y: 1rem;
+
+                                display: flex;
+                                flex-direction: column;
+                                gap: var(--space);
                                 text-align: left;
                                 background-color: transparent;
 
                                 &:hover {
                                     background-color: var(--bg-color);
+                                }
+
+                                span {
+                                    display: block;
+
+                                    &.info {
+                                        font-size: .9rem;
+                                    }
                                 }
                             }
                         }
