@@ -1,4 +1,1524 @@
 (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __glob = (map) => (path) => {
+    var fn = map[path];
+    if (fn) return fn();
+    throw new Error("Module not found in bundle: " + path);
+  };
+  var __esm = (fn, res) => function __init() {
+    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+  };
+  var __export = (target, all) => {
+    for (var name2 in all)
+      __defProp(target, name2, { get: all[name2], enumerable: true });
+  };
+
+  // layx/others/syntax_highlighter/languages/asm.js
+  var asm_exports = {};
+  __export(asm_exports, {
+    default: () => asm_default
+  });
+  var asm_default;
+  var init_asm = __esm({
+    "layx/others/syntax_highlighter/languages/asm.js"() {
+      asm_default = [
+        {
+          type: "cmnt",
+          match: /(;|#).*/gm
+        },
+        {
+          expand: "str"
+        },
+        {
+          expand: "num"
+        },
+        {
+          // value (ex: "$0x1")
+          type: "num",
+          match: /\$[\da-fA-F]*\b/g
+        },
+        {
+          type: "kwd",
+          // ex: "section .data"
+          match: /^[a-z]+\s+[a-z.]+\b/gm,
+          sub: [
+            {
+              // keyword (ex: "section")
+              type: "func",
+              match: /^[a-z]+/g
+            }
+          ]
+        },
+        {
+          // instruction (ex: "mov")
+          type: "kwd",
+          match: /^\t*[a-z][a-z\d]*\b/gm
+        },
+        {
+          match: /%|\$/g,
+          type: "oper"
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/bash.js
+  var bash_exports = {};
+  __export(bash_exports, {
+    default: () => bash_default
+  });
+  var variable, bash_default;
+  var init_bash = __esm({
+    "layx/others/syntax_highlighter/languages/bash.js"() {
+      variable = {
+        type: "var",
+        match: /\$\w+|\${[^}]*}|\$\([^)]*\)/g
+      };
+      bash_default = [
+        {
+          sub: "todo",
+          match: /#.*/g
+        },
+        {
+          type: "str",
+          match: /(["'])((?!\1)[^\r\n\\]|\\[^])*\1?/g,
+          sub: [variable]
+        },
+        {
+          // relative or absolute path
+          type: "oper",
+          match: /(?<=\s|^)\.*\/[a-z/_.-]+/gi
+        },
+        {
+          type: "kwd",
+          match: /\s-[a-zA-Z]+|$<|[&|;]+|\b(unset|readonly|shift|export|if|fi|else|elif|while|do|done|for|until|case|esac|break|continue|exit|return|trap|wait|eval|exec|then|declare|enable|local|select|typeset|time|add|remove|install|update|delete)(?=\s|$)/g
+        },
+        {
+          expand: "num"
+        },
+        {
+          // command
+          type: "func",
+          match: /(?<=(^|\||\&\&|\;)\s*)[a-z_.-]+(?=\s|$)/gmi
+        },
+        {
+          type: "bool",
+          match: /(?<=\s|^)(true|false)(?=\s|$)/g
+        },
+        // {
+        // 	// function definition
+        // 	type: 'func',
+        // 	match: /(?<=\s|^)[a-z_]+(?=\s*\()/g
+        // },
+        {
+          type: "oper",
+          match: /[=(){}<>!]+/g
+        },
+        {
+          type: "var",
+          match: /(?<=\s|^)[\w_]+(?=\s*=)/g
+        },
+        variable
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/bf.js
+  var bf_exports = {};
+  __export(bf_exports, {
+    default: () => bf_default
+  });
+  var bf_default;
+  var init_bf = __esm({
+    "layx/others/syntax_highlighter/languages/bf.js"() {
+      bf_default = [
+        {
+          match: /[^\[\->+.<\]\s].*/g,
+          sub: "todo"
+        },
+        {
+          type: "func",
+          match: /\.+/g
+        },
+        {
+          type: "kwd",
+          match: /[<>]+/g
+        },
+        {
+          type: "oper",
+          match: /[+-]+/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/c.js
+  var c_exports = {};
+  __export(c_exports, {
+    default: () => c_default
+  });
+  var c_default;
+  var init_c = __esm({
+    "layx/others/syntax_highlighter/languages/c.js"() {
+      c_default = [
+        {
+          match: /\/\/.*\n?|\/\*((?!\*\/)[^])*(\*\/)?/g,
+          sub: "todo"
+        },
+        {
+          expand: "str"
+        },
+        {
+          expand: "num"
+        },
+        {
+          type: "kwd",
+          match: /#\s*include (<.*>|".*")/g,
+          sub: [
+            {
+              type: "str",
+              match: /(<|").*/g
+            }
+          ]
+        },
+        {
+          match: /asm\s*{[^}]*}/g,
+          sub: [
+            {
+              type: "kwd",
+              match: /^asm/g
+            },
+            {
+              //type: 'str',
+              match: /[^{}]*(?=}$)/g,
+              sub: "asm"
+            }
+          ]
+        },
+        {
+          type: "kwd",
+          match: /\*|&|#[a-z]+\b|\b(asm|auto|double|int|struct|break|else|long|switch|case|enum|register|typedef|char|extern|return|union|const|float|short|unsigned|continue|for|signed|void|default|goto|sizeof|volatile|do|if|static|while)\b/g
+        },
+        {
+          type: "oper",
+          match: /[/*+:?&|%^~=!,<>.^-]+/g
+        },
+        {
+          type: "func",
+          match: /[a-zA-Z_][\w_]*(?=\s*\()/g
+        },
+        {
+          type: "class",
+          match: /\b[A-Z][\w_]*\b/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/css.js
+  var css_exports = {};
+  __export(css_exports, {
+    default: () => css_default
+  });
+  var css_default;
+  var init_css = __esm({
+    "layx/others/syntax_highlighter/languages/css.js"() {
+      css_default = [
+        {
+          match: /\/\*((?!\*\/)[^])*(\*\/)?/g,
+          sub: "todo"
+        },
+        {
+          expand: "str"
+        },
+        {
+          type: "kwd",
+          match: /@\w+\b|\b(and|not|only|or)\b|\b[a-z-]+(?=[^{}]*{)/g
+        },
+        {
+          type: "var",
+          match: /\b[\w-]+(?=\s*:)|(::?|\.)[\w-]+(?=[^{}]*{)/g
+        },
+        {
+          type: "func",
+          match: /#[\w-]+(?=[^{}]*{)/g
+        },
+        {
+          type: "num",
+          match: /#[\da-f]{3,8}/g
+        },
+        {
+          type: "num",
+          match: /\d+(\.\d+)?(cm|mm|in|px|pt|pc|em|ex|ch|rem|vm|vh|vmin|vmax|%)?/g,
+          sub: [
+            {
+              type: "var",
+              match: /[a-z]+|%/g
+            }
+          ]
+        },
+        {
+          match: /url\([^)]*\)/g,
+          sub: [
+            {
+              type: "func",
+              match: /url(?=\()/g
+            },
+            {
+              type: "str",
+              match: /[^()]+/g
+            }
+          ]
+        },
+        {
+          type: "func",
+          match: /\b[a-zA-Z]\w*(?=\s*\()/g
+        },
+        {
+          type: "num",
+          match: /\b[a-z-]+\b/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/csv.js
+  var csv_exports = {};
+  __export(csv_exports, {
+    default: () => csv_default
+  });
+  var csv_default;
+  var init_csv = __esm({
+    "layx/others/syntax_highlighter/languages/csv.js"() {
+      csv_default = [
+        {
+          expand: "strDouble"
+        },
+        {
+          type: "oper",
+          match: /,/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/diff.js
+  var diff_exports = {};
+  __export(diff_exports, {
+    default: () => diff_default
+  });
+  var diff_default;
+  var init_diff = __esm({
+    "layx/others/syntax_highlighter/languages/diff.js"() {
+      diff_default = [
+        {
+          type: "deleted",
+          match: /^[-<].*/gm
+        },
+        {
+          type: "insert",
+          match: /^[+>].*/gm
+        },
+        {
+          type: "kwd",
+          match: /!.*/gm
+        },
+        {
+          type: "section",
+          match: /^@@.*@@$|^\d.*|^([*-+])\1\1.*/gm
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/docker.js
+  var docker_exports = {};
+  __export(docker_exports, {
+    default: () => docker_default
+  });
+  var docker_default;
+  var init_docker = __esm({
+    "layx/others/syntax_highlighter/languages/docker.js"() {
+      init_bash();
+      docker_default = [
+        {
+          type: "kwd",
+          match: /^(FROM|RUN|CMD|LABEL|MAINTAINER|EXPOSE|ENV|ADD|COPY|ENTRYPOINT|VOLUME|USER|WORKDIR|ARG|ONBUILD|STOPSIGNAL|HEALTHCHECK|SHELL)\b/gmi
+        },
+        ...bash_default
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/git.js
+  var git_exports = {};
+  __export(git_exports, {
+    default: () => git_default
+  });
+  var git_default;
+  var init_git = __esm({
+    "layx/others/syntax_highlighter/languages/git.js"() {
+      init_diff();
+      git_default = [
+        {
+          match: /^#.*/gm,
+          sub: "todo"
+        },
+        {
+          expand: "str"
+        },
+        ...diff_default,
+        {
+          type: "func",
+          match: /^(\$ )?git(\s.*)?$/gm
+        },
+        {
+          type: "kwd",
+          match: /^commit \w+$/gm
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/go.js
+  var go_exports = {};
+  __export(go_exports, {
+    default: () => go_default
+  });
+  var go_default;
+  var init_go = __esm({
+    "layx/others/syntax_highlighter/languages/go.js"() {
+      go_default = [
+        {
+          match: /\/\/.*\n?|\/\*((?!\*\/)[^])*(\*\/)?/g,
+          sub: "todo"
+        },
+        {
+          expand: "str"
+        },
+        {
+          expand: "num"
+        },
+        {
+          type: "kwd",
+          match: /\*|&|\b(break|case|chan|const|continue|default|defer|else|fallthrough|for|func|go|goto|if|import|interface|map|package|range|return|select|struct|switch|type|var)\b/g
+        },
+        {
+          type: "func",
+          match: /[a-zA-Z_][\w_]*(?=\s*\()/g
+        },
+        {
+          type: "class",
+          match: /\b[A-Z][\w_]*\b/g
+        },
+        {
+          type: "oper",
+          match: /[+\-*\/%&|^~=!<>.^-]+/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/xml.js
+  var xml_exports = {};
+  __export(xml_exports, {
+    default: () => xml_default,
+    name: () => name,
+    properties: () => properties,
+    xmlElement: () => xmlElement
+  });
+  var nameStartChar, nameChar, name, properties, xmlElement, xml_default;
+  var init_xml = __esm({
+    "layx/others/syntax_highlighter/languages/xml.js"() {
+      nameStartChar = ":A-Z_a-z\xC0-\xD6\xD8-\xF6\xF8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD";
+      nameChar = nameStartChar + "\\-\\.0-9\xB7\u0300-\u036F\u203F-\u2040";
+      name = `[${nameStartChar}][${nameChar}]*`;
+      properties = `\\s*(\\s+${name}\\s*(=\\s*([^"']\\S*|("|')(\\\\[^]|(?!\\4)[^])*\\4?)?)?\\s*)*`;
+      xmlElement = {
+        match: RegExp(`<[/!?]?${name}${properties}[/!?]?>`, "g"),
+        sub: [
+          {
+            type: "var",
+            match: RegExp(`^<[/!?]?${name}`, "g"),
+            sub: [
+              {
+                type: "oper",
+                match: /^<[\/!?]?/g
+              }
+            ]
+          },
+          {
+            type: "str",
+            match: /=\s*([^"']\S*|("|')(\\[^]|(?!\2)[^])*\2?)/g,
+            sub: [
+              {
+                type: "oper",
+                match: /^=/g
+              }
+            ]
+          },
+          {
+            type: "oper",
+            match: /[\/!?]?>/g
+          },
+          {
+            type: "class",
+            match: RegExp(name, "g")
+          }
+        ]
+      };
+      xml_default = [
+        {
+          match: /<!--((?!-->)[^])*-->/g,
+          sub: "todo"
+        },
+        {
+          type: "class",
+          match: /<!\[CDATA\[[\s\S]*?\]\]>/gi
+        },
+        xmlElement,
+        // https://github.com/speed-highlight/core/issues/49
+        {
+          type: "str",
+          match: RegExp(`<\\?${name}([^?]|\\?[^?>])*\\?+>`, "g"),
+          sub: [
+            {
+              type: "var",
+              match: RegExp(`^<\\?${name}`, "g"),
+              sub: [
+                {
+                  type: "oper",
+                  match: /^<\?/g
+                }
+              ]
+            },
+            {
+              type: "oper",
+              match: /\?+>$/g
+            }
+          ]
+        },
+        {
+          type: "var",
+          match: /&(#x?)?[\da-z]{1,8};/gi
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/html.js
+  var html_exports = {};
+  __export(html_exports, {
+    default: () => html_default
+  });
+  var html_default;
+  var init_html = __esm({
+    "layx/others/syntax_highlighter/languages/html.js"() {
+      init_xml();
+      html_default = [
+        {
+          type: "class",
+          match: /<!DOCTYPE("[^"]*"|'[^']*'|[^"'>])*>/gi,
+          sub: [
+            {
+              type: "str",
+              match: /"[^"]*"|'[^']*'/g
+            },
+            {
+              type: "oper",
+              match: /^<!|>$/g
+            },
+            {
+              type: "var",
+              match: /DOCTYPE/gi
+            }
+          ]
+        },
+        {
+          match: RegExp(`<style${properties}>((?!</style>)[^])*</style\\s*>`, "g"),
+          sub: [
+            {
+              match: RegExp(`^<style${properties}>`, "g"),
+              sub: xmlElement.sub
+            },
+            {
+              match: RegExp(`${xmlElement.match}|[^]*(?=</style\\s*>$)`, "g"),
+              sub: "css"
+            },
+            xmlElement
+          ]
+        },
+        {
+          match: RegExp(`<script${properties}>((?!<\/script>)[^])*<\/script\\s*>`, "g"),
+          sub: [
+            {
+              match: RegExp(`^<script${properties}>`, "g"),
+              sub: xmlElement.sub
+            },
+            {
+              match: RegExp(`${xmlElement.match}|[^]*(?=<\/script\\s*>$)`, "g"),
+              sub: "js"
+            },
+            xmlElement
+          ]
+        },
+        ...xml_default
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/detect.js
+  var languages, detectLanguage;
+  var init_detect = __esm({
+    "layx/others/syntax_highlighter/detect.js"() {
+      languages = [
+        ["bash", [/#!(\/usr)?\/bin\/bash/g, 500], [/\b(if|elif|then|fi|echo)\b|\$/g, 10]],
+        ["html", [/<\/?[a-z-]+[^\n>]*>/g, 10], [/^\s+<!DOCTYPE\s+html/g, 500]],
+        ["http", [/^(GET|HEAD|POST|PUT|DELETE|PATCH|HTTP)\b/g, 500]],
+        ["js", [/\b(console|await|async|function|export|import|this|class|for|let|const|map|join|require)\b/g, 10]],
+        ["ts", [/\b(console|await|async|function|export|import|this|class|for|let|const|map|join|require|implements|interface|namespace)\b/g, 10]],
+        ["py", [/\b(def|print|class|and|or|lambda)\b/g, 10]],
+        ["sql", [/\b(SELECT|INSERT|FROM)\b/g, 50]],
+        ["pl", [/#!(\/usr)?\/bin\/perl/g, 500], [/\b(use|print)\b|\$/g, 10]],
+        ["lua", [/#!(\/usr)?\/bin\/lua/g, 500]],
+        ["make", [/\b(ifneq|endif|if|elif|then|fi|echo|.PHONY|^[a-z]+ ?:$)\b|\$/gm, 10]],
+        ["uri", [/https?:|mailto:|tel:|ftp:/g, 30]],
+        ["css", [/^(@import|@page|@media|(\.|#)[a-z]+)/gm, 20]],
+        ["diff", [/^[+><-]/gm, 10], [/^@@ ?[-+,0-9 ]+ ?@@/gm, 25]],
+        ["md", [/^(>|\t\*|\t\d+.)/gm, 10], [/\[.*\](.*)/g, 10]],
+        ["docker", [/^(FROM|ENTRYPOINT|RUN)/gm, 500]],
+        ["xml", [/<\/?[a-z-]+[^\n>]*>/g, 10], [/^<\?xml/g, 500]],
+        ["c", [/#include\b|\bprintf\s+\(/g, 100]],
+        ["rs", [/^\s+(use|fn|mut|match)\b/gm, 100]],
+        ["go", [/\b(func|fmt|package)\b/g, 100]],
+        ["java", [/^import\s+java/gm, 500]],
+        ["asm", [/^(section|global main|extern|\t(call|mov|ret))/gm, 100]],
+        ["css", [/^(@import|@page|@media|(\.|#)[a-z]+)/gm, 20]],
+        ["json", [/\b(true|false|null|\{})\b|\"[^"]+\":/g, 10]],
+        ["yaml", [/^(\s+)?[a-z][a-z0-9]*:/gmi, 10]]
+      ];
+      detectLanguage = (code) => {
+        return languages.map(([lang, ...features]) => [
+          lang,
+          features.reduce((acc, [match, score]) => acc + [...code.matchAll(match)].length * score, 0)
+        ]).filter(([lang, score]) => score > 20).sort((a, b) => b[1] - a[1])[0]?.[0] || "plain";
+      };
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/http.js
+  var http_exports = {};
+  __export(http_exports, {
+    default: () => http_default
+  });
+  var http_default;
+  var init_http = __esm({
+    "layx/others/syntax_highlighter/languages/http.js"() {
+      init_detect();
+      http_default = [
+        {
+          type: "kwd",
+          match: /^(GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE|PATCH|PRI|SEARCH)\b/gm
+        },
+        {
+          expand: "str"
+        },
+        {
+          type: "section",
+          match: /\bHTTP\/[\d.]+\b/g
+        },
+        {
+          expand: "num"
+        },
+        {
+          type: "oper",
+          match: /[,;:=]/g
+        },
+        {
+          type: "var",
+          match: /[a-zA-Z][\w-]*(?=:)/g
+        },
+        {
+          match: /\n\n[^]*/g,
+          sub: detectLanguage
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/ini.js
+  var ini_exports = {};
+  __export(ini_exports, {
+    default: () => ini_default
+  });
+  var ini_default;
+  var init_ini = __esm({
+    "layx/others/syntax_highlighter/languages/ini.js"() {
+      ini_default = [
+        {
+          match: /(^[ \f\t\v]*)[#;].*/gm,
+          sub: "todo"
+        },
+        {
+          type: "str",
+          match: /.*/g
+        },
+        {
+          type: "var",
+          match: /.*(?==)/g
+        },
+        {
+          type: "section",
+          match: /^\s*\[.+\]\s*$/gm
+        },
+        {
+          type: "oper",
+          match: /=/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/java.js
+  var java_exports = {};
+  __export(java_exports, {
+    default: () => java_default
+  });
+  var java_default;
+  var init_java = __esm({
+    "layx/others/syntax_highlighter/languages/java.js"() {
+      java_default = [
+        {
+          match: /\/\/.*\n?|\/\*((?!\*\/)[^])*(\*\/)?/g,
+          sub: "todo"
+        },
+        {
+          expand: "str"
+        },
+        {
+          expand: "num"
+        },
+        {
+          type: "kwd",
+          match: /\b(abstract|assert|boolean|break|byte|case|catch|char|class|continue|const|default|do|double|else|enum|exports|extends|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|module|native|new|package|private|protected|public|requires|return|short|static|strictfp|super|switch|synchronized|this|throw|throws|transient|try|var|void|volatile|while)\b/g
+        },
+        {
+          type: "oper",
+          match: /[/*+:?&|%^~=!,<>.^-]+/g
+        },
+        {
+          type: "func",
+          match: /[a-zA-Z_][\w_]*(?=\s*\()/g
+        },
+        {
+          type: "class",
+          match: /\b[A-Z][\w_]*\b/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/js.js
+  var js_exports = {};
+  __export(js_exports, {
+    default: () => js_default
+  });
+  var js_default;
+  var init_js = __esm({
+    "layx/others/syntax_highlighter/languages/js.js"() {
+      js_default = [
+        {
+          match: /\/\*\*((?!\*\/)[^])*(\*\/)?/g,
+          sub: "jsdoc"
+        },
+        {
+          match: /\/\/.*\n?|\/\*((?!\*\/)[^])*(\*\/)?/g,
+          sub: "todo"
+        },
+        {
+          expand: "str"
+        },
+        {
+          match: /`((?!`)[^]|\\[^])*`?/g,
+          sub: "js_template_literals"
+        },
+        {
+          type: "kwd",
+          match: /=>|\b(this|set|get|as|async|await|break|case|catch|class|const|constructor|continue|debugger|default|delete|do|else|enum|export|extends|finally|for|from|function|if|implements|import|in|instanceof|interface|let|var|of|new|package|private|protected|public|return|static|super|switch|throw|throws|try|typeof|void|while|with|yield)\b/g
+        },
+        {
+          match: /\/((?!\/)[^\r\n\\]|\\.)+\/[dgimsuy]*/g,
+          sub: "regex"
+        },
+        {
+          expand: "num"
+        },
+        {
+          type: "num",
+          match: /\b(NaN|null|undefined|[A-Z][A-Z_]*)\b/g
+        },
+        {
+          type: "bool",
+          match: /\b(true|false)\b/g
+        },
+        {
+          type: "oper",
+          match: /[/*+:?&|%^~=!,<>.^-]+/g
+        },
+        {
+          type: "class",
+          match: /\b[A-Z][\w_]*\b/g
+        },
+        {
+          type: "func",
+          match: /[a-zA-Z$_][\w$_]*(?=\s*((\?\.)?\s*\(|=\s*(\(?[\w,{}\[\])]+\)? =>|function\b)))/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/js_template_literals.js
+  var js_template_literals_exports = {};
+  __export(js_template_literals_exports, {
+    default: () => js_template_literals_default,
+    type: () => type
+  });
+  var js_template_literals_default, type;
+  var init_js_template_literals = __esm({
+    "layx/others/syntax_highlighter/languages/js_template_literals.js"() {
+      js_template_literals_default = [
+        {
+          match: new class {
+            exec(str) {
+              let i = this.lastIndex, j, f = (_) => {
+                while (++i < str.length - 2)
+                  if (str[i] == "{") f();
+                  else if (str[i] == "}") return;
+              };
+              for (; i < str.length; ++i)
+                if (str[i - 1] != "\\" && str[i] == "$" && str[i + 1] == "{") {
+                  j = i++;
+                  f(i);
+                  this.lastIndex = i + 1;
+                  return { index: j, 0: str.slice(j, i + 1) };
+                }
+              return null;
+            }
+          }(),
+          sub: [
+            {
+              type: "kwd",
+              match: /^\${|}$/g
+            },
+            {
+              match: /(?!^\$|{)[^]+(?=}$)/g,
+              sub: "js"
+            }
+          ]
+        }
+      ];
+      type = "str";
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/todo.js
+  var todo_exports = {};
+  __export(todo_exports, {
+    default: () => todo_default,
+    type: () => type2
+  });
+  var todo_default, type2;
+  var init_todo = __esm({
+    "layx/others/syntax_highlighter/languages/todo.js"() {
+      todo_default = [
+        {
+          type: "err",
+          match: /\b(TODO|FIXME|DEBUG|OPTIMIZE|WARNING|XXX|BUG)\b/g
+        },
+        {
+          type: "class",
+          match: /\bIDEA\b/g
+        },
+        {
+          type: "insert",
+          match: /\b(CHANGED|FIX|CHANGE)\b/g
+        },
+        {
+          type: "oper",
+          match: /\bQUESTION\b/g
+        }
+      ];
+      type2 = "cmnt";
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/jsdoc.js
+  var jsdoc_exports = {};
+  __export(jsdoc_exports, {
+    default: () => jsdoc_default,
+    type: () => type3
+  });
+  var jsdoc_default, type3;
+  var init_jsdoc = __esm({
+    "layx/others/syntax_highlighter/languages/jsdoc.js"() {
+      init_todo();
+      jsdoc_default = [
+        {
+          type: "kwd",
+          match: /@\w+/g
+        },
+        {
+          type: "class",
+          match: /{[\w\s|<>,.@\[\]]+}/g
+        },
+        {
+          type: "var",
+          match: /\[[\w\s="']+\]/g
+        },
+        ...todo_default
+      ];
+      type3 = "cmnt";
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/json.js
+  var json_exports = {};
+  __export(json_exports, {
+    default: () => json_default
+  });
+  var json_default;
+  var init_json = __esm({
+    "layx/others/syntax_highlighter/languages/json.js"() {
+      json_default = [
+        {
+          type: "var",
+          match: /("|')?[a-zA-Z]\w*\1(?=\s*:)/g
+        },
+        {
+          expand: "str"
+        },
+        {
+          expand: "num"
+        },
+        {
+          type: "num",
+          match: /\bnull\b/g
+        },
+        {
+          type: "bool",
+          match: /\b(true|false)\b/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/md.js
+  var md_exports = {};
+  __export(md_exports, {
+    default: () => md_default
+  });
+  var md_default;
+  var init_md = __esm({
+    "layx/others/syntax_highlighter/languages/md.js"() {
+      init_detect();
+      md_default = [
+        {
+          type: "cmnt",
+          match: /^>.*|(=|-)\1+/gm
+        },
+        {
+          type: "class",
+          match: /\*\*((?!\*\*).)*\*\*/g
+        },
+        {
+          match: /```((?!```)[^])*\n```/g,
+          sub: (code) => ({
+            type: "kwd",
+            sub: [
+              {
+                match: /\n[^]*(?=```)/g,
+                sub: code.split("\n")[0].slice(3) || detectLanguage(code)
+              }
+            ]
+          })
+        },
+        {
+          type: "str",
+          match: /`[^`]*`/g
+        },
+        {
+          type: "var",
+          match: /~~((?!~~).)*~~/g
+        },
+        {
+          type: "kwd",
+          match: /_[^_]*_|\*[^*]*\*/g
+        },
+        {
+          type: "kwd",
+          match: /^\s*(\*|\d+\.)\s/gm
+        },
+        {
+          type: "oper",
+          match: /\[[^\]]*]/g
+        },
+        {
+          type: "func",
+          match: /\([^)]*\)/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/leanpub-md.js
+  var leanpub_md_exports = {};
+  __export(leanpub_md_exports, {
+    default: () => leanpub_md_default
+  });
+  var leanpub_md_default;
+  var init_leanpub_md = __esm({
+    "layx/others/syntax_highlighter/languages/leanpub-md.js"() {
+      init_md();
+      init_detect();
+      leanpub_md_default = [
+        {
+          type: "insert",
+          match: /(leanpub-start-insert)((?!leanpub-end-insert)[^])*(leanpub-end-insert)?/g,
+          sub: [
+            {
+              type: "insert",
+              match: /leanpub-(start|end)-insert/g
+            },
+            {
+              match: /(?!leanpub-start-insert)((?!leanpub-end-insert)[^])*/g,
+              sub: detectLanguage
+            }
+          ]
+        },
+        {
+          type: "deleted",
+          match: /(leanpub-start-delete)((?!leanpub-end-delete)[^])*(leanpub-end-delete)?/g,
+          sub: [
+            {
+              type: "deleted",
+              match: /leanpub-(start|end)-delete/g
+            },
+            {
+              match: /(?!leanpub-start-delete)((?!leanpub-end-delete)[^])*/g,
+              sub: detectLanguage
+            }
+          ]
+        },
+        ...md_default
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/log.js
+  var log_exports = {};
+  __export(log_exports, {
+    default: () => log_default
+  });
+  var log_default;
+  var init_log = __esm({
+    "layx/others/syntax_highlighter/languages/log.js"() {
+      log_default = [
+        {
+          type: "cmnt",
+          match: /^#.*/gm
+        },
+        {
+          expand: "strDouble"
+        },
+        {
+          expand: "num"
+        },
+        {
+          type: "err",
+          match: /\b(err(or)?|[a-z_-]*exception|warn|warning|failed|ko|invalid|not ?found|alert|fatal)\b/gi
+        },
+        {
+          type: "num",
+          match: /\b(null|undefined)\b/gi
+        },
+        {
+          type: "bool",
+          match: /\b(false|true|yes|no)\b/gi
+        },
+        {
+          type: "oper",
+          match: /\.|,/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/lua.js
+  var lua_exports = {};
+  __export(lua_exports, {
+    default: () => lua_default
+  });
+  var lua_default;
+  var init_lua = __esm({
+    "layx/others/syntax_highlighter/languages/lua.js"() {
+      lua_default = [
+        {
+          match: /^#!.*|--(\[(=*)\[((?!--\]\2\])[^])*--\]\2\]|.*)/g,
+          sub: "todo"
+        },
+        {
+          expand: "str"
+        },
+        {
+          type: "kwd",
+          match: /\b(and|break|do|else|elseif|end|for|function|if|in|local|not|or|repeat|return|then|until|while)\b/g
+        },
+        {
+          type: "bool",
+          match: /\b(true|false|nil)\b/g
+        },
+        {
+          type: "oper",
+          match: /[+*/%^#=~<>:,.-]+/g
+        },
+        {
+          expand: "num"
+        },
+        {
+          type: "func",
+          match: /[a-z_]+(?=\s*[({])/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/make.js
+  var make_exports = {};
+  __export(make_exports, {
+    default: () => make_default
+  });
+  var make_default;
+  var init_make = __esm({
+    "layx/others/syntax_highlighter/languages/make.js"() {
+      make_default = [
+        {
+          match: /^\s*#.*/gm,
+          sub: "todo"
+        },
+        {
+          expand: "str"
+        },
+        {
+          type: "oper",
+          match: /[${}()]+/g
+        },
+        {
+          type: "class",
+          match: /.PHONY:/gm
+        },
+        {
+          type: "section",
+          match: /^[\w.]+:/gm
+        },
+        {
+          type: "kwd",
+          match: /\b(ifneq|endif)\b/g
+        },
+        {
+          expand: "num"
+        },
+        {
+          type: "var",
+          match: /[A-Z_]+(?=\s*=)/g
+        },
+        {
+          match: /^.*$/gm,
+          sub: "bash"
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/pl.js
+  var pl_exports = {};
+  __export(pl_exports, {
+    default: () => pl_default
+  });
+  var pl_default;
+  var init_pl = __esm({
+    "layx/others/syntax_highlighter/languages/pl.js"() {
+      pl_default = [
+        {
+          match: /#.*/g,
+          sub: "todo"
+        },
+        {
+          type: "str",
+          match: /(["'])(\\[^]|(?!\1)[^])*\1?/g
+        },
+        {
+          expand: "num"
+        },
+        {
+          type: "kwd",
+          match: /\b(any|break|continue|default|delete|die|do|else|elsif|eval|for|foreach|given|goto|if|last|local|my|next|our|package|print|redo|require|return|say|state|sub|switch|undef|unless|until|use|when|while|not|and|or|xor)\b/g
+        },
+        {
+          type: "oper",
+          match: /[-+*/%~!&<>|=?,]+/g
+        },
+        {
+          type: "func",
+          match: /[a-z_]+(?=\s*\()/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/plain.js
+  var plain_exports = {};
+  __export(plain_exports, {
+    default: () => plain_default
+  });
+  var plain_default;
+  var init_plain = __esm({
+    "layx/others/syntax_highlighter/languages/plain.js"() {
+      plain_default = [
+        {
+          expand: "strDouble"
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/py.js
+  var py_exports = {};
+  __export(py_exports, {
+    default: () => py_default
+  });
+  var py_default;
+  var init_py = __esm({
+    "layx/others/syntax_highlighter/languages/py.js"() {
+      py_default = [
+        {
+          match: /#.*/g,
+          sub: "todo"
+        },
+        {
+          match: /("""|''')(\\[^]|(?!\1)[^])*\1?/g,
+          sub: "todo"
+        },
+        {
+          type: "str",
+          match: /f("|')(\\[^]|(?!\1).)*\1?|f((["'])\4\4)(\\[^]|(?!\3)[^])*\3?/gi,
+          sub: [
+            {
+              type: "var",
+              match: /{[^{}]*}/g,
+              sub: [
+                {
+                  match: /(?!^{)[^]*(?=}$)/g,
+                  sub: "py"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          expand: "str"
+        },
+        {
+          type: "kwd",
+          match: /\b(and|as|assert|break|class|continue|def|del|elif|else|except|finally|for|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield)\b/g
+        },
+        {
+          type: "bool",
+          match: /\b(False|True|None)\b/g
+        },
+        {
+          expand: "num"
+        },
+        {
+          type: "func",
+          match: /[a-z_]+(?=\s*\()/g
+        },
+        {
+          type: "oper",
+          match: /[-/*+<>,=!&|^%]+/g
+        },
+        {
+          type: "class",
+          match: /\b[A-Z][\w_]*\b/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/regex.js
+  var regex_exports = {};
+  __export(regex_exports, {
+    default: () => regex_default,
+    type: () => type4
+  });
+  var regex_default, type4;
+  var init_regex = __esm({
+    "layx/others/syntax_highlighter/languages/regex.js"() {
+      regex_default = [
+        {
+          match: /^(?!\/).*/gm,
+          sub: "todo"
+        },
+        {
+          type: "num",
+          match: /\[((?!\])[^\\]|\\.)*\]/g
+        },
+        {
+          type: "kwd",
+          match: /\||\^|\$|\\.|\w+($|\r|\n)/g
+        },
+        {
+          type: "var",
+          match: /\*|\+|\{\d+,\d+\}/g
+        }
+      ];
+      type4 = "oper";
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/rs.js
+  var rs_exports = {};
+  __export(rs_exports, {
+    default: () => rs_default
+  });
+  var rs_default;
+  var init_rs = __esm({
+    "layx/others/syntax_highlighter/languages/rs.js"() {
+      rs_default = [
+        {
+          match: /\/\/.*\n?|\/\*((?!\*\/)[^])*(\*\/)?/g,
+          sub: "todo"
+        },
+        {
+          expand: "str"
+        },
+        {
+          expand: "num"
+        },
+        {
+          type: "kwd",
+          match: /\b(as|break|const|continue|crate|else|enum|extern|false|fn|for|if|impl|in|let|loop|match|mod|move|mut|pub|ref|return|self|Self|static|struct|super|trait|true|type|unsafe|use|where|while|async|await|dyn|abstract|become|box|do|final|macro|override|priv|typeof|unsized|virtual|yield|try)\b/g
+        },
+        {
+          type: "oper",
+          match: /[/*+:?&|%^~=!,<>.^-]+/g
+        },
+        {
+          type: "class",
+          match: /\b[A-Z][\w_]*\b/g
+        },
+        {
+          type: "func",
+          match: /[a-zA-Z_][\w_]*(?=\s*!?\s*\()/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/sql.js
+  var sql_exports = {};
+  __export(sql_exports, {
+    default: () => sql_default
+  });
+  var sql_default;
+  var init_sql = __esm({
+    "layx/others/syntax_highlighter/languages/sql.js"() {
+      sql_default = [
+        {
+          match: /--.*\n?|\/\*((?!\*\/)[^])*(\*\/)?/g,
+          sub: "todo"
+        },
+        {
+          expand: "str"
+        },
+        {
+          type: "func",
+          match: /\b(AVG|COUNT|FIRST|FORMAT|LAST|LCASE|LEN|MAX|MID|MIN|MOD|NOW|ROUND|SUM|UCASE)(?=\s*\()/g
+        },
+        {
+          type: "kwd",
+          match: /\b(ACTION|ADD|AFTER|ALGORITHM|ALL|ALTER|ANALYZE|ANY|APPLY|AS|ASC|AUTHORIZATION|AUTO_INCREMENT|BACKUP|BDB|BEGIN|BERKELEYDB|BIGINT|BINARY|BIT|BLOB|BOOL|BOOLEAN|BREAK|BROWSE|BTREE|BULK|BY|CALL|CASCADED?|CASE|CHAIN|CHAR(?:ACTER|SET)?|CHECK(?:POINT)?|CLOSE|CLUSTERED|COALESCE|COLLATE|COLUMNS?|COMMENT|COMMIT(?:TED)?|COMPUTE|CONNECT|CONSISTENT|CONSTRAINT|CONTAINS(?:TABLE)?|CONTINUE|CONVERT|CREATE|CROSS|CURRENT(?:_DATE|_TIME|_TIMESTAMP|_USER)?|CURSOR|CYCLE|DATA(?:BASES?)?|DATE(?:TIME)?|DAY|DBCC|DEALLOCATE|DEC|DECIMAL|DECLARE|DEFAULT|DEFINER|DELAYED|DELETE|DELIMITERS?|DENY|DESC|DESCRIBE|DETERMINISTIC|DISABLE|DISCARD|DISK|DISTINCT|DISTINCTROW|DISTRIBUTED|DO|DOUBLE|DROP|DUMMY|DUMP(?:FILE)?|DUPLICATE|ELSE(?:IF)?|ENABLE|ENCLOSED|END|ENGINE|ENUM|ERRLVL|ERRORS|ESCAPED?|EXCEPT|EXEC(?:UTE)?|EXISTS|EXIT|EXPLAIN|EXTENDED|FETCH|FIELDS|FILE|FILLFACTOR|FIRST|FIXED|FLOAT|FOLLOWING|FOR(?: EACH ROW)?|FORCE|FOREIGN|FREETEXT(?:TABLE)?|FROM|FULL|FUNCTION|GEOMETRY(?:COLLECTION)?|GLOBAL|GOTO|GRANT|GROUP|HANDLER|HASH|HAVING|HOLDLOCK|HOUR|IDENTITY(?:_INSERT|COL)?|IF|IGNORE|IMPORT|INDEX|INFILE|INNER|INNODB|INOUT|INSERT|INT|INTEGER|INTERSECT|INTERVAL|INTO|INVOKER|ISOLATION|ITERATE|JOIN|kwdS?|KILL|LANGUAGE|LAST|LEAVE|LEFT|LEVEL|LIMIT|LINENO|LINES|LINESTRING|LOAD|LOCAL|LOCK|LONG(?:BLOB|TEXT)|LOOP|MATCH(?:ED)?|MEDIUM(?:BLOB|INT|TEXT)|MERGE|MIDDLEINT|MINUTE|MODE|MODIFIES|MODIFY|MONTH|MULTI(?:LINESTRING|POINT|POLYGON)|NATIONAL|NATURAL|NCHAR|NEXT|NO|NONCLUSTERED|NULLIF|NUMERIC|OFF?|OFFSETS?|ON|OPEN(?:DATASOURCE|QUERY|ROWSET)?|OPTIMIZE|OPTION(?:ALLY)?|ORDER|OUT(?:ER|FILE)?|OVER|PARTIAL|PARTITION|PERCENT|PIVOT|PLAN|POINT|POLYGON|PRECEDING|PRECISION|PREPARE|PREV|PRIMARY|PRINT|PRIVILEGES|PROC(?:EDURE)?|PUBLIC|PURGE|QUICK|RAISERROR|READS?|REAL|RECONFIGURE|REFERENCES|RELEASE|RENAME|REPEAT(?:ABLE)?|REPLACE|REPLICATION|REQUIRE|RESIGNAL|RESTORE|RESTRICT|RETURN(?:S|ING)?|REVOKE|RIGHT|ROLLBACK|ROUTINE|ROW(?:COUNT|GUIDCOL|S)?|RTREE|RULE|SAVE(?:POINT)?|SCHEMA|SECOND|SELECT|SERIAL(?:IZABLE)?|SESSION(?:_USER)?|SET(?:USER)?|SHARE|SHOW|SHUTDOWN|SIMPLE|SMALLINT|SNAPSHOT|SOME|SONAME|SQL|START(?:ING)?|STATISTICS|STATUS|STRIPED|SYSTEM_USER|TABLES?|TABLESPACE|TEMP(?:ORARY|TABLE)?|TERMINATED|TEXT(?:SIZE)?|THEN|TIME(?:STAMP)?|TINY(?:BLOB|INT|TEXT)|TOP?|TRAN(?:SACTIONS?)?|TRIGGER|TRUNCATE|TSEQUAL|TYPES?|UNBOUNDED|UNCOMMITTED|UNDEFINED|UNION|UNIQUE|UNLOCK|UNPIVOT|UNSIGNED|UPDATE(?:TEXT)?|USAGE|USE|USER|USING|VALUES?|VAR(?:BINARY|CHAR|CHARACTER|YING)|VIEW|WAITFOR|WARNINGS|WHEN|WHERE|WHILE|WITH(?: ROLLUP|IN)?|WORK|WRITE(?:TEXT)?|YEAR)\b/g
+        },
+        {
+          type: "num",
+          match: /\.?\d[\d.oxa-fA-F-]*|\bNULL\b/g
+        },
+        {
+          type: "bool",
+          match: /\b(TRUE|FALSE)\b/g
+        },
+        {
+          type: "oper",
+          match: /[-+*\/=%^~]|&&?|\|\|?|!=?|<(?:=>?|<|>)?|>[>=]?|\b(?:AND|BETWEEN|DIV|IN|ILIKE|IS|LIKE|NOT|OR|REGEXP|RLIKE|SOUNDS LIKE|XOR)\b/g
+        },
+        {
+          type: "var",
+          match: /@\S+/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/toml.js
+  var toml_exports = {};
+  __export(toml_exports, {
+    default: () => toml_default
+  });
+  var toml_default;
+  var init_toml = __esm({
+    "layx/others/syntax_highlighter/languages/toml.js"() {
+      toml_default = [
+        {
+          match: /#.*/g,
+          sub: "todo"
+        },
+        {
+          type: "str",
+          match: /("""|''')((?!\1)[^]|\\[^])*\1?/g
+        },
+        {
+          expand: "str"
+        },
+        {
+          type: "section",
+          match: /^\[.+\]\s*$/gm
+        },
+        {
+          type: "num",
+          match: /\b(inf|nan)\b|\d[\d:ZT.-]*/g
+        },
+        {
+          expand: "num"
+        },
+        {
+          type: "bool",
+          match: /\b(true|false)\b/g
+        },
+        {
+          type: "oper",
+          match: /[+,.=-]/g
+        },
+        {
+          type: "var",
+          match: /\w+(?= \=)/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/ts.js
+  var ts_exports = {};
+  __export(ts_exports, {
+    default: () => ts_default
+  });
+  var ts_default;
+  var init_ts = __esm({
+    "layx/others/syntax_highlighter/languages/ts.js"() {
+      init_js();
+      ts_default = [
+        {
+          type: "type",
+          match: /:\s*(any|void|number|boolean|string|object|never|enum)\b/g
+        },
+        {
+          type: "kwd",
+          match: /\b(type|namespace|typedef|interface|public|private|protected|implements|declare|abstract|readonly)\b/g
+        },
+        ...js_default
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/uri.js
+  var uri_exports = {};
+  __export(uri_exports, {
+    default: () => uri_default
+  });
+  var uri_default;
+  var init_uri = __esm({
+    "layx/others/syntax_highlighter/languages/uri.js"() {
+      uri_default = [
+        {
+          match: /^#.*/gm,
+          sub: "todo"
+        },
+        {
+          type: "class",
+          match: /^\w+(?=:?)/gm
+        },
+        {
+          type: "num",
+          match: /:\d+/g
+        },
+        {
+          type: "oper",
+          match: /[:/&?]|\w+=/g
+        },
+        {
+          type: "func",
+          match: /[.\w]+@|#[\w]+$/gm
+        },
+        {
+          type: "var",
+          match: /\w+\.\w+(\.\w+)*/g
+        }
+      ];
+    }
+  });
+
+  // layx/others/syntax_highlighter/languages/yaml.js
+  var yaml_exports = {};
+  __export(yaml_exports, {
+    default: () => yaml_default
+  });
+  var yaml_default;
+  var init_yaml = __esm({
+    "layx/others/syntax_highlighter/languages/yaml.js"() {
+      yaml_default = [
+        {
+          match: /#.*/g,
+          sub: "todo"
+        },
+        {
+          expand: "str"
+        },
+        {
+          type: "str",
+          match: /(>|\|)\r?\n((\s[^\n]*)?(\r?\n|$))*/g
+        },
+        {
+          type: "type",
+          match: /!![a-z]+/g
+        },
+        {
+          type: "bool",
+          match: /\b(Yes|No)\b/g
+        },
+        {
+          type: "oper",
+          match: /[+:-]/g
+        },
+        {
+          expand: "num"
+        },
+        {
+          type: "var",
+          match: /[a-zA-Z]\w*(?=:)/g
+        }
+      ];
+    }
+  });
+
   // layx/others/idb/idb.js
   var IDB = class {
     constructor(dbName, version2 = 1, upgradeCallback) {
@@ -145,959 +1665,7 @@
     }
   };
 
-  // node_modules/whatwg-fetch/fetch.js
-  var g = typeof globalThis !== "undefined" && globalThis || typeof self !== "undefined" && self || // eslint-disable-next-line no-undef
-  typeof global !== "undefined" && global || {};
-  var support = {
-    searchParams: "URLSearchParams" in g,
-    iterable: "Symbol" in g && "iterator" in Symbol,
-    blob: "FileReader" in g && "Blob" in g && function() {
-      try {
-        new Blob();
-        return true;
-      } catch (e) {
-        return false;
-      }
-    }(),
-    formData: "FormData" in g,
-    arrayBuffer: "ArrayBuffer" in g
-  };
-  function isDataView(obj) {
-    return obj && DataView.prototype.isPrototypeOf(obj);
-  }
-  if (support.arrayBuffer) {
-    viewClasses = [
-      "[object Int8Array]",
-      "[object Uint8Array]",
-      "[object Uint8ClampedArray]",
-      "[object Int16Array]",
-      "[object Uint16Array]",
-      "[object Int32Array]",
-      "[object Uint32Array]",
-      "[object Float32Array]",
-      "[object Float64Array]"
-    ];
-    isArrayBufferView = ArrayBuffer.isView || function(obj) {
-      return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1;
-    };
-  }
-  var viewClasses;
-  var isArrayBufferView;
-  function normalizeName(name) {
-    if (typeof name !== "string") {
-      name = String(name);
-    }
-    if (/[^a-z0-9\-#$%&'*+.^_`|~!]/i.test(name) || name === "") {
-      throw new TypeError('Invalid character in header field name: "' + name + '"');
-    }
-    return name.toLowerCase();
-  }
-  function normalizeValue(value) {
-    if (typeof value !== "string") {
-      value = String(value);
-    }
-    return value;
-  }
-  function iteratorFor(items) {
-    var iterator = {
-      next: function() {
-        var value = items.shift();
-        return { done: value === void 0, value };
-      }
-    };
-    if (support.iterable) {
-      iterator[Symbol.iterator] = function() {
-        return iterator;
-      };
-    }
-    return iterator;
-  }
-  function Headers(headers) {
-    this.map = {};
-    if (headers instanceof Headers) {
-      headers.forEach(function(value, name) {
-        this.append(name, value);
-      }, this);
-    } else if (Array.isArray(headers)) {
-      headers.forEach(function(header) {
-        if (header.length != 2) {
-          throw new TypeError("Headers constructor: expected name/value pair to be length 2, found" + header.length);
-        }
-        this.append(header[0], header[1]);
-      }, this);
-    } else if (headers) {
-      Object.getOwnPropertyNames(headers).forEach(function(name) {
-        this.append(name, headers[name]);
-      }, this);
-    }
-  }
-  Headers.prototype.append = function(name, value) {
-    name = normalizeName(name);
-    value = normalizeValue(value);
-    var oldValue = this.map[name];
-    this.map[name] = oldValue ? oldValue + ", " + value : value;
-  };
-  Headers.prototype["delete"] = function(name) {
-    delete this.map[normalizeName(name)];
-  };
-  Headers.prototype.get = function(name) {
-    name = normalizeName(name);
-    return this.has(name) ? this.map[name] : null;
-  };
-  Headers.prototype.has = function(name) {
-    return this.map.hasOwnProperty(normalizeName(name));
-  };
-  Headers.prototype.set = function(name, value) {
-    this.map[normalizeName(name)] = normalizeValue(value);
-  };
-  Headers.prototype.forEach = function(callback, thisArg) {
-    for (var name in this.map) {
-      if (this.map.hasOwnProperty(name)) {
-        callback.call(thisArg, this.map[name], name, this);
-      }
-    }
-  };
-  Headers.prototype.keys = function() {
-    var items = [];
-    this.forEach(function(value, name) {
-      items.push(name);
-    });
-    return iteratorFor(items);
-  };
-  Headers.prototype.values = function() {
-    var items = [];
-    this.forEach(function(value) {
-      items.push(value);
-    });
-    return iteratorFor(items);
-  };
-  Headers.prototype.entries = function() {
-    var items = [];
-    this.forEach(function(value, name) {
-      items.push([name, value]);
-    });
-    return iteratorFor(items);
-  };
-  if (support.iterable) {
-    Headers.prototype[Symbol.iterator] = Headers.prototype.entries;
-  }
-  function consumed(body) {
-    if (body._noBody) return;
-    if (body.bodyUsed) {
-      return Promise.reject(new TypeError("Already read"));
-    }
-    body.bodyUsed = true;
-  }
-  function fileReaderReady(reader) {
-    return new Promise(function(resolve, reject) {
-      reader.onload = function() {
-        resolve(reader.result);
-      };
-      reader.onerror = function() {
-        reject(reader.error);
-      };
-    });
-  }
-  function readBlobAsArrayBuffer(blob) {
-    var reader = new FileReader();
-    var promise = fileReaderReady(reader);
-    reader.readAsArrayBuffer(blob);
-    return promise;
-  }
-  function readBlobAsText(blob) {
-    var reader = new FileReader();
-    var promise = fileReaderReady(reader);
-    var match = /charset=([A-Za-z0-9_-]+)/.exec(blob.type);
-    var encoding = match ? match[1] : "utf-8";
-    reader.readAsText(blob, encoding);
-    return promise;
-  }
-  function readArrayBufferAsText(buf) {
-    var view = new Uint8Array(buf);
-    var chars = new Array(view.length);
-    for (var i = 0; i < view.length; i++) {
-      chars[i] = String.fromCharCode(view[i]);
-    }
-    return chars.join("");
-  }
-  function bufferClone(buf) {
-    if (buf.slice) {
-      return buf.slice(0);
-    } else {
-      var view = new Uint8Array(buf.byteLength);
-      view.set(new Uint8Array(buf));
-      return view.buffer;
-    }
-  }
-  function Body() {
-    this.bodyUsed = false;
-    this._initBody = function(body) {
-      this.bodyUsed = this.bodyUsed;
-      this._bodyInit = body;
-      if (!body) {
-        this._noBody = true;
-        this._bodyText = "";
-      } else if (typeof body === "string") {
-        this._bodyText = body;
-      } else if (support.blob && Blob.prototype.isPrototypeOf(body)) {
-        this._bodyBlob = body;
-      } else if (support.formData && FormData.prototype.isPrototypeOf(body)) {
-        this._bodyFormData = body;
-      } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
-        this._bodyText = body.toString();
-      } else if (support.arrayBuffer && support.blob && isDataView(body)) {
-        this._bodyArrayBuffer = bufferClone(body.buffer);
-        this._bodyInit = new Blob([this._bodyArrayBuffer]);
-      } else if (support.arrayBuffer && (ArrayBuffer.prototype.isPrototypeOf(body) || isArrayBufferView(body))) {
-        this._bodyArrayBuffer = bufferClone(body);
-      } else {
-        this._bodyText = body = Object.prototype.toString.call(body);
-      }
-      if (!this.headers.get("content-type")) {
-        if (typeof body === "string") {
-          this.headers.set("content-type", "text/plain;charset=UTF-8");
-        } else if (this._bodyBlob && this._bodyBlob.type) {
-          this.headers.set("content-type", this._bodyBlob.type);
-        } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
-          this.headers.set("content-type", "application/x-www-form-urlencoded;charset=UTF-8");
-        }
-      }
-    };
-    if (support.blob) {
-      this.blob = function() {
-        var rejected = consumed(this);
-        if (rejected) {
-          return rejected;
-        }
-        if (this._bodyBlob) {
-          return Promise.resolve(this._bodyBlob);
-        } else if (this._bodyArrayBuffer) {
-          return Promise.resolve(new Blob([this._bodyArrayBuffer]));
-        } else if (this._bodyFormData) {
-          throw new Error("could not read FormData body as blob");
-        } else {
-          return Promise.resolve(new Blob([this._bodyText]));
-        }
-      };
-    }
-    this.arrayBuffer = function() {
-      if (this._bodyArrayBuffer) {
-        var isConsumed = consumed(this);
-        if (isConsumed) {
-          return isConsumed;
-        } else if (ArrayBuffer.isView(this._bodyArrayBuffer)) {
-          return Promise.resolve(
-            this._bodyArrayBuffer.buffer.slice(
-              this._bodyArrayBuffer.byteOffset,
-              this._bodyArrayBuffer.byteOffset + this._bodyArrayBuffer.byteLength
-            )
-          );
-        } else {
-          return Promise.resolve(this._bodyArrayBuffer);
-        }
-      } else if (support.blob) {
-        return this.blob().then(readBlobAsArrayBuffer);
-      } else {
-        throw new Error("could not read as ArrayBuffer");
-      }
-    };
-    this.text = function() {
-      var rejected = consumed(this);
-      if (rejected) {
-        return rejected;
-      }
-      if (this._bodyBlob) {
-        return readBlobAsText(this._bodyBlob);
-      } else if (this._bodyArrayBuffer) {
-        return Promise.resolve(readArrayBufferAsText(this._bodyArrayBuffer));
-      } else if (this._bodyFormData) {
-        throw new Error("could not read FormData body as text");
-      } else {
-        return Promise.resolve(this._bodyText);
-      }
-    };
-    if (support.formData) {
-      this.formData = function() {
-        return this.text().then(decode);
-      };
-    }
-    this.json = function() {
-      return this.text().then(JSON.parse);
-    };
-    return this;
-  }
-  var methods = ["CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE"];
-  function normalizeMethod(method) {
-    var upcased = method.toUpperCase();
-    return methods.indexOf(upcased) > -1 ? upcased : method;
-  }
-  function Request(input, options2) {
-    if (!(this instanceof Request)) {
-      throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.');
-    }
-    options2 = options2 || {};
-    var body = options2.body;
-    if (input instanceof Request) {
-      if (input.bodyUsed) {
-        throw new TypeError("Already read");
-      }
-      this.url = input.url;
-      this.credentials = input.credentials;
-      if (!options2.headers) {
-        this.headers = new Headers(input.headers);
-      }
-      this.method = input.method;
-      this.mode = input.mode;
-      this.signal = input.signal;
-      if (!body && input._bodyInit != null) {
-        body = input._bodyInit;
-        input.bodyUsed = true;
-      }
-    } else {
-      this.url = String(input);
-    }
-    this.credentials = options2.credentials || this.credentials || "same-origin";
-    if (options2.headers || !this.headers) {
-      this.headers = new Headers(options2.headers);
-    }
-    this.method = normalizeMethod(options2.method || this.method || "GET");
-    this.mode = options2.mode || this.mode || null;
-    this.signal = options2.signal || this.signal || function() {
-      if ("AbortController" in g) {
-        var ctrl = new AbortController();
-        return ctrl.signal;
-      }
-    }();
-    this.referrer = null;
-    if ((this.method === "GET" || this.method === "HEAD") && body) {
-      throw new TypeError("Body not allowed for GET or HEAD requests");
-    }
-    this._initBody(body);
-    if (this.method === "GET" || this.method === "HEAD") {
-      if (options2.cache === "no-store" || options2.cache === "no-cache") {
-        var reParamSearch = /([?&])_=[^&]*/;
-        if (reParamSearch.test(this.url)) {
-          this.url = this.url.replace(reParamSearch, "$1_=" + (/* @__PURE__ */ new Date()).getTime());
-        } else {
-          var reQueryString = /\?/;
-          this.url += (reQueryString.test(this.url) ? "&" : "?") + "_=" + (/* @__PURE__ */ new Date()).getTime();
-        }
-      }
-    }
-  }
-  Request.prototype.clone = function() {
-    return new Request(this, { body: this._bodyInit });
-  };
-  function decode(body) {
-    var form = new FormData();
-    body.trim().split("&").forEach(function(bytes) {
-      if (bytes) {
-        var split = bytes.split("=");
-        var name = split.shift().replace(/\+/g, " ");
-        var value = split.join("=").replace(/\+/g, " ");
-        form.append(decodeURIComponent(name), decodeURIComponent(value));
-      }
-    });
-    return form;
-  }
-  function parseHeaders(rawHeaders) {
-    var headers = new Headers();
-    var preProcessedHeaders = rawHeaders.replace(/\r?\n[\t ]+/g, " ");
-    preProcessedHeaders.split("\r").map(function(header) {
-      return header.indexOf("\n") === 0 ? header.substr(1, header.length) : header;
-    }).forEach(function(line) {
-      var parts = line.split(":");
-      var key = parts.shift().trim();
-      if (key) {
-        var value = parts.join(":").trim();
-        try {
-          headers.append(key, value);
-        } catch (error) {
-          console.warn("Response " + error.message);
-        }
-      }
-    });
-    return headers;
-  }
-  Body.call(Request.prototype);
-  function Response(bodyInit, options2) {
-    if (!(this instanceof Response)) {
-      throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.');
-    }
-    if (!options2) {
-      options2 = {};
-    }
-    this.type = "default";
-    this.status = options2.status === void 0 ? 200 : options2.status;
-    if (this.status < 200 || this.status > 599) {
-      throw new RangeError("Failed to construct 'Response': The status provided (0) is outside the range [200, 599].");
-    }
-    this.ok = this.status >= 200 && this.status < 300;
-    this.statusText = options2.statusText === void 0 ? "" : "" + options2.statusText;
-    this.headers = new Headers(options2.headers);
-    this.url = options2.url || "";
-    this._initBody(bodyInit);
-  }
-  Body.call(Response.prototype);
-  Response.prototype.clone = function() {
-    return new Response(this._bodyInit, {
-      status: this.status,
-      statusText: this.statusText,
-      headers: new Headers(this.headers),
-      url: this.url
-    });
-  };
-  Response.error = function() {
-    var response = new Response(null, { status: 200, statusText: "" });
-    response.ok = false;
-    response.status = 0;
-    response.type = "error";
-    return response;
-  };
-  var redirectStatuses = [301, 302, 303, 307, 308];
-  Response.redirect = function(url, status) {
-    if (redirectStatuses.indexOf(status) === -1) {
-      throw new RangeError("Invalid status code");
-    }
-    return new Response(null, { status, headers: { location: url } });
-  };
-  var DOMException = g.DOMException;
-  try {
-    new DOMException();
-  } catch (err) {
-    DOMException = function(message, name) {
-      this.message = message;
-      this.name = name;
-      var error = Error(message);
-      this.stack = error.stack;
-    };
-    DOMException.prototype = Object.create(Error.prototype);
-    DOMException.prototype.constructor = DOMException;
-  }
-  function fetch2(input, init) {
-    return new Promise(function(resolve, reject) {
-      var request = new Request(input, init);
-      if (request.signal && request.signal.aborted) {
-        return reject(new DOMException("Aborted", "AbortError"));
-      }
-      var xhr = new XMLHttpRequest();
-      function abortXhr() {
-        xhr.abort();
-      }
-      xhr.onload = function() {
-        var options2 = {
-          statusText: xhr.statusText,
-          headers: parseHeaders(xhr.getAllResponseHeaders() || "")
-        };
-        if (request.url.indexOf("file://") === 0 && (xhr.status < 200 || xhr.status > 599)) {
-          options2.status = 200;
-        } else {
-          options2.status = xhr.status;
-        }
-        options2.url = "responseURL" in xhr ? xhr.responseURL : options2.headers.get("X-Request-URL");
-        var body = "response" in xhr ? xhr.response : xhr.responseText;
-        setTimeout(function() {
-          resolve(new Response(body, options2));
-        }, 0);
-      };
-      xhr.onerror = function() {
-        setTimeout(function() {
-          reject(new TypeError("Network request failed"));
-        }, 0);
-      };
-      xhr.ontimeout = function() {
-        setTimeout(function() {
-          reject(new TypeError("Network request timed out"));
-        }, 0);
-      };
-      xhr.onabort = function() {
-        setTimeout(function() {
-          reject(new DOMException("Aborted", "AbortError"));
-        }, 0);
-      };
-      function fixUrl(url) {
-        try {
-          return url === "" && g.location.href ? g.location.href : url;
-        } catch (e) {
-          return url;
-        }
-      }
-      xhr.open(request.method, fixUrl(request.url), true);
-      if (request.credentials === "include") {
-        xhr.withCredentials = true;
-      } else if (request.credentials === "omit") {
-        xhr.withCredentials = false;
-      }
-      if ("responseType" in xhr) {
-        if (support.blob) {
-          xhr.responseType = "blob";
-        } else if (support.arrayBuffer) {
-          xhr.responseType = "arraybuffer";
-        }
-      }
-      if (init && typeof init.headers === "object" && !(init.headers instanceof Headers || g.Headers && init.headers instanceof g.Headers)) {
-        var names = [];
-        Object.getOwnPropertyNames(init.headers).forEach(function(name) {
-          names.push(normalizeName(name));
-          xhr.setRequestHeader(name, normalizeValue(init.headers[name]));
-        });
-        request.headers.forEach(function(value, name) {
-          if (names.indexOf(name) === -1) {
-            xhr.setRequestHeader(name, value);
-          }
-        });
-      } else {
-        request.headers.forEach(function(value, name) {
-          xhr.setRequestHeader(name, value);
-        });
-      }
-      if (request.signal) {
-        request.signal.addEventListener("abort", abortXhr);
-        xhr.onreadystatechange = function() {
-          if (xhr.readyState === 4) {
-            request.signal.removeEventListener("abort", abortXhr);
-          }
-        };
-      }
-      xhr.send(typeof request._bodyInit === "undefined" ? null : request._bodyInit);
-    });
-  }
-  fetch2.polyfill = true;
-  if (!g.fetch) {
-    g.fetch = fetch2;
-    g.Headers = Headers;
-    g.Request = Request;
-    g.Response = Response;
-  }
-
-  // node_modules/ollama/dist/browser.mjs
-  var version = "0.5.12";
-  var __defProp$1 = Object.defineProperty;
-  var __defNormalProp$1 = (obj, key, value) => key in obj ? __defProp$1(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-  var __publicField$1 = (obj, key, value) => {
-    __defNormalProp$1(obj, typeof key !== "symbol" ? key + "" : key, value);
-    return value;
-  };
-  var ResponseError = class _ResponseError extends Error {
-    constructor(error, status_code) {
-      super(error);
-      this.error = error;
-      this.status_code = status_code;
-      this.name = "ResponseError";
-      if (Error.captureStackTrace) {
-        Error.captureStackTrace(this, _ResponseError);
-      }
-    }
-  };
-  var AbortableAsyncIterator = class {
-    constructor(abortController, itr, doneCallback) {
-      __publicField$1(this, "abortController");
-      __publicField$1(this, "itr");
-      __publicField$1(this, "doneCallback");
-      this.abortController = abortController;
-      this.itr = itr;
-      this.doneCallback = doneCallback;
-    }
-    abort() {
-      this.abortController.abort();
-    }
-    async *[Symbol.asyncIterator]() {
-      for await (const message of this.itr) {
-        if ("error" in message) {
-          throw new Error(message.error);
-        }
-        yield message;
-        if (message.done || message.status === "success") {
-          this.doneCallback();
-          return;
-        }
-      }
-      throw new Error("Did not receive done or success response in stream.");
-    }
-  };
-  var checkOk = async (response) => {
-    if (response.ok) {
-      return;
-    }
-    let message = `Error ${response.status}: ${response.statusText}`;
-    let errorData = null;
-    if (response.headers.get("content-type")?.includes("application/json")) {
-      try {
-        errorData = await response.json();
-        message = errorData.error || message;
-      } catch (error) {
-        console.log("Failed to parse error response as JSON");
-      }
-    } else {
-      try {
-        console.log("Getting text from response");
-        const textResponse = await response.text();
-        message = textResponse || message;
-      } catch (error) {
-        console.log("Failed to get text from error response");
-      }
-    }
-    throw new ResponseError(message, response.status);
-  };
-  function getPlatform() {
-    if (typeof window !== "undefined" && window.navigator) {
-      return `${window.navigator.platform.toLowerCase()} Browser/${navigator.userAgent};`;
-    } else if (typeof process !== "undefined") {
-      return `${process.arch} ${process.platform} Node.js/${process.version}`;
-    }
-    return "";
-  }
-  var fetchWithHeaders = async (fetch3, url, options2 = {}) => {
-    const defaultHeaders = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      "User-Agent": `ollama-js/${version} (${getPlatform()})`
-    };
-    if (!options2.headers) {
-      options2.headers = {};
-    }
-    const customHeaders = Object.fromEntries(
-      Object.entries(options2.headers).filter(([key]) => !Object.keys(defaultHeaders).some((defaultKey) => defaultKey.toLowerCase() === key.toLowerCase()))
-    );
-    options2.headers = {
-      ...defaultHeaders,
-      ...customHeaders
-    };
-    return fetch3(url, options2);
-  };
-  var get = async (fetch3, host, options2) => {
-    const response = await fetchWithHeaders(fetch3, host, {
-      headers: options2?.headers
-    });
-    await checkOk(response);
-    return response;
-  };
-  var post = async (fetch3, host, data, options2) => {
-    const isRecord = (input) => {
-      return input !== null && typeof input === "object" && !Array.isArray(input);
-    };
-    const formattedData = isRecord(data) ? JSON.stringify(data) : data;
-    const response = await fetchWithHeaders(fetch3, host, {
-      method: "POST",
-      body: formattedData,
-      signal: options2?.signal,
-      headers: options2?.headers
-    });
-    await checkOk(response);
-    return response;
-  };
-  var del = async (fetch3, host, data, options2) => {
-    const response = await fetchWithHeaders(fetch3, host, {
-      method: "DELETE",
-      body: JSON.stringify(data),
-      headers: options2?.headers
-    });
-    await checkOk(response);
-    return response;
-  };
-  var parseJSON = async function* (itr) {
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
-    const reader = itr.getReader();
-    while (true) {
-      const { done, value: chunk } = await reader.read();
-      if (done) {
-        break;
-      }
-      buffer += decoder.decode(chunk);
-      const parts = buffer.split("\n");
-      buffer = parts.pop() ?? "";
-      for (const part of parts) {
-        try {
-          yield JSON.parse(part);
-        } catch (error) {
-          console.warn("invalid json: ", part);
-        }
-      }
-    }
-    for (const part of buffer.split("\n").filter((p) => p !== "")) {
-      try {
-        yield JSON.parse(part);
-      } catch (error) {
-        console.warn("invalid json: ", part);
-      }
-    }
-  };
-  var formatHost = (host) => {
-    if (!host) {
-      return "http://127.0.0.1:11434";
-    }
-    let isExplicitProtocol = host.includes("://");
-    if (host.startsWith(":")) {
-      host = `http://127.0.0.1${host}`;
-      isExplicitProtocol = true;
-    }
-    if (!isExplicitProtocol) {
-      host = `http://${host}`;
-    }
-    const url = new URL(host);
-    let port = url.port;
-    if (!port) {
-      if (!isExplicitProtocol) {
-        port = "11434";
-      } else {
-        port = url.protocol === "https:" ? "443" : "80";
-      }
-    }
-    let formattedHost = `${url.protocol}//${url.hostname}:${port}${url.pathname}`;
-    if (formattedHost.endsWith("/")) {
-      formattedHost = formattedHost.slice(0, -1);
-    }
-    return formattedHost;
-  };
-  var __defProp = Object.defineProperty;
-  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-  var __publicField = (obj, key, value) => {
-    __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-    return value;
-  };
-  var Ollama$1 = class Ollama {
-    constructor(config) {
-      __publicField(this, "config");
-      __publicField(this, "fetch");
-      __publicField(this, "ongoingStreamedRequests", []);
-      this.config = {
-        host: "",
-        headers: config?.headers
-      };
-      if (!config?.proxy) {
-        this.config.host = formatHost(config?.host ?? "http://127.0.0.1:11434");
-      }
-      this.fetch = config?.fetch ?? fetch;
-    }
-    // Abort any ongoing streamed requests to Ollama
-    abort() {
-      for (const request of this.ongoingStreamedRequests) {
-        request.abort();
-      }
-      this.ongoingStreamedRequests.length = 0;
-    }
-    /**
-     * Processes a request to the Ollama server. If the request is streamable, it will return a
-     * AbortableAsyncIterator that yields the response messages. Otherwise, it will return the response
-     * object.
-     * @param endpoint {string} - The endpoint to send the request to.
-     * @param request {object} - The request object to send to the endpoint.
-     * @protected {T | AbortableAsyncIterator<T>} - The response object or a AbortableAsyncIterator that yields
-     * response messages.
-     * @throws {Error} - If the response body is missing or if the response is an error.
-     * @returns {Promise<T | AbortableAsyncIterator<T>>} - The response object or a AbortableAsyncIterator that yields the streamed response.
-     */
-    async processStreamableRequest(endpoint, request) {
-      request.stream = request.stream ?? false;
-      const host = `${this.config.host}/api/${endpoint}`;
-      if (request.stream) {
-        const abortController = new AbortController();
-        const response2 = await post(this.fetch, host, request, {
-          signal: abortController.signal,
-          headers: this.config.headers
-        });
-        if (!response2.body) {
-          throw new Error("Missing body");
-        }
-        const itr = parseJSON(response2.body);
-        const abortableAsyncIterator = new AbortableAsyncIterator(
-          abortController,
-          itr,
-          () => {
-            const i = this.ongoingStreamedRequests.indexOf(abortableAsyncIterator);
-            if (i > -1) {
-              this.ongoingStreamedRequests.splice(i, 1);
-            }
-          }
-        );
-        this.ongoingStreamedRequests.push(abortableAsyncIterator);
-        return abortableAsyncIterator;
-      }
-      const response = await post(this.fetch, host, request, {
-        headers: this.config.headers
-      });
-      return await response.json();
-    }
-    /**
-     * Encodes an image to base64 if it is a Uint8Array.
-     * @param image {Uint8Array | string} - The image to encode.
-     * @returns {Promise<string>} - The base64 encoded image.
-     */
-    async encodeImage(image) {
-      if (typeof image !== "string") {
-        const uint8Array = new Uint8Array(image);
-        let byteString = "";
-        const len = uint8Array.byteLength;
-        for (let i = 0; i < len; i++) {
-          byteString += String.fromCharCode(uint8Array[i]);
-        }
-        return btoa(byteString);
-      }
-      return image;
-    }
-    /**
-     * Generates a response from a text prompt.
-     * @param request {GenerateRequest} - The request object.
-     * @returns {Promise<GenerateResponse | AbortableAsyncIterator<GenerateResponse>>} - The response object or
-     * an AbortableAsyncIterator that yields response messages.
-     */
-    async generate(request) {
-      if (request.images) {
-        request.images = await Promise.all(request.images.map(this.encodeImage.bind(this)));
-      }
-      return this.processStreamableRequest("generate", request);
-    }
-    /**
-     * Chats with the model. The request object can contain messages with images that are either
-     * Uint8Arrays or base64 encoded strings. The images will be base64 encoded before sending the
-     * request.
-     * @param request {ChatRequest} - The request object.
-     * @returns {Promise<ChatResponse | AbortableAsyncIterator<ChatResponse>>} - The response object or an
-     * AbortableAsyncIterator that yields response messages.
-     */
-    async chat(request) {
-      if (request.messages) {
-        for (const message of request.messages) {
-          if (message.images) {
-            message.images = await Promise.all(
-              message.images.map(this.encodeImage.bind(this))
-            );
-          }
-        }
-      }
-      return this.processStreamableRequest("chat", request);
-    }
-    /**
-     * Creates a new model from a stream of data.
-     * @param request {CreateRequest} - The request object.
-     * @returns {Promise<ProgressResponse | AbortableAsyncIterator<ProgressResponse>>} - The response object or a stream of progress responses.
-     */
-    async create(request) {
-      return this.processStreamableRequest("create", {
-        ...request
-      });
-    }
-    /**
-     * Pulls a model from the Ollama registry. The request object can contain a stream flag to indicate if the
-     * response should be streamed.
-     * @param request {PullRequest} - The request object.
-     * @returns {Promise<ProgressResponse | AbortableAsyncIterator<ProgressResponse>>} - The response object or
-     * an AbortableAsyncIterator that yields response messages.
-     */
-    async pull(request) {
-      return this.processStreamableRequest("pull", {
-        name: request.model,
-        stream: request.stream,
-        insecure: request.insecure
-      });
-    }
-    /**
-     * Pushes a model to the Ollama registry. The request object can contain a stream flag to indicate if the
-     * response should be streamed.
-     * @param request {PushRequest} - The request object.
-     * @returns {Promise<ProgressResponse | AbortableAsyncIterator<ProgressResponse>>} - The response object or
-     * an AbortableAsyncIterator that yields response messages.
-     */
-    async push(request) {
-      return this.processStreamableRequest("push", {
-        name: request.model,
-        stream: request.stream,
-        insecure: request.insecure
-      });
-    }
-    /**
-     * Deletes a model from the server. The request object should contain the name of the model to
-     * delete.
-     * @param request {DeleteRequest} - The request object.
-     * @returns {Promise<StatusResponse>} - The response object.
-     */
-    async delete(request) {
-      await del(
-        this.fetch,
-        `${this.config.host}/api/delete`,
-        { name: request.model },
-        { headers: this.config.headers }
-      );
-      return { status: "success" };
-    }
-    /**
-     * Copies a model from one name to another. The request object should contain the name of the
-     * model to copy and the new name.
-     * @param request {CopyRequest} - The request object.
-     * @returns {Promise<StatusResponse>} - The response object.
-     */
-    async copy(request) {
-      await post(this.fetch, `${this.config.host}/api/copy`, { ...request }, {
-        headers: this.config.headers
-      });
-      return { status: "success" };
-    }
-    /**
-     * Lists the models on the server.
-     * @returns {Promise<ListResponse>} - The response object.
-     * @throws {Error} - If the response body is missing.
-     */
-    async list() {
-      const response = await get(this.fetch, `${this.config.host}/api/tags`, {
-        headers: this.config.headers
-      });
-      return await response.json();
-    }
-    /**
-     * Shows the metadata of a model. The request object should contain the name of the model.
-     * @param request {ShowRequest} - The request object.
-     * @returns {Promise<ShowResponse>} - The response object.
-     */
-    async show(request) {
-      const response = await post(this.fetch, `${this.config.host}/api/show`, {
-        ...request
-      }, {
-        headers: this.config.headers
-      });
-      return await response.json();
-    }
-    /**
-     * Embeds text input into vectors.
-     * @param request {EmbedRequest} - The request object.
-     * @returns {Promise<EmbedResponse>} - The response object.
-     */
-    async embed(request) {
-      const response = await post(this.fetch, `${this.config.host}/api/embed`, {
-        ...request
-      }, {
-        headers: this.config.headers
-      });
-      return await response.json();
-    }
-    /**
-     * Embeds a text prompt into a vector.
-     * @param request {EmbeddingsRequest} - The request object.
-     * @returns {Promise<EmbeddingsResponse>} - The response object.
-     */
-    async embeddings(request) {
-      const response = await post(this.fetch, `${this.config.host}/api/embeddings`, {
-        ...request
-      }, {
-        headers: this.config.headers
-      });
-      return await response.json();
-    }
-    /**
-     * Lists the running models on the server
-     * @returns {Promise<ListResponse>} - The response object.
-     * @throws {Error} - If the response body is missing.
-     */
-    async ps() {
-      const response = await get(this.fetch, `${this.config.host}/api/ps`, {
-        headers: this.config.headers
-      });
-      return await response.json();
-    }
-  };
-  var browser = new Ollama$1();
-
-  // node_modules/marked/lib/marked.esm.js
+  // assets/js/lib/marked.esm.js
   function _getDefaults() {
     return {
       async: false,
@@ -1120,10 +1688,10 @@
   function edit(regex, opt = "") {
     let source = typeof regex === "string" ? regex : regex.source;
     const obj = {
-      replace: (name, val) => {
+      replace: (name2, val) => {
         let valSource = typeof val === "string" ? val : val.source;
         valSource = valSource.replace(other.caret, "$1");
-        source = source.replace(name, valSource);
+        source = source.replace(name2, valSource);
         return obj;
       },
       getRegex: () => {
@@ -2510,7 +3078,7 @@ ${currentText}` : currentText;
       if (!langString) {
         return "<pre><code>" + (escaped ? code : escape(code, true)) + "</code></pre>\n";
       }
-      return '<pre><code class="language-' + escape(langString) + '">' + (escaped ? code : escape(code, true)) + "</code></pre>\n";
+      return '<div data-code-lang="' + escape(langString) + '">' + (escaped ? code : escape(code, true)) + "</div>";
     }
     blockquote({ tokens }) {
       const body = this.parser.parse(tokens);
@@ -2536,9 +3104,9 @@ ${body}</blockquote>
         const item = token.items[j];
         body += this.listitem(item);
       }
-      const type = ordered ? "ol" : "ul";
+      const type5 = ordered ? "ol" : "ul";
       const startAttr = ordered && start !== 1 ? ' start="' + start + '"' : "";
-      return "<" + type + startAttr + ">\n" + body + "</" + type + ">\n";
+      return "<" + type5 + startAttr + ">\n" + body + "</" + type5 + ">\n";
     }
     listitem(item) {
       let itemBody = "";
@@ -2601,9 +3169,9 @@ ${text}</tr>
     }
     tablecell(token) {
       const content = this.parser.parseInline(token.tokens);
-      const type = token.header ? "th" : "td";
-      const tag2 = token.align ? `<${type} align="${token.align}">` : `<${type}>`;
-      return tag2 + content + `</${type}>
+      const type5 = token.header ? "th" : "td";
+      const tag2 = token.align ? `<${type5} align="${token.align}">` : `<${type5}>`;
+      return tag2 + content + `</${type5}>
 `;
     }
     /**
@@ -3223,6 +3791,1095 @@ ${text}</tr>
   var parser = _Parser.parse;
   var lexer = _Lexer.lex;
 
+  // import("./languages/**/*.js") in layx/others/syntax_highlighter/syntax_highlighter.js
+  var globImport_languages_js = __glob({
+    "./languages/asm.js": () => Promise.resolve().then(() => (init_asm(), asm_exports)),
+    "./languages/bash.js": () => Promise.resolve().then(() => (init_bash(), bash_exports)),
+    "./languages/bf.js": () => Promise.resolve().then(() => (init_bf(), bf_exports)),
+    "./languages/c.js": () => Promise.resolve().then(() => (init_c(), c_exports)),
+    "./languages/css.js": () => Promise.resolve().then(() => (init_css(), css_exports)),
+    "./languages/csv.js": () => Promise.resolve().then(() => (init_csv(), csv_exports)),
+    "./languages/diff.js": () => Promise.resolve().then(() => (init_diff(), diff_exports)),
+    "./languages/docker.js": () => Promise.resolve().then(() => (init_docker(), docker_exports)),
+    "./languages/git.js": () => Promise.resolve().then(() => (init_git(), git_exports)),
+    "./languages/go.js": () => Promise.resolve().then(() => (init_go(), go_exports)),
+    "./languages/html.js": () => Promise.resolve().then(() => (init_html(), html_exports)),
+    "./languages/http.js": () => Promise.resolve().then(() => (init_http(), http_exports)),
+    "./languages/ini.js": () => Promise.resolve().then(() => (init_ini(), ini_exports)),
+    "./languages/java.js": () => Promise.resolve().then(() => (init_java(), java_exports)),
+    "./languages/js.js": () => Promise.resolve().then(() => (init_js(), js_exports)),
+    "./languages/js_template_literals.js": () => Promise.resolve().then(() => (init_js_template_literals(), js_template_literals_exports)),
+    "./languages/jsdoc.js": () => Promise.resolve().then(() => (init_jsdoc(), jsdoc_exports)),
+    "./languages/json.js": () => Promise.resolve().then(() => (init_json(), json_exports)),
+    "./languages/leanpub-md.js": () => Promise.resolve().then(() => (init_leanpub_md(), leanpub_md_exports)),
+    "./languages/log.js": () => Promise.resolve().then(() => (init_log(), log_exports)),
+    "./languages/lua.js": () => Promise.resolve().then(() => (init_lua(), lua_exports)),
+    "./languages/make.js": () => Promise.resolve().then(() => (init_make(), make_exports)),
+    "./languages/md.js": () => Promise.resolve().then(() => (init_md(), md_exports)),
+    "./languages/pl.js": () => Promise.resolve().then(() => (init_pl(), pl_exports)),
+    "./languages/plain.js": () => Promise.resolve().then(() => (init_plain(), plain_exports)),
+    "./languages/py.js": () => Promise.resolve().then(() => (init_py(), py_exports)),
+    "./languages/regex.js": () => Promise.resolve().then(() => (init_regex(), regex_exports)),
+    "./languages/rs.js": () => Promise.resolve().then(() => (init_rs(), rs_exports)),
+    "./languages/sql.js": () => Promise.resolve().then(() => (init_sql(), sql_exports)),
+    "./languages/todo.js": () => Promise.resolve().then(() => (init_todo(), todo_exports)),
+    "./languages/toml.js": () => Promise.resolve().then(() => (init_toml(), toml_exports)),
+    "./languages/ts.js": () => Promise.resolve().then(() => (init_ts(), ts_exports)),
+    "./languages/uri.js": () => Promise.resolve().then(() => (init_uri(), uri_exports)),
+    "./languages/xml.js": () => Promise.resolve().then(() => (init_xml(), xml_exports)),
+    "./languages/yaml.js": () => Promise.resolve().then(() => (init_yaml(), yaml_exports))
+  });
+
+  // layx/others/syntax_highlighter/syntax_highlighter.js
+  var expandData = {
+    num: {
+      type: "num",
+      match: /(\.e?|\b)\d(e-|[\d.oxa-fA-F_])*(\.|\b)/g
+    },
+    str: {
+      type: "str",
+      match: /(["'])(\\[^]|(?!\1)[^\r\n\\])*\1?/g
+    },
+    strDouble: {
+      type: "str",
+      match: /"((?!")[^\r\n\\]|\\[^])*"?/g
+    }
+  };
+  var langs = /* @__PURE__ */ new Map();
+  var sanitize = (str = "") => {
+    const entities = {
+      "&": "&#38;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    };
+    return str.replace(/[&<>"']/g, (char) => entities[char]);
+  };
+  var toSpan = (str, token) => token ? `<span class="${token}">${str}</span>` : str;
+  async function tokenize(src, lang, token) {
+    try {
+      let data;
+      if (typeof lang === "string") {
+        data = langs.get(lang);
+        if (!data) {
+          data = await globImport_languages_js(`./languages/${lang}.js`);
+          if (!data?.default) {
+            throw new Error(`Invalid language module for ${lang}`);
+          }
+        }
+      } else {
+        data = lang;
+      }
+      let m, part, first = {}, match, cache = [], i = 0, arr = Array.isArray(data.sub) ? [...data.sub] : Array.isArray(data.default) ? [...data.default] : [];
+      if (arr.length === 0) {
+        token(src);
+        return;
+      }
+      while (i < src.length) {
+        first.index = null;
+        for (m = arr.length; m-- > 0; ) {
+          part = arr[m].expand ? expandData[arr[m].expand] : arr[m];
+          if (cache[m] === void 0 || cache[m].match.index < i) {
+            part.match.lastIndex = i;
+            match = part.match.exec(src);
+            if (match === null) {
+              arr.splice(m, 1);
+              cache.splice(m, 1);
+              continue;
+            }
+            cache[m] = { match, lastIndex: part.match.lastIndex };
+          }
+          if (cache[m].match[0] && (cache[m].match.index <= first.index || first.index === null))
+            first = {
+              part,
+              index: cache[m].match.index,
+              match: cache[m].match[0],
+              end: cache[m].lastIndex
+            };
+        }
+        if (first.index === null)
+          break;
+        token(src.slice(i, first.index), data.type);
+        i = first.end;
+        if (first.part.sub)
+          await tokenize(first.match, typeof first.part.sub === "string" ? first.part.sub : typeof first.part.sub === "function" ? first.part.sub(first.match) : first.part, token);
+        else
+          token(first.match, first.part.type);
+      }
+      token(src.slice(i, src.length), data.type);
+    } catch (error) {
+      console.error(`Tokenization error: ${error.message}`);
+      token(src);
+    }
+  }
+  async function highlightText(src, lang, multiline = true, opt = {}) {
+    let tmp = "";
+    await tokenize(src, lang, (str, type5) => tmp += toSpan(sanitize(str), type5));
+    return multiline ? `<div class="wrapper"><div class="numbers">${"<div></div>".repeat(!opt.hideLineNumbers && src.split("\n").length)}</div><code class="code">${tmp}</code></div>` : tmp;
+  }
+  async function highlightElement(elm, lang = elm.dataset.codeLang, mode, opt) {
+    let txt = elm.textContent;
+    mode ??= `${txt.split("\n").length < 2 ? "one" : "multi"}line`;
+    elm.className = `${[...elm.classList].filter((className) => !className.startsWith("")).join(" ")}code-block ${lang} ${mode} highlighted`;
+    elm.innerHTML = await highlightText(txt, lang, mode == "multiline", opt);
+  }
+  var highlightAll = async (opt) => Promise.all(
+    Array.from(document.querySelectorAll("[data-code-lang]:not(.highlighted)")).map((elm) => highlightElement(elm, void 0, void 0, opt))
+  );
+
+  // node_modules/whatwg-fetch/fetch.js
+  var g = typeof globalThis !== "undefined" && globalThis || typeof self !== "undefined" && self || // eslint-disable-next-line no-undef
+  typeof global !== "undefined" && global || {};
+  var support = {
+    searchParams: "URLSearchParams" in g,
+    iterable: "Symbol" in g && "iterator" in Symbol,
+    blob: "FileReader" in g && "Blob" in g && function() {
+      try {
+        new Blob();
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }(),
+    formData: "FormData" in g,
+    arrayBuffer: "ArrayBuffer" in g
+  };
+  function isDataView(obj) {
+    return obj && DataView.prototype.isPrototypeOf(obj);
+  }
+  if (support.arrayBuffer) {
+    viewClasses = [
+      "[object Int8Array]",
+      "[object Uint8Array]",
+      "[object Uint8ClampedArray]",
+      "[object Int16Array]",
+      "[object Uint16Array]",
+      "[object Int32Array]",
+      "[object Uint32Array]",
+      "[object Float32Array]",
+      "[object Float64Array]"
+    ];
+    isArrayBufferView = ArrayBuffer.isView || function(obj) {
+      return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1;
+    };
+  }
+  var viewClasses;
+  var isArrayBufferView;
+  function normalizeName(name2) {
+    if (typeof name2 !== "string") {
+      name2 = String(name2);
+    }
+    if (/[^a-z0-9\-#$%&'*+.^_`|~!]/i.test(name2) || name2 === "") {
+      throw new TypeError('Invalid character in header field name: "' + name2 + '"');
+    }
+    return name2.toLowerCase();
+  }
+  function normalizeValue(value) {
+    if (typeof value !== "string") {
+      value = String(value);
+    }
+    return value;
+  }
+  function iteratorFor(items) {
+    var iterator = {
+      next: function() {
+        var value = items.shift();
+        return { done: value === void 0, value };
+      }
+    };
+    if (support.iterable) {
+      iterator[Symbol.iterator] = function() {
+        return iterator;
+      };
+    }
+    return iterator;
+  }
+  function Headers(headers) {
+    this.map = {};
+    if (headers instanceof Headers) {
+      headers.forEach(function(value, name2) {
+        this.append(name2, value);
+      }, this);
+    } else if (Array.isArray(headers)) {
+      headers.forEach(function(header) {
+        if (header.length != 2) {
+          throw new TypeError("Headers constructor: expected name/value pair to be length 2, found" + header.length);
+        }
+        this.append(header[0], header[1]);
+      }, this);
+    } else if (headers) {
+      Object.getOwnPropertyNames(headers).forEach(function(name2) {
+        this.append(name2, headers[name2]);
+      }, this);
+    }
+  }
+  Headers.prototype.append = function(name2, value) {
+    name2 = normalizeName(name2);
+    value = normalizeValue(value);
+    var oldValue = this.map[name2];
+    this.map[name2] = oldValue ? oldValue + ", " + value : value;
+  };
+  Headers.prototype["delete"] = function(name2) {
+    delete this.map[normalizeName(name2)];
+  };
+  Headers.prototype.get = function(name2) {
+    name2 = normalizeName(name2);
+    return this.has(name2) ? this.map[name2] : null;
+  };
+  Headers.prototype.has = function(name2) {
+    return this.map.hasOwnProperty(normalizeName(name2));
+  };
+  Headers.prototype.set = function(name2, value) {
+    this.map[normalizeName(name2)] = normalizeValue(value);
+  };
+  Headers.prototype.forEach = function(callback, thisArg) {
+    for (var name2 in this.map) {
+      if (this.map.hasOwnProperty(name2)) {
+        callback.call(thisArg, this.map[name2], name2, this);
+      }
+    }
+  };
+  Headers.prototype.keys = function() {
+    var items = [];
+    this.forEach(function(value, name2) {
+      items.push(name2);
+    });
+    return iteratorFor(items);
+  };
+  Headers.prototype.values = function() {
+    var items = [];
+    this.forEach(function(value) {
+      items.push(value);
+    });
+    return iteratorFor(items);
+  };
+  Headers.prototype.entries = function() {
+    var items = [];
+    this.forEach(function(value, name2) {
+      items.push([name2, value]);
+    });
+    return iteratorFor(items);
+  };
+  if (support.iterable) {
+    Headers.prototype[Symbol.iterator] = Headers.prototype.entries;
+  }
+  function consumed(body) {
+    if (body._noBody) return;
+    if (body.bodyUsed) {
+      return Promise.reject(new TypeError("Already read"));
+    }
+    body.bodyUsed = true;
+  }
+  function fileReaderReady(reader) {
+    return new Promise(function(resolve, reject) {
+      reader.onload = function() {
+        resolve(reader.result);
+      };
+      reader.onerror = function() {
+        reject(reader.error);
+      };
+    });
+  }
+  function readBlobAsArrayBuffer(blob) {
+    var reader = new FileReader();
+    var promise = fileReaderReady(reader);
+    reader.readAsArrayBuffer(blob);
+    return promise;
+  }
+  function readBlobAsText(blob) {
+    var reader = new FileReader();
+    var promise = fileReaderReady(reader);
+    var match = /charset=([A-Za-z0-9_-]+)/.exec(blob.type);
+    var encoding = match ? match[1] : "utf-8";
+    reader.readAsText(blob, encoding);
+    return promise;
+  }
+  function readArrayBufferAsText(buf) {
+    var view = new Uint8Array(buf);
+    var chars = new Array(view.length);
+    for (var i = 0; i < view.length; i++) {
+      chars[i] = String.fromCharCode(view[i]);
+    }
+    return chars.join("");
+  }
+  function bufferClone(buf) {
+    if (buf.slice) {
+      return buf.slice(0);
+    } else {
+      var view = new Uint8Array(buf.byteLength);
+      view.set(new Uint8Array(buf));
+      return view.buffer;
+    }
+  }
+  function Body() {
+    this.bodyUsed = false;
+    this._initBody = function(body) {
+      this.bodyUsed = this.bodyUsed;
+      this._bodyInit = body;
+      if (!body) {
+        this._noBody = true;
+        this._bodyText = "";
+      } else if (typeof body === "string") {
+        this._bodyText = body;
+      } else if (support.blob && Blob.prototype.isPrototypeOf(body)) {
+        this._bodyBlob = body;
+      } else if (support.formData && FormData.prototype.isPrototypeOf(body)) {
+        this._bodyFormData = body;
+      } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
+        this._bodyText = body.toString();
+      } else if (support.arrayBuffer && support.blob && isDataView(body)) {
+        this._bodyArrayBuffer = bufferClone(body.buffer);
+        this._bodyInit = new Blob([this._bodyArrayBuffer]);
+      } else if (support.arrayBuffer && (ArrayBuffer.prototype.isPrototypeOf(body) || isArrayBufferView(body))) {
+        this._bodyArrayBuffer = bufferClone(body);
+      } else {
+        this._bodyText = body = Object.prototype.toString.call(body);
+      }
+      if (!this.headers.get("content-type")) {
+        if (typeof body === "string") {
+          this.headers.set("content-type", "text/plain;charset=UTF-8");
+        } else if (this._bodyBlob && this._bodyBlob.type) {
+          this.headers.set("content-type", this._bodyBlob.type);
+        } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
+          this.headers.set("content-type", "application/x-www-form-urlencoded;charset=UTF-8");
+        }
+      }
+    };
+    if (support.blob) {
+      this.blob = function() {
+        var rejected = consumed(this);
+        if (rejected) {
+          return rejected;
+        }
+        if (this._bodyBlob) {
+          return Promise.resolve(this._bodyBlob);
+        } else if (this._bodyArrayBuffer) {
+          return Promise.resolve(new Blob([this._bodyArrayBuffer]));
+        } else if (this._bodyFormData) {
+          throw new Error("could not read FormData body as blob");
+        } else {
+          return Promise.resolve(new Blob([this._bodyText]));
+        }
+      };
+    }
+    this.arrayBuffer = function() {
+      if (this._bodyArrayBuffer) {
+        var isConsumed = consumed(this);
+        if (isConsumed) {
+          return isConsumed;
+        } else if (ArrayBuffer.isView(this._bodyArrayBuffer)) {
+          return Promise.resolve(
+            this._bodyArrayBuffer.buffer.slice(
+              this._bodyArrayBuffer.byteOffset,
+              this._bodyArrayBuffer.byteOffset + this._bodyArrayBuffer.byteLength
+            )
+          );
+        } else {
+          return Promise.resolve(this._bodyArrayBuffer);
+        }
+      } else if (support.blob) {
+        return this.blob().then(readBlobAsArrayBuffer);
+      } else {
+        throw new Error("could not read as ArrayBuffer");
+      }
+    };
+    this.text = function() {
+      var rejected = consumed(this);
+      if (rejected) {
+        return rejected;
+      }
+      if (this._bodyBlob) {
+        return readBlobAsText(this._bodyBlob);
+      } else if (this._bodyArrayBuffer) {
+        return Promise.resolve(readArrayBufferAsText(this._bodyArrayBuffer));
+      } else if (this._bodyFormData) {
+        throw new Error("could not read FormData body as text");
+      } else {
+        return Promise.resolve(this._bodyText);
+      }
+    };
+    if (support.formData) {
+      this.formData = function() {
+        return this.text().then(decode);
+      };
+    }
+    this.json = function() {
+      return this.text().then(JSON.parse);
+    };
+    return this;
+  }
+  var methods = ["CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE"];
+  function normalizeMethod(method) {
+    var upcased = method.toUpperCase();
+    return methods.indexOf(upcased) > -1 ? upcased : method;
+  }
+  function Request(input, options2) {
+    if (!(this instanceof Request)) {
+      throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.');
+    }
+    options2 = options2 || {};
+    var body = options2.body;
+    if (input instanceof Request) {
+      if (input.bodyUsed) {
+        throw new TypeError("Already read");
+      }
+      this.url = input.url;
+      this.credentials = input.credentials;
+      if (!options2.headers) {
+        this.headers = new Headers(input.headers);
+      }
+      this.method = input.method;
+      this.mode = input.mode;
+      this.signal = input.signal;
+      if (!body && input._bodyInit != null) {
+        body = input._bodyInit;
+        input.bodyUsed = true;
+      }
+    } else {
+      this.url = String(input);
+    }
+    this.credentials = options2.credentials || this.credentials || "same-origin";
+    if (options2.headers || !this.headers) {
+      this.headers = new Headers(options2.headers);
+    }
+    this.method = normalizeMethod(options2.method || this.method || "GET");
+    this.mode = options2.mode || this.mode || null;
+    this.signal = options2.signal || this.signal || function() {
+      if ("AbortController" in g) {
+        var ctrl = new AbortController();
+        return ctrl.signal;
+      }
+    }();
+    this.referrer = null;
+    if ((this.method === "GET" || this.method === "HEAD") && body) {
+      throw new TypeError("Body not allowed for GET or HEAD requests");
+    }
+    this._initBody(body);
+    if (this.method === "GET" || this.method === "HEAD") {
+      if (options2.cache === "no-store" || options2.cache === "no-cache") {
+        var reParamSearch = /([?&])_=[^&]*/;
+        if (reParamSearch.test(this.url)) {
+          this.url = this.url.replace(reParamSearch, "$1_=" + (/* @__PURE__ */ new Date()).getTime());
+        } else {
+          var reQueryString = /\?/;
+          this.url += (reQueryString.test(this.url) ? "&" : "?") + "_=" + (/* @__PURE__ */ new Date()).getTime();
+        }
+      }
+    }
+  }
+  Request.prototype.clone = function() {
+    return new Request(this, { body: this._bodyInit });
+  };
+  function decode(body) {
+    var form = new FormData();
+    body.trim().split("&").forEach(function(bytes) {
+      if (bytes) {
+        var split = bytes.split("=");
+        var name2 = split.shift().replace(/\+/g, " ");
+        var value = split.join("=").replace(/\+/g, " ");
+        form.append(decodeURIComponent(name2), decodeURIComponent(value));
+      }
+    });
+    return form;
+  }
+  function parseHeaders(rawHeaders) {
+    var headers = new Headers();
+    var preProcessedHeaders = rawHeaders.replace(/\r?\n[\t ]+/g, " ");
+    preProcessedHeaders.split("\r").map(function(header) {
+      return header.indexOf("\n") === 0 ? header.substr(1, header.length) : header;
+    }).forEach(function(line) {
+      var parts = line.split(":");
+      var key = parts.shift().trim();
+      if (key) {
+        var value = parts.join(":").trim();
+        try {
+          headers.append(key, value);
+        } catch (error) {
+          console.warn("Response " + error.message);
+        }
+      }
+    });
+    return headers;
+  }
+  Body.call(Request.prototype);
+  function Response(bodyInit, options2) {
+    if (!(this instanceof Response)) {
+      throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.');
+    }
+    if (!options2) {
+      options2 = {};
+    }
+    this.type = "default";
+    this.status = options2.status === void 0 ? 200 : options2.status;
+    if (this.status < 200 || this.status > 599) {
+      throw new RangeError("Failed to construct 'Response': The status provided (0) is outside the range [200, 599].");
+    }
+    this.ok = this.status >= 200 && this.status < 300;
+    this.statusText = options2.statusText === void 0 ? "" : "" + options2.statusText;
+    this.headers = new Headers(options2.headers);
+    this.url = options2.url || "";
+    this._initBody(bodyInit);
+  }
+  Body.call(Response.prototype);
+  Response.prototype.clone = function() {
+    return new Response(this._bodyInit, {
+      status: this.status,
+      statusText: this.statusText,
+      headers: new Headers(this.headers),
+      url: this.url
+    });
+  };
+  Response.error = function() {
+    var response = new Response(null, { status: 200, statusText: "" });
+    response.ok = false;
+    response.status = 0;
+    response.type = "error";
+    return response;
+  };
+  var redirectStatuses = [301, 302, 303, 307, 308];
+  Response.redirect = function(url, status) {
+    if (redirectStatuses.indexOf(status) === -1) {
+      throw new RangeError("Invalid status code");
+    }
+    return new Response(null, { status, headers: { location: url } });
+  };
+  var DOMException = g.DOMException;
+  try {
+    new DOMException();
+  } catch (err) {
+    DOMException = function(message, name2) {
+      this.message = message;
+      this.name = name2;
+      var error = Error(message);
+      this.stack = error.stack;
+    };
+    DOMException.prototype = Object.create(Error.prototype);
+    DOMException.prototype.constructor = DOMException;
+  }
+  function fetch2(input, init) {
+    return new Promise(function(resolve, reject) {
+      var request = new Request(input, init);
+      if (request.signal && request.signal.aborted) {
+        return reject(new DOMException("Aborted", "AbortError"));
+      }
+      var xhr = new XMLHttpRequest();
+      function abortXhr() {
+        xhr.abort();
+      }
+      xhr.onload = function() {
+        var options2 = {
+          statusText: xhr.statusText,
+          headers: parseHeaders(xhr.getAllResponseHeaders() || "")
+        };
+        if (request.url.indexOf("file://") === 0 && (xhr.status < 200 || xhr.status > 599)) {
+          options2.status = 200;
+        } else {
+          options2.status = xhr.status;
+        }
+        options2.url = "responseURL" in xhr ? xhr.responseURL : options2.headers.get("X-Request-URL");
+        var body = "response" in xhr ? xhr.response : xhr.responseText;
+        setTimeout(function() {
+          resolve(new Response(body, options2));
+        }, 0);
+      };
+      xhr.onerror = function() {
+        setTimeout(function() {
+          reject(new TypeError("Network request failed"));
+        }, 0);
+      };
+      xhr.ontimeout = function() {
+        setTimeout(function() {
+          reject(new TypeError("Network request timed out"));
+        }, 0);
+      };
+      xhr.onabort = function() {
+        setTimeout(function() {
+          reject(new DOMException("Aborted", "AbortError"));
+        }, 0);
+      };
+      function fixUrl(url) {
+        try {
+          return url === "" && g.location.href ? g.location.href : url;
+        } catch (e) {
+          return url;
+        }
+      }
+      xhr.open(request.method, fixUrl(request.url), true);
+      if (request.credentials === "include") {
+        xhr.withCredentials = true;
+      } else if (request.credentials === "omit") {
+        xhr.withCredentials = false;
+      }
+      if ("responseType" in xhr) {
+        if (support.blob) {
+          xhr.responseType = "blob";
+        } else if (support.arrayBuffer) {
+          xhr.responseType = "arraybuffer";
+        }
+      }
+      if (init && typeof init.headers === "object" && !(init.headers instanceof Headers || g.Headers && init.headers instanceof g.Headers)) {
+        var names = [];
+        Object.getOwnPropertyNames(init.headers).forEach(function(name2) {
+          names.push(normalizeName(name2));
+          xhr.setRequestHeader(name2, normalizeValue(init.headers[name2]));
+        });
+        request.headers.forEach(function(value, name2) {
+          if (names.indexOf(name2) === -1) {
+            xhr.setRequestHeader(name2, value);
+          }
+        });
+      } else {
+        request.headers.forEach(function(value, name2) {
+          xhr.setRequestHeader(name2, value);
+        });
+      }
+      if (request.signal) {
+        request.signal.addEventListener("abort", abortXhr);
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4) {
+            request.signal.removeEventListener("abort", abortXhr);
+          }
+        };
+      }
+      xhr.send(typeof request._bodyInit === "undefined" ? null : request._bodyInit);
+    });
+  }
+  fetch2.polyfill = true;
+  if (!g.fetch) {
+    g.fetch = fetch2;
+    g.Headers = Headers;
+    g.Request = Request;
+    g.Response = Response;
+  }
+
+  // node_modules/ollama/dist/browser.mjs
+  var version = "0.5.12";
+  var __defProp$1 = Object.defineProperty;
+  var __defNormalProp$1 = (obj, key, value) => key in obj ? __defProp$1(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __publicField$1 = (obj, key, value) => {
+    __defNormalProp$1(obj, typeof key !== "symbol" ? key + "" : key, value);
+    return value;
+  };
+  var ResponseError = class _ResponseError extends Error {
+    constructor(error, status_code) {
+      super(error);
+      this.error = error;
+      this.status_code = status_code;
+      this.name = "ResponseError";
+      if (Error.captureStackTrace) {
+        Error.captureStackTrace(this, _ResponseError);
+      }
+    }
+  };
+  var AbortableAsyncIterator = class {
+    constructor(abortController, itr, doneCallback) {
+      __publicField$1(this, "abortController");
+      __publicField$1(this, "itr");
+      __publicField$1(this, "doneCallback");
+      this.abortController = abortController;
+      this.itr = itr;
+      this.doneCallback = doneCallback;
+    }
+    abort() {
+      this.abortController.abort();
+    }
+    async *[Symbol.asyncIterator]() {
+      for await (const message of this.itr) {
+        if ("error" in message) {
+          throw new Error(message.error);
+        }
+        yield message;
+        if (message.done || message.status === "success") {
+          this.doneCallback();
+          return;
+        }
+      }
+      throw new Error("Did not receive done or success response in stream.");
+    }
+  };
+  var checkOk = async (response) => {
+    if (response.ok) {
+      return;
+    }
+    let message = `Error ${response.status}: ${response.statusText}`;
+    let errorData = null;
+    if (response.headers.get("content-type")?.includes("application/json")) {
+      try {
+        errorData = await response.json();
+        message = errorData.error || message;
+      } catch (error) {
+        console.log("Failed to parse error response as JSON");
+      }
+    } else {
+      try {
+        console.log("Getting text from response");
+        const textResponse = await response.text();
+        message = textResponse || message;
+      } catch (error) {
+        console.log("Failed to get text from error response");
+      }
+    }
+    throw new ResponseError(message, response.status);
+  };
+  function getPlatform() {
+    if (typeof window !== "undefined" && window.navigator) {
+      return `${window.navigator.platform.toLowerCase()} Browser/${navigator.userAgent};`;
+    } else if (typeof process !== "undefined") {
+      return `${process.arch} ${process.platform} Node.js/${process.version}`;
+    }
+    return "";
+  }
+  var fetchWithHeaders = async (fetch3, url, options2 = {}) => {
+    const defaultHeaders = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "User-Agent": `ollama-js/${version} (${getPlatform()})`
+    };
+    if (!options2.headers) {
+      options2.headers = {};
+    }
+    const customHeaders = Object.fromEntries(
+      Object.entries(options2.headers).filter(([key]) => !Object.keys(defaultHeaders).some((defaultKey) => defaultKey.toLowerCase() === key.toLowerCase()))
+    );
+    options2.headers = {
+      ...defaultHeaders,
+      ...customHeaders
+    };
+    return fetch3(url, options2);
+  };
+  var get = async (fetch3, host, options2) => {
+    const response = await fetchWithHeaders(fetch3, host, {
+      headers: options2?.headers
+    });
+    await checkOk(response);
+    return response;
+  };
+  var post = async (fetch3, host, data, options2) => {
+    const isRecord = (input) => {
+      return input !== null && typeof input === "object" && !Array.isArray(input);
+    };
+    const formattedData = isRecord(data) ? JSON.stringify(data) : data;
+    const response = await fetchWithHeaders(fetch3, host, {
+      method: "POST",
+      body: formattedData,
+      signal: options2?.signal,
+      headers: options2?.headers
+    });
+    await checkOk(response);
+    return response;
+  };
+  var del = async (fetch3, host, data, options2) => {
+    const response = await fetchWithHeaders(fetch3, host, {
+      method: "DELETE",
+      body: JSON.stringify(data),
+      headers: options2?.headers
+    });
+    await checkOk(response);
+    return response;
+  };
+  var parseJSON = async function* (itr) {
+    const decoder = new TextDecoder("utf-8");
+    let buffer = "";
+    const reader = itr.getReader();
+    while (true) {
+      const { done, value: chunk } = await reader.read();
+      if (done) {
+        break;
+      }
+      buffer += decoder.decode(chunk);
+      const parts = buffer.split("\n");
+      buffer = parts.pop() ?? "";
+      for (const part of parts) {
+        try {
+          yield JSON.parse(part);
+        } catch (error) {
+          console.warn("invalid json: ", part);
+        }
+      }
+    }
+    for (const part of buffer.split("\n").filter((p) => p !== "")) {
+      try {
+        yield JSON.parse(part);
+      } catch (error) {
+        console.warn("invalid json: ", part);
+      }
+    }
+  };
+  var formatHost = (host) => {
+    if (!host) {
+      return "http://127.0.0.1:11434";
+    }
+    let isExplicitProtocol = host.includes("://");
+    if (host.startsWith(":")) {
+      host = `http://127.0.0.1${host}`;
+      isExplicitProtocol = true;
+    }
+    if (!isExplicitProtocol) {
+      host = `http://${host}`;
+    }
+    const url = new URL(host);
+    let port = url.port;
+    if (!port) {
+      if (!isExplicitProtocol) {
+        port = "11434";
+      } else {
+        port = url.protocol === "https:" ? "443" : "80";
+      }
+    }
+    let formattedHost = `${url.protocol}//${url.hostname}:${port}${url.pathname}`;
+    if (formattedHost.endsWith("/")) {
+      formattedHost = formattedHost.slice(0, -1);
+    }
+    return formattedHost;
+  };
+  var __defProp2 = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => {
+    __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+    return value;
+  };
+  var Ollama$1 = class Ollama {
+    constructor(config) {
+      __publicField(this, "config");
+      __publicField(this, "fetch");
+      __publicField(this, "ongoingStreamedRequests", []);
+      this.config = {
+        host: "",
+        headers: config?.headers
+      };
+      if (!config?.proxy) {
+        this.config.host = formatHost(config?.host ?? "http://127.0.0.1:11434");
+      }
+      this.fetch = config?.fetch ?? fetch;
+    }
+    // Abort any ongoing streamed requests to Ollama
+    abort() {
+      for (const request of this.ongoingStreamedRequests) {
+        request.abort();
+      }
+      this.ongoingStreamedRequests.length = 0;
+    }
+    /**
+     * Processes a request to the Ollama server. If the request is streamable, it will return a
+     * AbortableAsyncIterator that yields the response messages. Otherwise, it will return the response
+     * object.
+     * @param endpoint {string} - The endpoint to send the request to.
+     * @param request {object} - The request object to send to the endpoint.
+     * @protected {T | AbortableAsyncIterator<T>} - The response object or a AbortableAsyncIterator that yields
+     * response messages.
+     * @throws {Error} - If the response body is missing or if the response is an error.
+     * @returns {Promise<T | AbortableAsyncIterator<T>>} - The response object or a AbortableAsyncIterator that yields the streamed response.
+     */
+    async processStreamableRequest(endpoint, request) {
+      request.stream = request.stream ?? false;
+      const host = `${this.config.host}/api/${endpoint}`;
+      if (request.stream) {
+        const abortController = new AbortController();
+        const response2 = await post(this.fetch, host, request, {
+          signal: abortController.signal,
+          headers: this.config.headers
+        });
+        if (!response2.body) {
+          throw new Error("Missing body");
+        }
+        const itr = parseJSON(response2.body);
+        const abortableAsyncIterator = new AbortableAsyncIterator(
+          abortController,
+          itr,
+          () => {
+            const i = this.ongoingStreamedRequests.indexOf(abortableAsyncIterator);
+            if (i > -1) {
+              this.ongoingStreamedRequests.splice(i, 1);
+            }
+          }
+        );
+        this.ongoingStreamedRequests.push(abortableAsyncIterator);
+        return abortableAsyncIterator;
+      }
+      const response = await post(this.fetch, host, request, {
+        headers: this.config.headers
+      });
+      return await response.json();
+    }
+    /**
+     * Encodes an image to base64 if it is a Uint8Array.
+     * @param image {Uint8Array | string} - The image to encode.
+     * @returns {Promise<string>} - The base64 encoded image.
+     */
+    async encodeImage(image) {
+      if (typeof image !== "string") {
+        const uint8Array = new Uint8Array(image);
+        let byteString = "";
+        const len = uint8Array.byteLength;
+        for (let i = 0; i < len; i++) {
+          byteString += String.fromCharCode(uint8Array[i]);
+        }
+        return btoa(byteString);
+      }
+      return image;
+    }
+    /**
+     * Generates a response from a text prompt.
+     * @param request {GenerateRequest} - The request object.
+     * @returns {Promise<GenerateResponse | AbortableAsyncIterator<GenerateResponse>>} - The response object or
+     * an AbortableAsyncIterator that yields response messages.
+     */
+    async generate(request) {
+      if (request.images) {
+        request.images = await Promise.all(request.images.map(this.encodeImage.bind(this)));
+      }
+      return this.processStreamableRequest("generate", request);
+    }
+    /**
+     * Chats with the model. The request object can contain messages with images that are either
+     * Uint8Arrays or base64 encoded strings. The images will be base64 encoded before sending the
+     * request.
+     * @param request {ChatRequest} - The request object.
+     * @returns {Promise<ChatResponse | AbortableAsyncIterator<ChatResponse>>} - The response object or an
+     * AbortableAsyncIterator that yields response messages.
+     */
+    async chat(request) {
+      if (request.messages) {
+        for (const message of request.messages) {
+          if (message.images) {
+            message.images = await Promise.all(
+              message.images.map(this.encodeImage.bind(this))
+            );
+          }
+        }
+      }
+      return this.processStreamableRequest("chat", request);
+    }
+    /**
+     * Creates a new model from a stream of data.
+     * @param request {CreateRequest} - The request object.
+     * @returns {Promise<ProgressResponse | AbortableAsyncIterator<ProgressResponse>>} - The response object or a stream of progress responses.
+     */
+    async create(request) {
+      return this.processStreamableRequest("create", {
+        ...request
+      });
+    }
+    /**
+     * Pulls a model from the Ollama registry. The request object can contain a stream flag to indicate if the
+     * response should be streamed.
+     * @param request {PullRequest} - The request object.
+     * @returns {Promise<ProgressResponse | AbortableAsyncIterator<ProgressResponse>>} - The response object or
+     * an AbortableAsyncIterator that yields response messages.
+     */
+    async pull(request) {
+      return this.processStreamableRequest("pull", {
+        name: request.model,
+        stream: request.stream,
+        insecure: request.insecure
+      });
+    }
+    /**
+     * Pushes a model to the Ollama registry. The request object can contain a stream flag to indicate if the
+     * response should be streamed.
+     * @param request {PushRequest} - The request object.
+     * @returns {Promise<ProgressResponse | AbortableAsyncIterator<ProgressResponse>>} - The response object or
+     * an AbortableAsyncIterator that yields response messages.
+     */
+    async push(request) {
+      return this.processStreamableRequest("push", {
+        name: request.model,
+        stream: request.stream,
+        insecure: request.insecure
+      });
+    }
+    /**
+     * Deletes a model from the server. The request object should contain the name of the model to
+     * delete.
+     * @param request {DeleteRequest} - The request object.
+     * @returns {Promise<StatusResponse>} - The response object.
+     */
+    async delete(request) {
+      await del(
+        this.fetch,
+        `${this.config.host}/api/delete`,
+        { name: request.model },
+        { headers: this.config.headers }
+      );
+      return { status: "success" };
+    }
+    /**
+     * Copies a model from one name to another. The request object should contain the name of the
+     * model to copy and the new name.
+     * @param request {CopyRequest} - The request object.
+     * @returns {Promise<StatusResponse>} - The response object.
+     */
+    async copy(request) {
+      await post(this.fetch, `${this.config.host}/api/copy`, { ...request }, {
+        headers: this.config.headers
+      });
+      return { status: "success" };
+    }
+    /**
+     * Lists the models on the server.
+     * @returns {Promise<ListResponse>} - The response object.
+     * @throws {Error} - If the response body is missing.
+     */
+    async list() {
+      const response = await get(this.fetch, `${this.config.host}/api/tags`, {
+        headers: this.config.headers
+      });
+      return await response.json();
+    }
+    /**
+     * Shows the metadata of a model. The request object should contain the name of the model.
+     * @param request {ShowRequest} - The request object.
+     * @returns {Promise<ShowResponse>} - The response object.
+     */
+    async show(request) {
+      const response = await post(this.fetch, `${this.config.host}/api/show`, {
+        ...request
+      }, {
+        headers: this.config.headers
+      });
+      return await response.json();
+    }
+    /**
+     * Embeds text input into vectors.
+     * @param request {EmbedRequest} - The request object.
+     * @returns {Promise<EmbedResponse>} - The response object.
+     */
+    async embed(request) {
+      const response = await post(this.fetch, `${this.config.host}/api/embed`, {
+        ...request
+      }, {
+        headers: this.config.headers
+      });
+      return await response.json();
+    }
+    /**
+     * Embeds a text prompt into a vector.
+     * @param request {EmbeddingsRequest} - The request object.
+     * @returns {Promise<EmbeddingsResponse>} - The response object.
+     */
+    async embeddings(request) {
+      const response = await post(this.fetch, `${this.config.host}/api/embeddings`, {
+        ...request
+      }, {
+        headers: this.config.headers
+      });
+      return await response.json();
+    }
+    /**
+     * Lists the running models on the server
+     * @returns {Promise<ListResponse>} - The response object.
+     * @throws {Error} - If the response body is missing.
+     */
+    async ps() {
+      const response = await get(this.fetch, `${this.config.host}/api/ps`, {
+        headers: this.config.headers
+      });
+      return await response.json();
+    }
+  };
+  var browser = new Ollama$1();
+
   // assets/js/pages/chat_app.js
   var ChatApplication = class {
     constructor(config = {}) {
@@ -3291,13 +4948,13 @@ ${text}</tr>
       console.log(`Upgrading database from version ${oldVersion} to ${newVersion}...`);
       const { stores } = this.config;
       Object.values(stores).forEach((storeConfig) => {
-        const { name, options: options2, indexes } = storeConfig;
-        if (!db.objectStoreNames.contains(name)) {
-          const objectStore = db.createObjectStore(name, options2);
-          indexes?.forEach(({ name: name2, keyPath, options: options3 }) => {
-            objectStore.createIndex(name2, keyPath, options3);
+        const { name: name2, options: options2, indexes } = storeConfig;
+        if (!db.objectStoreNames.contains(name2)) {
+          const objectStore = db.createObjectStore(name2, options2);
+          indexes?.forEach(({ name: name3, keyPath, options: options3 }) => {
+            objectStore.createIndex(name3, keyPath, options3);
           });
-          console.log(`Created store: ${name}`);
+          console.log(`Created store: ${name2}`);
         }
       });
     }
@@ -3628,6 +5285,7 @@ ${text}</tr>
           assistantContent += part.message.content;
           lastAssistantBlock.innerHTML = marked.parse(assistantContent);
           this.scrollToBottom();
+          highlightAll();
         }
         await this.addMessageToDatabase(this.sessionId, { role: "assistant", content: assistantContent });
         this.context.push({ role: "assistant", content: assistantContent });
@@ -3731,6 +5389,7 @@ ${text}</tr>
             }
           }
           this.scrollToBottom();
+          highlightAll();
           await this.refreshContext(conversation.messages, this.maxContext);
           console.log(this.context);
         }

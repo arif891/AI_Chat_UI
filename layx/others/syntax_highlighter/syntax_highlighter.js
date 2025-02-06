@@ -1,218 +1,217 @@
-class CodeHighlighter {
-  constructor() {
-    this.languages = {
+/**
+ * @typedef {Object} Options
+ * @property {Boolean} [hideLineNumbers=false] Indicates whether to hide line numbers
+ */
 
-      js: this.compileLanguage([
-        { type: 'control-flow', regex: /\b(if|else|for|while|do|switch|case|break|continue|default|return|yield)\b(?![-\w])/g },
-        { type: 'declaration', regex: /\b(const|let|var|function|class|import|export|extends|implements|interface)\b(?![-\w])/g },
-        { type: 'error-handling', regex: /\b(try|catch|finally|throw)\b(?![-\w])/g },
-        { type: 'async', regex: /\b(async|await)\b(?![-\w])/g },
-        { type: 'type', regex: /\b(typeof|instanceof|in|of|as)\b(?![-\w])/g },
-        { type: 'object-oriented', regex: /\b(new|this|super|constructor|get|set|static)\b(?![-\w])/g },
-        { type: 'boolean', regex: /\b(true|false)\b(?![-\w])/g },
-        { type: 'null-undefined', regex: /\b(null|undefined|void)\b(?![-\w])/g },
-        { type: 'string', regex: /(["'`])(?:\\(?:\r\n|[\s\S])|(?!\1)[^\\\r\n])*\1/g },
-        { type: 'template-expression', regex: /\$\{(?:[^{}]|\{[^}]*\})*\}/g },
-        { type: 'comment', regex: /\/\/.*|\/\*[\s\S]*?\*\//g },
-        { type: 'number', regex: /\b(?:0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|\d*\.?\d+(?:[eE][+-]?\d+)?)\b/g },
-        { type: 'regex', regex: /\/(?![*+?])(?:[^\r\n\[/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+\/[gimyus]*/g },
-        { type: 'function', regex: /\b[a-zA-Z_]\w*(?=\s*\()/g },
-        { type: 'builtin', regex: /\b(console|Math|JSON|Date|Promise|Array|Object|String|Number|Boolean|Set|Map|Symbol|Error|RegExp|Int(?:8|16|32)Array|Uint(?:8|16|32|8Clamped)Array|Float(?:32|64)Array|BigInt|BigInt64Array|BigUint64Array)\b(?![-\w])/g },
-        { type: 'identifier', regex: /\b[a-zA-Z_]\w*\b/g },
-        { type: 'operator', regex: /(?:[-+*/%&|^!~=<>?:]=?|>>>=?|<<<?|\+\+?|--?|\?\??|\.\.\.|=>)/g },
-        { type: 'punctuation', regex: /[{}[\](),.;:]/g },
-      ]),
+/**
+ * @typedef {('oneline'|'multiline')} DisplayMode
+ * * `oneline` inside `div` element and containing only one line
+ * * `multiline` inside `div` element
+ */
 
-      html: this.compileLanguage([
-        { type: 'doctype', regex: /<!(?:DOCTYPE|doctype)\s+html>/ },
-        { type: 'comment', regex: /<!--[\s\S]*?-->/ },
-        { type: 'punctuation', regex: /[</>]/ },
-        { type: 'tag', regex: /\/?\w+(?=[>\s])/ },
-        { type: 'attribute', regex: /\s([\w-]+)(?=\s*=)/ },
-        { type: 'equals', regex: /=/ },
-        { type: 'string', regex: /"[^"]*"|'[^']*'/ },
-        { type: 'text', regex: /[^<>]+/ },
-      ]),
-      css: this.compileLanguage([
-        { type: 'comment', regex: /\/\*[\s\S]*?\*\// },
-        { type: 'atrule', regex: /\s*@[\w-]+/ },
-        { type: 'selector', regex: /\b[a-zA-Z]+\b(?=\s*{)/ }, 
-        { type: 'class', regex: /\.[\w-]+/ },
-        { type: 'id', regex: /#[\w-]+/ },
-        { type: 'property', regex: /[\w-]+(?=\s*:)/ },
-        { type: 'value', regex: /:\s*[^;]+/ },
-        { type: 'punctuation', regex: /[{()};]/ },
-        { type: 'unit', regex: /\b\d+(px|em|rem|%|vh|vw|s|ms)\b/ },
-        { type: 'color', regex: /#(?:[0-9a-fA-F]{3}){1,2}\b/ },
-        { type: 'media-feature', regex: /\([\w-]+\s*:\s*[^)]+\)/ },
-        { type: 'function', regex: /\burl(?=\()/ },
-        { type: 'url', regex: /url\(([^)]+)\)/ },  
-        { type: 'unknown', regex: /\S+/ },
-    ]),
-    batch: this.compileLanguage([
-      { type: 'comment', regex: /^(\s*)(::|\s*REM\s|\/\/).*$/im }, 
-      { type: 'program-name', regex: /\b(layx)\b/i }, 
-      { type: 'program-command', regex: /\b(build|unbuild|create|optimage|install|uninstall)\b/i },
-      { type: 'label', regex: /^\s*:\w+/m },
-      { type: 'variable', regex: /%[^%\s]+%|\%\w+\%/g },
-      { type: 'operator', regex: /\b(EQU|NEQ|LSS|LEQ|GTR|GEQ|NOT|AND|OR)\b/i },
-      { type: 'keyword', regex: /\b(IF|ELSE|FOR|IN|DO|GOTO|CALL|EXIT|ECHO|SET|SETLOCAL|ENDLOCAL|PAUSE|SHIFT)\b/i },
-      { type: 'string', regex: /"[^"]*"/g },
-      { type: 'number', regex: /\b\d+\b/g },
-      { type: 'path', regex: /\b([a-zA-Z]:\\(?:[^\\\/:*?"<>|\r\n]+\\)*[^\\\/:*?"<>|\r\n]*)/g },
-      { type: 'parameter', regex: /%[0-9*]/ },
-      { type: 'special-character', regex: /[&|<>^]/ },
-      { type: 'punctuation', regex: /[()[\]{}]/g },
-    ]),
-    };
+/**
+ * Token types
+ * @typedef {('deleted'|'err'|'var'|'section'|'kwd'|'class'|'cmnt'|'insert'|'type'|'func'|'bool'|'num'|'oper'|'str'|'esc')} Token
+ */
 
-    this.defaultRules = [
-      { type: 'whitespace', regex: /\s+/ },
-      { type: 'unknown', regex: /\S+/ },
-    ];
-
-    this.init();
-    this.addCopyButtons();
-  }
-
-  init() {
-    this.highlightCodeElements();
-  }
-
-  addCopyButtons() {
-    const codeElements = document.querySelectorAll('[data-code-lang][copy]');
-    codeElements.forEach(element => {
-      const button = document.createElement('button');
-      button.className = 'copy-btn';
-      button.addEventListener('click', () => this.copyToClipboard(element));
-      
-      element.appendChild(button);
-    });
-  }
-
-  copyToClipboard(element) {
-    const text = element.textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      const button = element.querySelector('.copy-btn');
-      button.classList.add('copied');
-      setTimeout(() => {
-        button.classList.remove('copied');
-      }, 2000);
-    }).catch(err => {
-      console.error('Failed to copy text: ', err);
-    });
-  }
-
-  compileLanguage(rules) {
-    return rules.map(rule => ({
-      type: rule.type,
-      regex: new RegExp(rule.regex.source, 'g'),
-    }));
-  }
-
-  escapeHtml(unsafe) {
-    return unsafe.replace(/[&<>"']/g, char => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;',
-    }[char]));
-  }
-
-  unescapeHtml(escaped) {
-    return escaped.replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#039;/g, "'")
-      .replace(/&amp;/g, '&');
-  }
-
-  tokenize(code, language) {
-    const rules = [...(this.languages[language] || []), ...this.defaultRules];
-    const tokens = [];
-    let remaining = code;
-
-    while (remaining) {
-      let match = null;
-
-      for (const rule of rules) {
-        rule.regex.lastIndex = 0;
-        const result = rule.regex.exec(remaining);
-        if (result && result.index === 0) {
-          match = { type: rule.type, value: result[0] };
-          break;
-        }
-      }
-
-      if (match) {
-        tokens.push(match);
-        remaining = remaining.slice(match.value.length);
-      } else {
-        tokens.push({ type: 'unknown', value: remaining[0] });
-        remaining = remaining.slice(1);
-      }
-    }
-
-    return tokens;
-  }
-
-  highlightSyntax(code, language) {
-    const lines = code.split('\n');
-    return lines
-      .map(line => {
-        const tokens = this.tokenize(line, language);
-        return tokens
-          .map(token => {
-            const escapedValue = this.escapeHtml(token.value);
-            if (token.type === 'whitespace') {
-              return escapedValue;
-            }
-            return `<span class="${language}-${token.type}">${escapedValue}</span>`;
-          })
-          .join('');
-      })
-      .map(line => `<span class="line">${line}</span>`)
-      .join('\n');
-  }
-
-  highlightNestedLanguages(html) {
-    const styleRegex = /(&lt;style[^&gt;]*&gt;)([\s\S]*?)(&lt;\/style&gt;)/gi;
-    const scriptRegex = /(&lt;script[^&gt;]*&gt;)([\s\S]*?)(&lt;\/script&gt;)/gi;
-
-    html = html.replace(styleRegex, (match, openTag, content, closeTag) => {
-      const highlightedCSS = this.highlightSyntax(this.unescapeHtml(content), 'css');
-      return `${openTag}${highlightedCSS}${closeTag}`;
-    });
-
-    html = html.replace(scriptRegex, (match, openTag, content, closeTag) => {
-      const highlightedJS = this.highlightSyntax(this.unescapeHtml(content), 'js');
-      return `${openTag}${highlightedJS}${closeTag}`;
-    });
-
-    return html;
-  }
-
-  highlightHTML(code) {
-    let highlighted = this.highlightSyntax(code, 'html');
-    return this.highlightNestedLanguages(highlighted);
-  }
-
-  highlightCodeElements() {
-    const codeElements = document.querySelectorAll('[data-code-lang]');
-    codeElements.forEach(element => {
-      const code = element.textContent;
-      const language = element.getAttribute('data-code-lang');
-      if (this.languages[language]) {
-        if (language === 'html') {
-          element.innerHTML = this.highlightHTML(code);
-        } else {
-          element.innerHTML = this.highlightSyntax(code, language);
-        }
-      }
-    });
-  }
+const expandData = {
+	num: {
+		type: 'num',
+		match: /(\.e?|\b)\d(e-|[\d.oxa-fA-F_])*(\.|\b)/g
+	},
+	str: {
+		type: 'str',
+		match: /(["'])(\\[^]|(?!\1)[^\r\n\\])*\1?/g
+	},
+	strDouble: {
+		type: 'str',
+		match: /"((?!")[^\r\n\\]|\\[^])*"?/g
+	}
 }
 
-export default new CodeHighlighter();
-export {CodeHighlighter};
+const langs = new Map(),
+	sanitize = (str = '') => {
+		const entities = {
+			'&': '&#38;',
+			'<': '&lt;',
+			'>': '&gt;',
+			'"': '&quot;',
+			"'": '&#39;'
+		};
+		return str.replace(/[&<>"']/g, char => entities[char]);
+	},
+	/**
+	 * Create a HTML element with the right token styling
+	 *
+	 * @function
+	 * @ignore
+	 * @param {string} str The content (need to be sanitized)
+	 * @param {Token} [token] The type of token
+	 * @returns A HMTL string
+	 */
+	toSpan = (str, token) => token ? `<span class="${token}">${str}</span>` : str;
+
+/**
+ * Find and process tokens in the given code using the language definition
+ *
+ * @function tokenize
+ * @param {string} src The source code to tokenize
+ * @param {Language|Array} lang The language definition or name
+ * @param {function(string, Token=):void} token Callback function that receives:
+ * - text of the token
+ * - type of the token
+ */
+export async function tokenize(src, lang, token) {
+    try {
+        let data;
+        if (typeof lang === 'string') {
+            data = langs.get(lang);
+            if (!data) {
+                data = await import(`./languages/${lang}.js`);
+                if (!data?.default) {
+                    throw new Error(`Invalid language module for ${lang}`);
+                }
+            }
+        } else {
+            data = lang;
+        }
+
+        let m,
+            part,
+            first = {},
+            match,
+            cache = [],
+            i = 0,
+            // Ensure we have a valid array to work with
+            arr = Array.isArray(data.sub) ? [...data.sub] : 
+                  Array.isArray(data.default) ? [...data.default] : 
+                  [];
+
+        if (arr.length === 0) {
+            token(src);
+            return;
+        }
+
+        while (i < src.length) {
+            first.index = null;
+            for (m = arr.length; m-- > 0;) {
+                part = arr[m].expand ? expandData[arr[m].expand] : arr[m];
+                // do not call again exec if the previous result is sufficient
+                if (cache[m] === undefined || cache[m].match.index < i) {
+                    part.match.lastIndex = i;
+                    match = part.match.exec(src);
+                    if (match === null) {
+                        // no more match with this regex can be disposed
+                        arr.splice(m, 1);
+                        cache.splice(m, 1);
+                        continue;
+                    }
+                    // save match for later use to decrease performance cost
+                    cache[m] = { match, lastIndex: part.match.lastIndex };
+                }
+                // check if it the first match in the string
+                if (cache[m].match[0] && (cache[m].match.index <= first.index || first.index === null))
+                    first = {
+                        part: part,
+                        index: cache[m].match.index,
+                        match: cache[m].match[0],
+                        end: cache[m].lastIndex
+                    }
+            }
+            if (first.index === null)
+                break;
+            token(src.slice(i, first.index), data.type);
+            i = first.end;
+            if (first.part.sub)
+                await tokenize(first.match, typeof first.part.sub === 'string' ? first.part.sub : (typeof first.part.sub === 'function' ? first.part.sub(first.match) : first.part), token);
+            else
+                token(first.match, first.part.type);
+        }
+        token(src.slice(i, src.length), data.type);
+    }
+    catch (error) {
+        console.error(`Tokenization error: ${error.message}`);
+        token(src);
+    }
+}
+
+/**
+ * Highlight code text and return HTML string with syntax highlighting
+ * 
+ * @async
+ * @function highlightText
+ * @param {string} src The source code
+ * @param {Language} lang The language identifier
+ * @param {Boolean} [multiline=true] Whether to add wrapper for line numbers and header
+ * @param {Options} [opt={}] Highlighting options
+ * @returns {Promise<string>} HTML string with syntax highlighting
+ */
+export async function highlightText(src, lang, multiline = true, opt = {}) {
+	let tmp = ''
+	await tokenize(src, lang, (str, type) => tmp += toSpan(sanitize(str), type))
+
+	return multiline
+		? `<div class="wrapper"><div class="numbers">${'<div></div>'.repeat(!opt.hideLineNumbers && src.split('\n').length)}</div><code class="code">${tmp}</code></div>`
+		: tmp;
+}
+
+/**
+ * Highlight a DOM element by applying syntax highlighting
+ *
+ * @async
+ * @function highlightElement
+ * @param {Element} elm The DOM element to highlight
+ * @param {Language} [lang] Language identifier (defaults to element's data-code-lang attribute)
+ * @param {DisplayMode} [mode] Display mode (auto-detected if not specified)
+ * @param {Options} [opt] Highlighting options
+ */
+export async function highlightElement(elm, lang = elm.dataset.codeLang, mode, opt) {
+	let txt = elm.textContent;
+	mode ??= `${(txt.split('\n').length < 2 ? 'one' : 'multi')}line`;
+	elm.className = `${[...elm.classList].filter(className => !className.startsWith('')).join(' ')}code-block ${lang} ${mode} highlighted`;
+	elm.innerHTML = await highlightText(txt, lang, mode == 'multiline', opt);
+}
+
+/**
+ * Call highlightElement on element with a css class starting with `lang-`
+ *
+ * @async
+ * @function highlightAll
+ * @param {Options} [opt={}] Customization options
+ */
+export let highlightAll = async (opt) =>
+	Promise.all(
+		Array.from(document.querySelectorAll('[data-code-lang]:not(.highlighted)'))
+		.map(elm => highlightElement(elm, undefined, undefined, opt)))
+
+/**
+ * Language component definition
+ * @typedef {{ 
+ *   match?: RegExp, 
+ *   type?: string,
+ *   sub?: string | LanguageDefinition | ((code:string) => LanguageComponent),
+ *   expand?: string 
+ * }} LanguageComponent
+ */
+
+/**
+ * @typedef {LanguageComponent[]} LanguageDefinition
+ */
+
+/**
+ * Load a language and add it to the langs object
+ *
+ * @function loadLanguage
+ * @param {string} languageName The name of the language
+ * @param {{ default: LanguageDefinition }} language The language
+ */
+export async function loadLanguage(languageName, language) {
+	if (!language?.default?.length) {
+		throw new Error(`Invalid language definition for ${languageName}`);
+	}
+	langs.set(languageName, language);
+}
+
+export function clearLanguageCache() {
+	langs.clear();
+}

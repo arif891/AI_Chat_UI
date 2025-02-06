@@ -1,6 +1,8 @@
 import { IDB } from '../../../layx/others/idb/idb.js';
+import { marked } from '../lib/marked.esm.js';
+import { highlightAll } from '../../../layx/others/syntax_highlighter/syntax_highlighter.js';
+
 import ollama from 'ollama/browser';
-import { marked } from 'marked';
 
 class ChatApplication {
   constructor(config = {}) {
@@ -488,6 +490,7 @@ class ChatApplication {
         assistantContent += part.message.content;
         lastAssistantBlock.innerHTML = marked.parse(assistantContent);
         this.scrollToBottom();
+        highlightAll();
       }
       await this.addMessageToDatabase(this.sessionId, { role: 'assistant', content: assistantContent });
       this.context.push({ role: 'assistant', content: assistantContent });
@@ -518,6 +521,7 @@ class ChatApplication {
       if (this.context.length >= this.maxContext) {
         await this.refreshContext(this.context, this.maxContext);
       }
+
       console.log(this.context);
     } catch (error) {
       console.error('Error processing chat:', error);
@@ -603,8 +607,9 @@ class ChatApplication {
           } else {
             this.renderMessage(message.content, message.role);
           }
-        }
+        }  
         this.scrollToBottom();
+        highlightAll();
         await this.refreshContext(conversation.messages, this.maxContext);
         console.log(this.context);
       }
