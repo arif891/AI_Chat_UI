@@ -477,9 +477,18 @@
                                 .response {
                                     max-width: 100%;
 
-                                    .text__block {
-                                        &:not(:last-child) {
-                                            margin-bottom: var(--space-3);
+
+                                    &:not(:last-child, :last-child) {
+                                        :is(h1,h2,h3,h4,h5,h6) {
+                                            margin-block: var(--space-5) var(--space-2);
+                                        }
+                                       
+                                        > p {
+                                            margin-bottom: var(--space-2);
+                                        }
+
+                                        [data-code-lang] {
+                                            margin-bottom: var(--space);
                                         }
                                     }
                                 }
