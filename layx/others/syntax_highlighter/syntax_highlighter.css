@@ -3,12 +3,13 @@
 	font-size: 1rem;
 	line-height: 1.5;
 	padding: 1rem;
+	max-width: 100%;
+	overflow-x: auto;
 	background-color: var(--surface-color);
 	border-radius: var(--radius);
+	white-space: pre;
 
 	&.multiline {
-		max-width: 100%;
-		overflow-x: auto;
 
 		.wrapper {
 			display: flex;

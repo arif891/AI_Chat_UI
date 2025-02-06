@@ -1761,7 +1761,7 @@ class _Renderer {
         if (!langString) {
             return '<pre><code>'
                 + (escaped ? code : escape(code, true))
-                + '</code></pre>\n';
+                + '</code></pre>';
         }
         return '<div data-code-lang="'
             + escape(langString)

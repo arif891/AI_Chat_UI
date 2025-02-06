@@ -1,8 +1,9 @@
 import { IDB } from '../../../layx/others/idb/idb.js';
-import { marked } from '../lib/marked.esm.js';
 import { highlightAll } from '../../../layx/others/syntax_highlighter/syntax_highlighter.js';
+import { marked } from '../lib/marked.esm.js';
+import { Ollama } from '../lib/ollama.js'
 
-import ollama from 'ollama/browser';
+const ollama = new Ollama();
 
 class ChatApplication {
   constructor(config = {}) {
@@ -489,9 +490,10 @@ class ChatApplication {
       for await (const part of responseStream) {
         assistantContent += part.message.content;
         lastAssistantBlock.innerHTML = marked.parse(assistantContent);
-        this.scrollToBottom();
-        highlightAll();
       }
+
+    
+      highlightAll();
       await this.addMessageToDatabase(this.sessionId, { role: 'assistant', content: assistantContent });
       this.context.push({ role: 'assistant', content: assistantContent });
 

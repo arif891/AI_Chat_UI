@@ -449,10 +449,6 @@
                         &.assistant {
                             flex-direction: column;
 
-                            @media (width >=992px) {
-                                flex-direction: row;
-                            }
-
                             &.new {
                                 transition: opacity .3s;
                                 opacity: 1;
@@ -470,10 +466,6 @@
                                 flex-shrink: 0;
                                 fill: #60b2ff;
                                 background-color: var(--surface-color);
-
-                                @media (width >=992px) {
-                                    translate: 0 -50%;
-                                 }
                             }
 
                             .response_wrapper {
@@ -484,10 +476,6 @@
 
                                 .response {
                                     max-width: 100%;
-
-                                    @media (width >=992px) {
-                                       max-width: calc(100% - 3rem);
-                                    }
 
                                     .text__block {
                                         &:not(:last-child) {

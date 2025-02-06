@@ -1,6 +1,6 @@
 /**
  * @typedef {Object} Options
- * @property {Boolean} [hideLineNumbers=false] Indicates whether to hide line numbers
+ * @property {Boolean} [lineNumbers=false] Indicates whether to hide line numbers
  */
 
 /**
@@ -151,7 +151,7 @@ export async function highlightText(src, lang, multiline = true, opt = {}) {
 	await tokenize(src, lang, (str, type) => tmp += toSpan(sanitize(str), type))
 
 	return multiline
-		? `<div class="wrapper"><div class="numbers">${'<div></div>'.repeat(!opt.hideLineNumbers && src.split('\n').length)}</div><code class="code">${tmp}</code></div>`
+		? `<div class="wrapper"><div class="numbers">${'<div></div>'.repeat(opt.lineNumbers && (src.split('\n').length - 1))}</div><code class="code">${tmp}</code></div>`
 		: tmp;
 }
 
