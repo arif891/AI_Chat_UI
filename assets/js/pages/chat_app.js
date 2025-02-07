@@ -3,7 +3,6 @@ import { highlightAll } from '../../../layx/others/syntax_highlighter/syntax_hig
 import { marked } from '../lib/marked.esm.js';
 import { Ollama } from '../lib/ollama.js'
 
-const ollama = new Ollama({host: 'http://192.168.0.120:11434'});
 
 class ChatApplication {
   constructor(config = {}) {
@@ -57,6 +56,7 @@ class ChatApplication {
     this.model = '';
     this.modelList = [];
     this.editMode = null;
+    this.host = 'localhost:11434'
 
     // Initialize UI and events
     this.initializeUIElements();
@@ -453,9 +453,9 @@ class ChatApplication {
   async processChat() {
     try {
       const userContent = this.textarea.value.trim();
-      this.textarea.value = '';
       if (!userContent || this.root.classList.contains('generating')) return;
 
+      this.textarea.value = '';
       this.root.classList.add('generating');
 
       const isNewSession = !this.root.hasAttribute('data-session-id');
@@ -482,7 +482,7 @@ class ChatApplication {
       );
 
       // Stream the assistant response
-      const responseStream = await ollama.chat({
+      const responseStream = await this.ollama.chat({
         model: this.model,
         messages: [
           { role: 'system', content: this.systemPrompt },
@@ -506,7 +506,7 @@ class ChatApplication {
 
       // If this is a new session, update the chat history title
       if (isNewSession) {
-        const titleResponse = await ollama.chat({
+        const titleResponse = await this.ollama.chat({
           model: this.model,
           messages: [
             {
@@ -657,7 +657,7 @@ class ChatApplication {
     try {
       // Load chat history if DB is already initialized
       if (localStorage.getItem('chatDB')) {
-        const chatHistoryItems = await this.getRecentItems(this.config.stores.sessions.name, 50, 'updateTime');
+        const chatHistoryItems = await this.getRecentItems(this.config.stores.sessions.name, 100, 'updateTime');
         if (chatHistoryItems.length) {
           chatHistoryItems.forEach(item => {
             this.addChatHistoryItem(item.title, item.sessionId);
@@ -665,8 +665,11 @@ class ChatApplication {
         }
       }
 
+     this.ollama = new Ollama({host: this.host});
+
+
       // Load available models from the AI service
-      const modelListResponse = await ollama.list();
+      const modelListResponse = await this.ollama.list();
       if (modelListResponse.models.length) {
         this.modelList = modelListResponse.models;
         if (!localStorage.getItem('selectedModel')) {
