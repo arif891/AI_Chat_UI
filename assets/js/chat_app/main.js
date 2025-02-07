@@ -31,6 +31,11 @@ class ChatApplication {
       await this.loadChatHistory();
     }
 
+    const sessionIdFromUrl = this.getSessionIdFromUrl();
+    if (sessionIdFromUrl) {
+      chatApp.displayChatHistory(sessionIdFromUrl);
+    }
+
     this.ollama = new Ollama({ host: this.host });
 
     await this.loadModels();
@@ -50,7 +55,9 @@ class ChatApplication {
     });
 
     this.ui.root.addEventListener('display-chat', async (e) => {
-      await this.displayChatHistory(e.detail.sessionId);
+      const sessionId = e.detail.sessionId;
+      history.pushState(null, null, `?session=${sessionId}`);
+      await this.displayChatHistory(sessionId);
     });
 
     this.ui.root.addEventListener('model-selected', (e) => {
@@ -239,6 +246,11 @@ class ChatApplication {
     } catch (error) {
       console.error('Error updating context:', error);
     }
+  }
+
+  getSessionIdFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('session');
   }
 }
 
