@@ -138,7 +138,7 @@ class ChatApplication {
         });
 
         if (titleResponse.message.content) {
-          const updatedTitle = titleResponse.message.content;
+          const updatedTitle = titleResponse.message.content.replaceAll('"','');
           const historyItem = this.ui.chatHistoryContainer.querySelector(`.item[data-session-id="${this.sessionId}"]`);
           if (historyItem) {
             historyItem.textContent = updatedTitle;
@@ -169,6 +169,7 @@ class ChatApplication {
     this.ui.textarea.value = '';
     this.ui.root.removeAttribute('data-session-id');
     this.context = [];
+    history.pushState(null, null, window.location.pathname);
   }
 
   async loadChatHistory() {
