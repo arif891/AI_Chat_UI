@@ -479,11 +479,14 @@
 
 
                                     &:not(:last-child, :last-child) {
+
+
+
                                         :is(h1,h2,h3,h4,h5,h6) {
                                             margin-block: var(--space-5) var(--space-2);
                                         }
                                        
-                                        > p {
+                                        > &p {
                                             margin-bottom: var(--space-2);
                                         }
 
@@ -690,9 +693,21 @@
 
                         &.send {
                             margin-left: auto;
+                            position: relative;
 
                             .icon {
                                 scale: 1.5;
+                            }
+
+                            .generating & {
+
+                                &::before {
+                                    content: '';
+                                    position: absolute;
+                                    inset: .6rem;
+                                    border-radius: .2rem;
+                                    background-color: currentColor;
+                                }
                             }
                         }
                     }

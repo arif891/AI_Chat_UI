@@ -3,7 +3,7 @@ import { highlightAll } from '../../../layx/others/syntax_highlighter/syntax_hig
 import { marked } from '../lib/marked.esm.js';
 import { Ollama } from '../lib/ollama.js'
 
-const ollama = new Ollama();
+const ollama = new Ollama({host: 'http://192.168.0.120:11434'});
 
 class ChatApplication {
   constructor(config = {}) {
@@ -32,7 +32,6 @@ class ChatApplication {
           You are a friendly AI assistant. Follow the user's vibe, and if needed, do role play.
           Your responses should be helpful, informative, and engaging.
           You can use markdown to format your responses.
-          Use h4, h5, h6 for headings.
           The current date and time is: ${new Date().toLocaleString(undefined, {
             weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "long"
           })}.
@@ -216,6 +215,10 @@ class ChatApplication {
 
     // Send message events
     this.sendButton.addEventListener('click', async () => {
+      if(this.root.classList.contains('generating')) {
+       this.abortGenerate();
+       return 
+      }
       await this.processChat();
     });
     this.textarea.addEventListener('keydown', (e) => {
@@ -451,7 +454,9 @@ class ChatApplication {
     try {
       const userContent = this.textarea.value.trim();
       this.textarea.value = '';
-      if (!userContent) return;
+      if (!userContent || this.root.classList.contains('generating')) return;
+
+      this.root.classList.add('generating');
 
       const isNewSession = !this.root.hasAttribute('data-session-id');
 
@@ -493,6 +498,7 @@ class ChatApplication {
         lastAssistantBlock.innerHTML = marked.parse(assistantContent);
       }
 
+      this.root.classList.remove('generating');
     
       highlightAll();
       await this.addMessageToDatabase(this.sessionId, { role: 'assistant', content: assistantContent });
@@ -527,8 +533,13 @@ class ChatApplication {
 
       console.log(this.context);
     } catch (error) {
+      this.root.classList.remove('generating');
       console.error('Error processing chat:', error);
     }
+  }
+
+  abortGenerate() {
+    ollama.abort();
   }
 
   startNewChat() {
