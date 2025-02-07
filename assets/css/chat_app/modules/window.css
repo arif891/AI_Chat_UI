@@ -249,8 +249,6 @@
 
                                     &:not(:last-child, :last-child) {
 
-
-
                                         :is(h1, h2, h3, h4, h5, h6) {
                                             margin-block: var(--space-5) var(--space-2);
                                         }
@@ -261,6 +259,8 @@
 
                                         [data-code-lang] {
                                             margin-bottom: var(--space);
+                                            font-family: 'Fira Code', monospace;
+                                            font-size: 1.15rem;
                                         }
                                     }
                                 }
