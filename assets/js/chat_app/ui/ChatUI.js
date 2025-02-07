@@ -15,6 +15,7 @@ export class ChatUI {
       ...options
     };
 
+    this.initWindowControls();
     this.initializeElements();
     this.registerEventListeners();
 
@@ -356,5 +357,27 @@ export class ChatUI {
 
   addSystemMessage(content) {
     this.renderMessage(content, 'system');
+  }
+
+  initWindowControls() {
+    if ('windowControlsOverlay' in navigator) {
+      const updateTitlebarArea = (e) => {
+        try {
+          const isOverlayVisible = navigator.windowControlsOverlay.visible;
+          const { x, y, width, height } = e?.titlebarAreaRect || navigator.windowControlsOverlay.getTitlebarAreaRect();
+          this.root.style.setProperty('--title-bar-height', `${height}px`);
+          this.root.style.setProperty('--title-bar-width', `${width}px`);
+          this.root.style.setProperty('--title-bar-x', `${x}px`);
+          this.root.style.setProperty('--title-bar-y', `${y}px`);
+          this.root.classList.toggle('overlay-visible', isOverlayVisible);
+        } catch (error) {
+          console.error('Error updating titlebar area:', error);
+        }
+      };
+
+      navigator.windowControlsOverlay.addEventListener('geometrychange', updateTitlebarArea);
+      // Initial update
+      updateTitlebarArea();
+    }
   }
 }
