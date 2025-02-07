@@ -32,14 +32,8 @@ class ChatApplication {
 
     const sessionIdFromUrl = this.getSessionIdFromUrl();
     if (sessionIdFromUrl) {
-      // If we have a session ID in URL, set appropriate state
-      history.replaceState(
-        { type: 'chat', sessionId: sessionIdFromUrl }, 
-        null, 
-        `?session=${sessionIdFromUrl}`
-      );
+      history.replaceState({ type: 'chat', sessionId: sessionIdFromUrl }, null, `?session=${sessionIdFromUrl}`);
     } else {
-      // Only replace state if no session ID in URL
       history.replaceState({ type: 'new' }, null, window.location.pathname);
     }
 
@@ -71,7 +65,6 @@ class ChatApplication {
 
     this.ui.root.addEventListener('display-chat', async (e) => {
       const sessionId = e.detail.sessionId;
-      // Push new history state
       history.pushState({ type: 'chat', sessionId: sessionId }, null, `?session=${sessionId}`);
       await this.displayChatHistory(sessionId);
     });
