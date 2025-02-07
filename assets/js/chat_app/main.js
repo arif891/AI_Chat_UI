@@ -23,17 +23,14 @@ class ChatApplication {
 
     this.initialize();
     this.registerEvents();
-
-    // Add popstate event listener for browser back/forward
-    window.addEventListener('popstate', () => {
-      this.handleUrlChange();
-    });
-
-    // Add initial state
-    history.replaceState({ type: 'new' }, null, window.location.pathname);
   }
 
   async initialize() {
+    window.addEventListener('popstate', (event) => {
+      this.handleUrlChange(event);
+    });
+    history.replaceState({ type: 'new' }, null, window.location.pathname);
+
     const dbInitialized = await this.dbManager.initialize();
     if (dbInitialized) {
       await this.loadChatHistory();
@@ -265,13 +262,13 @@ class ChatApplication {
     return urlParams.get('session');
   }
 
-  async handleUrlChange() {
+  async handleUrlChange(event) {
     const sessionId = this.getSessionIdFromUrl();
-    const state = history.state;
+    const state = event.state;
 
     if (state && state.type === 'chat' && sessionId) {
       await this.displayChatHistory(sessionId);
-    } else {
+    } else if (state && state.type === 'new') {
       this.startNewChat();
     }
   }
