@@ -1,8 +1,8 @@
 import { IDB } from '../../../layx/others/idb/idb.js';
 import { highlightAll } from '../../../layx/others/syntax_highlighter/syntax_highlighter.js';
 
-import { marked } from '../lib/marked.esm.js';
-import { Ollama } from '../lib/ollama.js'
+import { marked } from '../chat_app/lib/marked.esm.js';
+import { Ollama } from '../chat_app/lib/ollama.js'
 
 
 class ChatApplication {
