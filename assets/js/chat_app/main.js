@@ -23,6 +23,14 @@ class ChatApplication {
 
     this.initialize();
     this.registerEvents();
+
+    // Add popstate event listener for browser back/forward
+    window.addEventListener('popstate', () => {
+      this.handleUrlChange();
+    });
+
+    // Add initial state
+    history.replaceState({ type: 'new' }, null, window.location.pathname);
   }
 
   async initialize() {
@@ -56,7 +64,8 @@ class ChatApplication {
 
     this.ui.root.addEventListener('display-chat', async (e) => {
       const sessionId = e.detail.sessionId;
-      history.pushState(null, null, `?session=${sessionId}`);
+      // Push new history state
+      history.pushState({ type: 'chat', sessionId: sessionId }, null, `?session=${sessionId}`);
       await this.displayChatHistory(sessionId);
     });
 
@@ -169,7 +178,9 @@ class ChatApplication {
     this.ui.textarea.value = '';
     this.ui.root.removeAttribute('data-session-id');
     this.context = [];
-    history.pushState(null, null, window.location.pathname);
+
+    // Push new history state
+    history.pushState({ type: 'new' }, null, window.location.pathname);
   }
 
   async loadChatHistory() {
@@ -252,6 +263,17 @@ class ChatApplication {
   getSessionIdFromUrl() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('session');
+  }
+
+  async handleUrlChange() {
+    const sessionId = this.getSessionIdFromUrl();
+    const state = history.state;
+
+    if (state && state.type === 'chat' && sessionId) {
+      await this.displayChatHistory(sessionId);
+    } else {
+      this.startNewChat();
+    }
   }
 }
 
