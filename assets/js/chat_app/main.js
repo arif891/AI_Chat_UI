@@ -3,7 +3,7 @@ import { DatabaseManager } from './core/DatabaseManager.js';
 import { ChatUI } from './ui/ChatUI.js';
 
 import { Ollama } from './lib/ollama.js';
-import { marked } from './lib/marked.esm.js';
+import { marked } from './lib/marked.js';
 import { highlightAll } from '../../../layx/others/syntax_highlighter/syntax_highlighter.js';
 
 class ChatApplication {
