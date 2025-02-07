@@ -258,6 +258,7 @@
                                         }
 
                                         [data-code-lang] {
+                                            position: relative;
                                             margin-bottom: var(--space);
                                             font-family: 'Fira Code', monospace;
                                             font-size: 1.05rem;
@@ -315,6 +316,7 @@
             .offline__content_wrapper {
                 position: absolute;
                 inset: 0;
+                max-width: 100%;
                 visibility: hidden;
                 opacity: 0;
                 transition: .3s;

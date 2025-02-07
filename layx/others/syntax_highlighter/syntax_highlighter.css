@@ -1,18 +1,41 @@
 [data-code-lang] {
+	--padding: 1rem;
 	font-family: monospace;
 	font-size: 1rem;
 	line-height: 1.5;
-	padding: 1rem;
 	max-width: 100%;
 	overflow-x: auto;
 	background-color: var(--surface-color);
 	border-radius: var(--radius);
 	white-space: pre;
 
+	&:not(.multiline, .oneline) {
+		padding: var(--padding);
+	}
+
 	&.multiline {
+
+		.header {
+			display: flex;
+			justify-content: space-between;
+			padding: var(--padding);
+			border-bottom: 2px solid var(--bg-color);
+
+			.lang, .copy {
+             line-height: 1;
+			 font-size: .9rem;
+			}
+
+			.copy {
+				padding: 0;
+			}
+		}
 
 		.wrapper {
 			display: flex;
+			padding: var(--padding);
+			max-width: 100%;
+			overflow-x: auto;
 
 			.code {
 				color: inherit;
@@ -21,7 +44,22 @@
 		}
 	}
 
-	&.oneline {}
+	&.oneline {
+		position: relative;
+		padding: var(--padding);
+
+		.wrapper {
+			max-width: 100%;
+			overflow-x: auto;
+		}
+
+		.copy {
+			position: absolute;
+			inset: 0 var(--padding) 0 auto;
+			padding: 0;
+			background: linear-gradient(to right, transparent 0% 20%, var(--surface-color));
+		}
+	}
 
 	.numbers {
 		padding-left: 5px;

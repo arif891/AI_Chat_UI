@@ -151,8 +151,8 @@ export async function highlightText(src, lang, multiline = true, opt = {}) {
 	await tokenize(src, lang, (str, type) => tmp += toSpan(sanitize(str), type))
 
 	return multiline
-		? `<div class="wrapper"><div class="numbers">${'<div></div>'.repeat(opt.lineNumbers && (src.split('\n').length - 1))}</div><code class="code">${tmp}</code></div>`
-		: tmp;
+		? `<div class="header"><span class="lang">${lang}</span><button class="copy">Copy</button></div><div class="wrapper"><div class="numbers">${'<div></div>'.repeat(opt.lineNumbers && src.split('\n').length)}</div><code class="code">${tmp}</code></div>`
+		: `<div class="wrapper"><code class="code">${tmp}</code></div><button class="copy">Copy</button>`;
 }
 
 /**
@@ -166,7 +166,7 @@ export async function highlightText(src, lang, multiline = true, opt = {}) {
  * @param {Options} [opt] Highlighting options
  */
 export async function highlightElement(elm, lang = elm.dataset.codeLang, mode, opt) {
-	let txt = elm.textContent;
+	let txt = elm.textContent.trim();
 	mode ??= `${(txt.split('\n').length < 2 ? 'one' : 'multi')}line`;
 	elm.className = `${[...elm.classList].filter(className => !className.startsWith('')).join(' ')}code-block ${lang} ${mode} highlighted`;
 	elm.innerHTML = await highlightText(txt, lang, mode == 'multiline', opt);

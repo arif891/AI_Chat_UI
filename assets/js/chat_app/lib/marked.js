@@ -1759,9 +1759,9 @@ class _Renderer {
         const langString = (lang || '').match(other.notSpaceStart)?.[0];
         const code = text.replace(other.endingNewline, '') + '\n';
         if (!langString) {
-            return '<pre><code>'
+            return '<code>'
                 + (escaped ? code : escape(code, true))
-                + '</code></pre>';
+                + '</code>';
         }
         return '<div data-code-lang="'
             + escape(langString)
