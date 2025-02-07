@@ -131,7 +131,7 @@ class ChatApplication {
         });
 
         if (titleResponse.message.content) {
-          const updatedTitle = titleResponse.message.content.replaceAll('"', '');
+          const updatedTitle = titleResponse.message.content;
           const historyItem = this.ui.chatHistoryContainer.querySelector(`.item[data-session-id="${this.sessionId}"]`);
           if (historyItem) {
             historyItem.textContent = updatedTitle;
