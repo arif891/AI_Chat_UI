@@ -36,11 +36,6 @@
 			padding: var(--padding);
 			max-width: 100%;
 			overflow-x: auto;
-
-			.code {
-				color: inherit;
-				font: inherit;
-			}
 		}
 	}
 
@@ -56,9 +51,14 @@
 		.copy {
 			position: absolute;
 			inset: 0 var(--padding) 0 auto;
-			padding: 0;
-			background: linear-gradient(to right, transparent 0% 20%, var(--surface-color));
+			padding: 0 0 0 1rem;
+			background: linear-gradient(to right, transparent , var(--surface-color) 20% 100%);
 		}
+	}
+
+	.code {
+		color: inherit;
+		font: inherit;
 	}
 
 	.numbers {
