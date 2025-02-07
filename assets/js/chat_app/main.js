@@ -29,20 +29,30 @@ class ChatApplication {
     window.addEventListener('popstate', (event) => {
       this.handleUrlChange(event);
     });
-    history.replaceState({ type: 'new' }, null, window.location.pathname);
+
+    const sessionIdFromUrl = this.getSessionIdFromUrl();
+    if (sessionIdFromUrl) {
+      // If we have a session ID in URL, set appropriate state
+      history.replaceState(
+        { type: 'chat', sessionId: sessionIdFromUrl }, 
+        null, 
+        `?session=${sessionIdFromUrl}`
+      );
+    } else {
+      // Only replace state if no session ID in URL
+      history.replaceState({ type: 'new' }, null, window.location.pathname);
+    }
 
     const dbInitialized = await this.dbManager.initialize();
     if (dbInitialized) {
       await this.loadChatHistory();
     }
 
-    const sessionIdFromUrl = this.getSessionIdFromUrl();
     if (sessionIdFromUrl) {
-      chatApp.displayChatHistory(sessionIdFromUrl);
+      await this.displayChatHistory(sessionIdFromUrl);
     }
 
     this.ollama = new Ollama({ host: this.host });
-
     await this.loadModels();
   }
 
