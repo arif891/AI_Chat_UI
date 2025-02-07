@@ -1,6 +1,3 @@
-import { highlightAll } from '../../../../layx/others/syntax_highlighter/syntax_highlighter.js';
-import { marked } from '../lib/marked.esm.js';
-
 export class ChatUI {
   constructor(root, options = {}) {
     this.root = root;
@@ -108,10 +105,12 @@ export class ChatUI {
     });
 
     // Network status updates
-    window.addEventListener('offline', () => this.updateNetworkStatus());
-    window.addEventListener('online', () => this.updateNetworkStatus());
+    // window.addEventListener('offline', () => this.updateNetworkStatus());
+    // window.addEventListener('online', () => this.updateNetworkStatus());
+
     document.addEventListener('DOMContentLoaded', () => {
-      this.updateNetworkStatus();
+
+      // this.updateNetworkStatus();
       this.root.classList.add('loaded');
     });
 

@@ -1,0 +1,194 @@
+.chat__wrapper {
+    .side__nav {
+        display: grid;
+        grid-template-rows: max-content max-content 1fr max-content;
+        gap: var(--space-2);
+        overflow-x: clip;
+        padding: var(--space);
+        content-visibility: auto;
+
+        @media (width < 992px) {
+            position: fixed;
+            inset: 0 auto 0 0;
+            width: min(80%, var(--sidebar-width));
+            background-color: var(--bg-color);
+            z-index: 2;
+            transition: .6s;
+            translate: -100% 0;
+
+            .sidebar-open & {
+                translate: 0 0;
+            }
+        }
+
+        * {
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .header__wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space);
+            padding-left: env(titlebar-area-x, 0);
+            app-region: drag;
+            -webkit-app-region: drag;
+
+            >* {
+                app-region: no-drag;
+                -webkit-app-region: no-drag;
+            }
+
+            :last-child {
+                margin-left: auto;
+            }
+        }
+
+        .top__wrapper {
+            #new-chat-button {
+                --padding-x: 1.15em;
+                --padding-y: 1em;
+                --radius: 50px;
+
+                display: flex;
+                align-items: center;
+                gap: var(--space);
+                margin-bottom: var(--space-2);
+                transition: opacity .3s;
+
+                .icon {
+                    height: 1lh;
+                }
+
+                .offline & {
+                    opacity: .6;
+                    pointer-events: none;
+                }
+            }
+
+            .history__text {
+                font-size: 1.1rem;
+                padding-left: .65rem;
+                margin-bottom: -1rem;
+            }
+        }
+
+        .history__wrapper {
+            position: relative;
+
+            .scroll__container {
+                overflow-x: clip;
+
+                .items__wrapper {
+                    display: flex;
+                    flex-direction: column;
+
+                    .item {
+                        color: inherit;
+                        opacity: .8;
+                        padding: .65rem .75rem;
+                        text-align: left;
+                        border-radius: 50px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        background-color: transparent;
+
+                        &:hover,
+                        .active {
+                            background-color: var(--surface-color);
+                        }
+                    }
+                }
+
+                .sidebar-partial-close & {
+                    @media (width >=992px) {
+                        opacity: 0;
+                        transition: .3s;
+
+                        .sidebar-open &,
+                        .sidebar-hover-open:has(.side__nav:hover) & {
+                            opacity: 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        .footer__wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space);
+
+            .block {
+                display: flex;
+                align-items: center;
+                gap: var(--space);
+                padding: var(--space-2);
+                border-radius: var(--radius);
+                color: inherit;
+                background-color: var(--surface-color);
+
+                >* {
+                    flex-shrink: 0;
+                }
+
+                .title__text {
+                    opacity: .8;
+                }
+
+                .icon {
+                    height: 1lh;
+                }
+
+                &.user {
+
+                    .avatar__img {
+                        height: 2.5rem;
+                        width: 2.58rem;
+                        border-radius: 50%;
+                    }
+
+                    .user__info {
+
+                        span {
+                            display: block;
+                            white-space: nowrap;
+
+                            &.subscription {
+                                font-size: .8rem;
+                                opacity: .8;
+                            }
+                        }
+                    }
+                }
+
+                &.settings {}
+
+                &.theme {
+                    background-color: unset;
+                    padding: 0;
+
+                    .wrapper {
+                        display: flex;
+                        padding: var(--space);
+                        gap: var(--space);
+                        background-color: var(--surface-color);
+                        border-radius: 5rem;
+
+
+                        button {
+                            padding: var(--space);
+                            border-radius: 50%;
+                            background-size: 80%;
+                            opacity: .8;
+
+                            &.active {
+                                background-color: var(--accent-color);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

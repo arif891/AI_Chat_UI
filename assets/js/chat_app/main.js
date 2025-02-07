@@ -11,8 +11,8 @@ class ChatApplication {
     this.config = new ChatConfig(config);
     this.dbManager = new DatabaseManager(this.config);
     this.ui = new ChatUI(document.querySelector('#chat-app-root'));
-    this.ollama = new Ollama({ host: 'localhost:11434' });
 
+    this.host = 'localhost:11434';
     this.sessionId = 0;
     this.context = [];
     this.maxContext = 20;
@@ -30,6 +30,9 @@ class ChatApplication {
     if (dbInitialized) {
       await this.loadChatHistory();
     }
+
+    this.ollama = new Ollama({ host: this.host });
+
     await this.loadModels();
   }
 

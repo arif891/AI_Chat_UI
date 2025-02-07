@@ -1,0 +1,121 @@
+.chat__wrapper {
+    .main {
+        .action__wrapper {
+            --padding-x: 1rem;
+            --padding-y: 1rem;
+
+            position: relative;
+            background: unset;
+            padding: 0;
+
+
+            .chat__action {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-2);
+                margin-inline: auto;
+                max-width: 48rem;
+                padding: var(--padding-y) var(--padding-x);
+                border-radius: var(--radius-3) var(--radius-3) 0 0;
+                background-color: var(--bg-color);
+                transition: .6s;
+
+                .initial & {
+                    border-radius: var(--radius-3);
+
+                    @media (width < 992px) {
+                        margin-inline: var(--space);
+                    }
+                }
+
+                .chat__textarea {
+                    --min-line: 1;
+                    --max-line: 8;
+
+                    padding: 0;
+                    margin: 0;
+                    border: none;
+                    border-radius: 0;
+                    font: inherit;
+                    line-height: 1.5;
+                    background-color: unset;
+                    resize: none;
+                    outline: none;
+                    field-sizing: content;
+                    min-block-size: calc(1lh * var(--min-line));
+                    max-block-size: calc(1lh * var(--max-line));
+                    white-space: pre-wrap;
+                    overflow-wrap: anywhere;
+
+                    &::placeholder {
+                        color: inherit;
+                        opacity: .6;
+                    }
+
+                    &:focus {
+                        outline: none;
+                    }
+                }
+
+                .bottom__wrapper {
+                    display: flex;
+                    align-items: end;
+                    gap: var(--space);
+
+                    .chat__button {
+                        --padding-x: .5rem;
+                        --padding-y: .5rem;
+
+                        &:not(.send) {
+                            --bg: var(--surface-3-color);
+                        }
+
+                        .icon {
+                            fill: currentColor;
+                            height: 1.15rem;
+                            aspect-ratio: 1;
+                            vertical-align: middle;
+                        }
+
+                        &.send {
+                            margin-left: auto;
+                            position: relative;
+
+                            .icon {
+                                scale: 1.5;
+                            }
+
+                            .generating & {
+
+                                &::before {
+                                    content: '';
+                                    position: absolute;
+                                    inset: .6rem;
+                                    border-radius: .2rem;
+                                    background-color: currentColor;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                .offline &,
+                &.disabled,
+                &[disabled] {
+                    opacity: .6;
+                    pointer-events: none;
+                }
+            }
+
+            .note {
+                display: block;
+                font-size: .8rem;
+                text-align: center;
+                opacity: .6;
+                margin-top: var(--space);
+                position: absolute;
+                inset: 100% 0 0;
+            }
+        }
+    }
+}
