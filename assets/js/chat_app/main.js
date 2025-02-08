@@ -197,6 +197,7 @@ class ChatApplication {
   }
 
   async displayChatHistory(sessionId) {
+    if ((sessionId == this.sessionId)) return;
     try {
       this.ui.root.classList.remove('initial');
       this.ui.clearChatHistory();

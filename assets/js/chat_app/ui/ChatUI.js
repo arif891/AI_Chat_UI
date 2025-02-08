@@ -168,7 +168,7 @@ export class ChatUI {
 
   addChatHistoryItem(title, sessionId, position = 'beforeend') {
     this.chatHistoryContainer.insertAdjacentHTML(position,
-      `<button class="item" data-session-id="${sessionId}">${title}</button>`
+      `<div class="item" data-session-id="${sessionId}"><span class="title">${title}</span></div>`
     );
   }
 

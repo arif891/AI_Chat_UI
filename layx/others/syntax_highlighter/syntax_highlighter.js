@@ -168,8 +168,8 @@ export async function highlightText(src, lang, multiline = true, opt = {}) {
     await tokenize(src, lang, (str, type) => tmp += toSpan(sanitize(str), type))
 
     const html = multiline
-        ? `<div class="header"><span class="lang">${lang}</span><button class="copy"></button></div><div class="wrapper"><div class="numbers">${'<div></div>'.repeat(opt.lineNumbers && src.split('\n').length)}</div><code class="code">${tmp}</code></div>`
-        : `<div class="wrapper"><code class="code">${tmp}</code></div><button class="copy"></button>`;
+        ? `<div class="header"><span class="lang">${lang}</span><button class="copy" title="Copy Code"></button></div><div class="wrapper"><div class="numbers">${'<div></div>'.repeat(opt.lineNumbers && src.split('\n').length)}</div><code class="code">${tmp}</code></div>`
+        : `<div class="wrapper"><code class="code">${tmp}</code></div><button class="copy" title="Copy Code"></button>`;
 
     return html;
 }
