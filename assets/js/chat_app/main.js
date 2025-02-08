@@ -81,6 +81,25 @@ class ChatApplication {
       const { messageBlock, content, messageIndex } = e.detail;
       await this.saveEdit(messageBlock, content, messageIndex);
     });
+
+    this.ui.root.addEventListener('rename-chat', async (e) => {
+      const { sessionId, title } = e.detail;
+      if (!sessionId || !title) return;
+      await this.dbManager.updateChatHistoryTitle(sessionId, title);
+      
+      // Update document title if this is the current session
+      if (this.sessionId === Number(sessionId)) {
+        document.title = title;
+      }
+    });
+
+    this.ui.root.addEventListener('delete-chat', async (e) => {
+      const { sessionId } = e.detail;
+      await this.dbManager.deleteSession(sessionId);
+      if (this.sessionId === Number(sessionId)) {
+        this.startNewChat();
+      }
+    });
   }
 
   async processChat(editedContent = null) {
@@ -157,7 +176,7 @@ class ChatApplication {
 
         if (titleResponse.message.content) {
           const updatedTitle = titleResponse.message.content.replaceAll('"','');
-          const historyItem = this.ui.chatHistoryContainer.querySelector(`.item[data-session-id="${this.sessionId}"]`);
+          const historyItem = this.ui.chatHistoryContainer.querySelector(`.item[data-session-id="${this.sessionId}"] .title`);
           if (historyItem) {
             historyItem.textContent = updatedTitle;
           }

@@ -112,8 +112,14 @@ export class DatabaseManager {
 
   async updateChatHistoryTitle(sessionId, newTitle) {
     try {
-      const sessionInfo = await this.db.get(this.config.stores.sessions.name, sessionId);
+      const sessionInfo = await this.db.get(this.config.stores.sessions.name, Number(sessionId));
+      if (!sessionInfo) {
+        console.warn(`Session ${sessionId} not found`);
+        return;
+      }
+      
       sessionInfo.title = newTitle;
+      sessionInfo.updateTime = Date.now();
       await this.db.put(this.config.stores.sessions.name, sessionInfo);
       console.log(`History item updated: ${newTitle}`);
     } catch (error) {
@@ -138,6 +144,16 @@ export class DatabaseManager {
       }
     } catch (error) {
       console.error(`Error updating message in conversation: ${error.message}`);
+    }
+  }
+
+  async deleteSession(sessionId) {
+    try {
+      await this.db.delete(this.config.stores.conversations.name, Number(sessionId));
+      await this.db.delete(this.config.stores.sessions.name, Number(sessionId));
+      console.log(`Session ${sessionId} deleted successfully`);
+    } catch (error) {
+      console.error(`Error deleting session: ${error.message}`);
     }
   }
 }

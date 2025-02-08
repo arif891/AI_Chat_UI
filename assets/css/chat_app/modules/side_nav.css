@@ -84,6 +84,7 @@
                     flex-direction: column;
 
                     .item {
+                        position: relative;
                         color: inherit;
                         opacity: .8;
                         padding: .65rem .75rem;
@@ -93,9 +94,47 @@
                         text-overflow: ellipsis;
                         background-color: transparent;
 
-                        &:hover,
-                        .active {
+                        &:hover, .active {
                             background-color: var(--surface-color);
+                        }
+
+                        .title, .menu {
+                            
+                            .renaming & {
+                                display: none;
+                            }
+                        }
+
+                        .title {
+                            pointer-events: none;
+                        }
+
+                        .menu {
+                            position: absolute;
+                            inset: 0 0 0 auto;
+                            display: flex;
+                            gap: var(--space);
+                            padding-inline: .5rem 1rem;
+                            background-color: var(--surface-color);
+                            opacity: 0;
+
+                            .item:hover & {
+                                opacity: 1;
+                            }
+
+                            .menu__item {
+                                padding: 0;
+                                background: none;
+                            }
+                        }
+
+                        .rename-input {
+                            width: 100%;
+                            font: inherit;
+                            
+                            &:focus {
+                                outline-color: var(--accent-color);
+                            }
                         }
                     }
                 }

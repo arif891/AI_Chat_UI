@@ -83,6 +83,23 @@ export class ChatUI {
 
     // Chat history item click event
     this.chatHistoryContainer.addEventListener('click', (e) => {
+
+      const renameButton = e.target.closest('.menu__item.rename');
+      if (renameButton) {
+        e.stopPropagation();
+        const historyItem = renameButton.closest('.item');
+        this.enableHistoryRenameMode(historyItem);
+        return;
+      }
+
+      const deleteButton = e.target.closest('.menu__item.delete');
+      if (deleteButton) {
+        e.stopPropagation();
+        const historyItem = deleteButton.closest('.item');
+        this.deleteHistoryItem(historyItem);
+        return;
+      }
+
       try {
         this.displayChatHistory(e.target);
       } catch (error) {
@@ -168,7 +185,21 @@ export class ChatUI {
 
   addChatHistoryItem(title, sessionId, position = 'beforeend') {
     this.chatHistoryContainer.insertAdjacentHTML(position,
-      `<div class="item" data-session-id="${sessionId}"><span class="title">${title}</span></div>`
+      `<div class="item" data-session-id="${sessionId}">
+        <span class="title">${title}</span>
+        <div class="menu">
+          <button class="menu__item rename" title="Rename">
+            <svg class="icon">
+                <use href="/assets/image/svg/icons.svg#edit-icon" />
+            </svg>
+          </button>
+          <button class="menu__item delete" title="Delete">
+             <svg class="icon">
+                <use href="/assets/image/svg/icons.svg#delete-icon" />
+            </svg>
+          </button>
+        </div>
+      </div>`
     );
   }
 
@@ -397,5 +428,69 @@ export class ChatUI {
     blocks.slice(index).forEach(block => {
       block.remove();
     });
+  }
+
+
+  enableHistoryRenameMode(historyItem) {
+    const titleSpan = historyItem.querySelector('.title');
+    if (!titleSpan || historyItem.classList.contains('renaming')) return;
+    
+    const originalText = titleSpan.textContent;
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = originalText;
+    input.className = 'rename-input';
+    
+    const saveRename = async () => {
+      
+      const newTitle = input.value.trim();
+      const sessionId = historyItem.dataset.sessionId;
+      
+      if (newTitle && newTitle !== originalText) {
+        const event = new CustomEvent('rename-chat', {
+          detail: { sessionId, title: newTitle },
+          bubbles: true,
+          cancelable: true
+        });
+        this.root.dispatchEvent(event);
+        titleSpan.textContent = newTitle;
+      } else {
+        titleSpan.textContent = originalText;
+      }
+      
+      input.remove();
+      historyItem.classList.remove('renaming');
+    };
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        input.blur(); 
+      }
+      if (e.key === 'Escape') {
+        titleSpan.textContent = originalText;
+        input.remove();
+        historyItem.classList.remove('renaming');
+      }
+    });
+
+    input.addEventListener('blur', saveRename);
+
+    historyItem.classList.add('renaming');
+    titleSpan.after(input);
+    input.focus();
+    input.select();
+  }
+
+  deleteHistoryItem(historyItem) {
+    const sessionId = historyItem.dataset.sessionId;
+    const event = new CustomEvent('delete-chat', {
+      detail: { sessionId },
+      bubbles: true,
+      cancelable: true
+    });
+    this.root.dispatchEvent(event);
+    historyItem.remove();
   }
 }
