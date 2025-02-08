@@ -76,17 +76,22 @@ class ChatApplication {
       this.model = e.detail.model;
       localStorage.setItem('selectedModel', this.model);
     });
+
+    this.ui.root.addEventListener('save-edit', async (e) => {
+      const { messageBlock, content, messageIndex } = e.detail;
+      await this.saveEdit(messageBlock, content, messageIndex);
+    });
   }
 
-  async processChat() {
+  async processChat(editedContent = null) {
     try {
-      const userContent = this.ui.textarea.value.trim();
+      let userContent = editedContent || this.ui.textarea.value.trim();
       if (!userContent || this.ui.root.classList.contains('generating')) return;
 
       this.ui.textarea.value = '';
       this.ui.root.classList.add('generating');
 
-      const isNewSession = !this.ui.root.hasAttribute('data-session-id');
+      let isNewSession = !this.ui.root.hasAttribute('data-session-id');
 
       if (isNewSession) {
         this.sessionId = await this.dbManager.createNewSession();
@@ -286,6 +291,26 @@ class ChatApplication {
       await this.displayChatHistory(sessionId);
     } else if (state && state.type === 'new') {
       this.startNewChat();
+    }
+  }
+
+  async saveEdit(messageBlock, content, messageIndex) {
+    try {
+      const sessionId = Number(this.ui.root.dataset.sessionId);
+      await this.dbManager.updateMessage(sessionId, messageBlock, content, messageIndex);
+
+      // Remove blocks from UI after the edited message
+      this.ui.removeBlocksAfter(messageIndex);
+
+      // Refresh context after saving edit
+      const conversationInfo = await this.dbManager.db.get(this.config.stores.conversations.name, this.sessionId);
+      await this.refreshContext(conversationInfo.messages, this.maxContext);
+
+      // Process chat with the edited content
+      await this.processChat(content);
+
+    } catch (error) {
+      console.error('Error saving edit:', error);
     }
   }
 }

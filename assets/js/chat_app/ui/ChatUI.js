@@ -281,6 +281,17 @@ export class ChatUI {
     const newText = this.editMode.textarea.value.trim();
     if (newText && newText !== this.editMode.original) {
       this.editMode.messageSpan.textContent = newText;
+      const messageBlock = this.editMode.block;
+      const content = newText;
+      const messageIndex = Array.from(messageBlock.parentNode.children).indexOf(messageBlock);
+
+      const event = new CustomEvent('save-edit', {
+        detail: { messageBlock, content, messageIndex },
+        bubbles: true,
+        cancelable: true,
+        composed: false,
+      });
+      this.root.dispatchEvent(event);
     }
     this.exitEditMode();
   }
@@ -379,5 +390,12 @@ export class ChatUI {
       // Initial update
       updateTitlebarArea();
     }
+  }
+
+  removeBlocksAfter(index) {
+    const blocks = Array.from(this.contentContainer.children);
+    blocks.slice(index).forEach(block => {
+      block.remove();
+    });
   }
 }

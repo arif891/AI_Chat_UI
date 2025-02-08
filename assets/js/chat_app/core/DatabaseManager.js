@@ -120,4 +120,24 @@ export class DatabaseManager {
       console.error('Error updating chat history title:', error);
     }
   }
+
+  async updateMessage(sessionId, messageBlock, content, messageIndex) {
+    try {
+      const conversation = await this.db.get(this.config.stores.conversations.name, sessionId);
+
+      if (messageIndex >= 0 && messageIndex < conversation.messages.length) {
+        conversation.messages[messageIndex].content = content;
+
+        // Remove messages after the edited message
+        conversation.messages = conversation.messages.slice(0, messageIndex);
+
+        await this.db.put(this.config.stores.conversations.name, conversation);
+        console.log(`Message updated successfully in conversation: ${sessionId}`);
+      } else {
+        console.warn(`Message index out of bounds: ${messageIndex}`);
+      }
+    } catch (error) {
+      console.error(`Error updating message in conversation: ${error.message}`);
+    }
+  }
 }
