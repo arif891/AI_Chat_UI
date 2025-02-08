@@ -61,6 +61,16 @@
 		font: inherit;
 	}
 
+	.copy {
+		&::before {
+			content: 'Copy';
+		}
+
+		&.copied::before {
+			content: 'Copied';
+		}
+	}
+
 	.numbers {
 		padding-left: 5px;
 		counter-reset: line;
