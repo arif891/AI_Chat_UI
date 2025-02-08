@@ -32,8 +32,10 @@ export class ChatConfig {
         options: {}
       },
       ui: {
-       maxHistory: 50,
-       maxMessage: 25
+       pageSize: {
+         history: 10,
+         messages: 15
+       }
       },
       ...userConfig
     };
