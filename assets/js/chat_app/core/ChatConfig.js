@@ -31,6 +31,10 @@ export class ChatConfig {
         `,
         options: {}
       },
+      ui: {
+       maxHistory: 50,
+       maxMessage: 25
+      },
       ...userConfig
     };
   }

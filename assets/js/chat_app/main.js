@@ -209,7 +209,7 @@ class ChatApplication {
 
   async loadChatHistory() {
     try {
-      const chatHistoryItems = await this.dbManager.getRecentItems(this.config.stores.sessions.name, 100, 'updateTime');
+      const chatHistoryItems = await this.dbManager.getRecentItems(this.config.stores.sessions.name, this.config.ui.maxHistory, 'updateTime');
       if (chatHistoryItems.length) {
         chatHistoryItems.forEach(item => {
           this.ui.addChatHistoryItem(item.title, item.sessionId);
