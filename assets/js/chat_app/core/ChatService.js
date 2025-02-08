@@ -1,6 +1,7 @@
 export class ChatService {
     constructor(host) {
         this.host = host;
+        this.abortController = new AbortController();
     }
 
     async getTitle(model, userContent) {
@@ -24,14 +25,15 @@ export class ChatService {
         return null;
     }
 
-    async chat(options) {
+    async chat(options, signal = this.abortController.signal) {
         try {
             const response = await fetch(`http://${this.host}/api/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(options)
+                body: JSON.stringify(options),
+                signal: signal
             });
 
             if (!response.ok) {
@@ -40,19 +42,24 @@ export class ChatService {
 
             return await response.json();
         } catch (error) {
-            console.error('Error in chat:', error);
-            throw error;
+            if (error.name === 'AbortError') {
+                console.warn('Request aborted by user.');
+            } else {
+                console.error('Error in chat:', error);
+                throw error;
+            }
         }
     }
 
-    async *streamChat(options) {
+    async *streamChat(options, signal = this.abortController.signal) {
         try {
             const response = await fetch(`http://${this.host}/api/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ ...options, stream: true })
+                body: JSON.stringify({ ...options, stream: true }),
+                signal: signal
             });
 
             if (!response.ok) {
@@ -94,8 +101,12 @@ export class ChatService {
                 reader.releaseLock();
             }
         } catch (error) {
-            console.error('Error in streamChat:', error);
-            throw error;
+            if (error.name === 'AbortError') {
+                console.warn('Request aborted by user.');
+            } else {
+                console.error('Error in streamChat:', error);
+                throw error;
+            }
         }
     }
 
@@ -120,7 +131,8 @@ export class ChatService {
     }
 
     abort() {
-        // Implement abort logic if needed
-        console.warn('Abort functionality is not yet implemented.');
+        this.abortController.abort();
+        this.abortController = new AbortController();
+        console.warn('ChatService Aborted');
     }
 }
