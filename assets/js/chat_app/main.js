@@ -3,7 +3,10 @@ import { DatabaseManager } from './core/DatabaseManager.js';
 import { ChatUI } from './ui/ChatUI.js';
 
 import { Ollama } from './lib/ollama.js';
+
 import { marked } from './lib/marked.js';
+import {default_renderer, parser, parser_write } from './lib/smd.js';
+
 import { highlightAll } from '../../../layx/others/syntax_highlighter/syntax_highlighter.js';
 
 class ChatApplication {
@@ -118,10 +121,11 @@ class ChatApplication {
         stream: true
       });
 
+      const parser =  this.getParser(lastAssistantBlock);
       let assistantContent = '';
       for await (const part of responseStream) {
         assistantContent += part.message.content;
-        lastAssistantBlock.innerHTML = marked.parse(assistantContent);
+        parser_write(parser, part.message.content);
       }
 
       this.ui.root.classList.remove('generating');
@@ -166,10 +170,6 @@ class ChatApplication {
       this.ui.root.classList.remove('generating');
       console.error('Error processing chat:', error);
     }
-  }
-
-  abortGenerate() {
-    ollama.abort();
   }
 
   startNewChat() {
@@ -258,6 +258,15 @@ class ChatApplication {
     } catch (error) {
       console.error('Error updating context:', error);
     }
+  }
+
+  abortGenerate() {
+    ollama.abort();
+  }
+
+  getParser(element) {
+    const renderer = default_renderer(element)
+    return parser(renderer)
   }
 
   getSessionIdFromUrl() {
