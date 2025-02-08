@@ -203,9 +203,9 @@ class ChatApplication {
       this.ui.root.setAttribute('data-session-id', sessionId);
       this.sessionId = Number(sessionId);
 
-      const conversation = await this.dbManager.db.get(this.config.stores.conversations.name, this.sessionId);
-      if (conversation.messages.length) {
-        for (const message of conversation.messages) {
+      const conversationInfo = await this.dbManager.db.get(this.config.stores.conversations.name, this.sessionId);
+      if (conversationInfo.messages.length) {
+        for (const message of conversationInfo.messages) {
           if (message.role === 'assistant') {
             this.ui.renderMessage(marked.parse(message.content), message.role);
           } else {
@@ -214,9 +214,12 @@ class ChatApplication {
         }
         this.ui.scrollToBottom();
         highlightAll();
-        await this.refreshContext(conversation.messages, this.maxContext);
+        await this.refreshContext(conversationInfo.messages, this.maxContext);
         console.log(this.context);
       }
+
+      const sessionInfo = await this.dbManager.db.get(this.config.stores.sessions.name, this.sessionId);
+      document.title = sessionInfo.title;
     } catch (error) {
       console.error('Error displaying chat history:', error);
     }
