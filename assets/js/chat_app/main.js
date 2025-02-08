@@ -1,13 +1,9 @@
 import { ChatConfig } from './core/ChatConfig.js';
 import { DatabaseManager } from './core/DatabaseManager.js';
 import { ChatUI } from './ui/ChatUI.js';
-
-import { Ollama } from './lib/ollama.js';
-
-import { marked } from './lib/marked.js';
-import {default_renderer, parser, parser_write } from './lib/smd.js';
-
-import { highlightAll } from '../../../layx/others/syntax_highlighter/syntax_highlighter.js';
+import { ChatService } from './core/ChatService.js';
+import { DOMUtils } from './utils/DOMUtils.js';
+import { MarkdownUtils } from './utils/MarkdownUtils.js';
 
 class ChatApplication {
   constructor(config = {}) {
@@ -16,6 +12,7 @@ class ChatApplication {
     this.ui = new ChatUI(document.querySelector('#chat-app-root'));
 
     this.host = 'localhost:11434';
+    this.chatService = new ChatService(this.host);
     this.sessionId = 0;
     this.context = [];
     this.maxContext = 20;
@@ -49,13 +46,12 @@ class ChatApplication {
       await this.displayChatHistory(sessionIdFromUrl);
     }
 
-    this.ollama = new Ollama({ host: this.host });
     await this.loadModels();
   }
 
   registerEvents() {
     this.ui.root.addEventListener('send-message', async () => {
-      if (this.ui.root.classList.contains('generating')) {
+      if (DOMUtils.hasClass(this.ui.root, 'generating')) {
         this.abortGenerate();
         return;
       }
@@ -105,20 +101,20 @@ class ChatApplication {
   async processChat(editedContent = null) {
     try {
       let userContent = editedContent || this.ui.textarea.value.trim();
-      if (!userContent || this.ui.root.classList.contains('generating')) return;
+      if (!userContent || DOMUtils.hasClass(this.ui.root, 'generating')) return;
 
       this.ui.textarea.value = '';
-      this.ui.root.classList.add('generating');
+      DOMUtils.addClass(this.ui.root, 'generating');
 
       let isNewSession = !this.ui.root.hasAttribute('data-session-id');
 
       if (isNewSession) {
         this.sessionId = await this.dbManager.createNewSession();
-        this.ui.root.setAttribute('data-session-id', this.sessionId);
+        DOMUtils.setAttribute(this.ui.root, 'data-session-id', this.sessionId);
         this.ui.addChatHistoryItem(`New Chat ${this.sessionId}`, this.sessionId, 'afterbegin');
       }
 
-      this.ui.root.classList.remove('initial');
+      DOMUtils.removeClass(this.ui.root, 'initial');
 
       // Render the user message and add a placeholder for the assistant
       this.ui.renderMessage(userContent, 'user');
@@ -135,47 +131,32 @@ class ChatApplication {
       );
 
       // Stream the assistant response
-      const responseStream = await this.ollama.chat({
+      const responseStream = this.chatService.streamChat({
         model: this.model,
         messages: [
           { role: 'system', content: this.systemPrompt },
           ...this.context
         ],
-        options: this.aiOptions,
-        stream: true
+        options: this.aiOptions
       });
 
-      const parser =  this.getParser(lastAssistantBlock);
+      const parser = MarkdownUtils.getParser(lastAssistantBlock);
       let assistantContent = '';
       for await (const part of responseStream) {
         assistantContent += part.message.content;
-        parser_write(parser, part.message.content);
+        MarkdownUtils.parserWrite(parser, part.message.content);
       }
 
-      this.ui.root.classList.remove('generating');
+      DOMUtils.removeClass(this.ui.root, 'generating');
 
-      highlightAll();
+      MarkdownUtils.highlightCode();
       await this.dbManager.addMessage(this.sessionId, { role: 'assistant', content: assistantContent });
       this.context.push({ role: 'assistant', content: assistantContent });
 
       // If this is a new session, update the chat history title
       if (isNewSession) {
-        const titleResponse = await this.ollama.chat({
-          model: this.model,
-          messages: [
-            {
-              role: "system",
-              content: "You are an AI assistant. Generate a concise, engaging title under 6 words that reflects the core intent of the user's first message, from their perspective. The title should summarize the query clearly to aid in future searchability. Respond *only* with the title—no explanations."
-            },
-            {
-              role: "user",
-              content: `Generate a title for this message: '${userContent}'.`
-            }
-          ]
-        });
-
-        if (titleResponse.message.content) {
-          const updatedTitle = titleResponse.message.content.replaceAll('"','');
+        const updatedTitle = await this.chatService.getTitle(this.model, userContent);
+        if (updatedTitle) {
           const historyItem = this.ui.chatHistoryContainer.querySelector(`.item[data-session-id="${this.sessionId}"] .title`);
           if (historyItem) {
             historyItem.textContent = updatedTitle;
@@ -191,16 +172,16 @@ class ChatApplication {
 
       console.log(this.context);
     } catch (error) {
-      this.ui.root.classList.remove('generating');
+      DOMUtils.removeClass(this.ui.root, 'generating');
       console.error('Error processing chat:', error);
     }
   }
 
   startNewChat() {
-    this.ui.root.classList.add('initial');
+    DOMUtils.addClass(this.ui.root, 'initial');
     this.ui.clearChatHistory();
     this.ui.textarea.value = '';
-    this.ui.root.removeAttribute('data-session-id');
+    DOMUtils.removeAttribute(this.ui.root, 'data-session-id');
     this.context = [];
 
     // Push new history state
@@ -223,22 +204,22 @@ class ChatApplication {
   async displayChatHistory(sessionId) {
     if ((sessionId == this.sessionId)) return;
     try {
-      this.ui.root.classList.remove('initial');
+      DOMUtils.removeClass(this.ui.root, 'initial');
       this.ui.clearChatHistory();
-      this.ui.root.setAttribute('data-session-id', sessionId);
+      DOMUtils.setAttribute(this.ui.root, 'data-session-id', sessionId);
       this.sessionId = Number(sessionId);
 
       const conversationInfo = await this.dbManager.db.get(this.config.stores.conversations.name, this.sessionId);
       if (conversationInfo.messages.length) {
         for (const message of conversationInfo.messages) {
           if (message.role === 'assistant') {
-            this.ui.renderMessage(marked.parse(message.content), message.role);
+            this.ui.renderMessage(MarkdownUtils.parseMarkdown(message.content), message.role);
           } else {
             this.ui.renderMessage(message.content, message.role);
           }
         }
         this.ui.scrollToBottom();
-        highlightAll();
+        MarkdownUtils.highlightCode();
         await this.refreshContext(conversationInfo.messages, this.maxContext);
         console.log(this.context);
       }
@@ -252,7 +233,7 @@ class ChatApplication {
 
   async loadModels() {
     try {
-      const modelListResponse = await this.ollama.list();
+      const modelListResponse = await this.chatService.list();
       if (modelListResponse.models.length) {
         this.modelList = modelListResponse.models;
         if (!localStorage.getItem('selectedModel')) {
@@ -289,12 +270,7 @@ class ChatApplication {
   }
 
   abortGenerate() {
-    ollama.abort();
-  }
-
-  getParser(element) {
-    const renderer = default_renderer(element)
-    return parser(renderer)
+    this.chatService.abort();
   }
 
   getSessionIdFromUrl() {

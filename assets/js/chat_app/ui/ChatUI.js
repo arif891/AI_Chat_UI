@@ -1,3 +1,5 @@
+import { DOMUtils } from '../utils/DOMUtils.js';
+
 export class ChatUI {
   constructor(root, options = {}) {
     this.root = root;
@@ -23,14 +25,14 @@ export class ChatUI {
   }
 
   initializeElements() {
-    this.sidebarTogglers = this.root.querySelectorAll(this.uiOptions.sidebarTogglers);
-    this.textarea = this.root.querySelector(this.uiOptions.textarea);
-    this.sendButton = this.root.querySelector(this.uiOptions.sendButton);
-    this.newChatButton = this.root.querySelector(this.uiOptions.newChatButton);
-    this.chatHistoryContainer = this.root.querySelector(this.uiOptions.chatHistoryContainer);
-    this.contentScrollContainer = this.root.querySelector(this.uiOptions.contentScrollContainer);
-    this.contentContainer = this.root.querySelector(this.uiOptions.contentContainer);
-    this.modelMenu = this.root.querySelector(this.uiOptions.modelMenu);
+    this.sidebarTogglers = DOMUtils.findElements(this.root, this.uiOptions.sidebarTogglers);
+    this.textarea = DOMUtils.findElement(this.root, this.uiOptions.textarea);
+    this.sendButton = DOMUtils.findElement(this.root, this.uiOptions.sendButton);
+    this.newChatButton = DOMUtils.findElement(this.root, this.uiOptions.newChatButton);
+    this.chatHistoryContainer = DOMUtils.findElement(this.root, this.uiOptions.chatHistoryContainer);
+    this.contentScrollContainer = DOMUtils.findElement(this.root, this.uiOptions.contentScrollContainer);
+    this.contentContainer = DOMUtils.findElement(this.root, this.uiOptions.contentContainer);
+    this.modelMenu = DOMUtils.findElement(this.root, this.uiOptions.modelMenu);
   }
 
   registerEventListeners() {
@@ -47,11 +49,11 @@ export class ChatUI {
 
     // Restore sidebar state from localStorage
     const sidebarIsOpen = localStorage.getItem(this.uiOptions.sidebarStateName) === 'true';
-    if (sidebarIsOpen) this.root.classList.add('sidebar-open');
+    if (sidebarIsOpen) DOMUtils.addClass(this.root, 'sidebar-open');
 
     // Close sidebar on Escape key press
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.root.classList.contains('sidebar-open')) {
+      if (e.key === 'Escape' && DOMUtils.hasClass(this.root, 'sidebar-open')) {
         try {
           this.toggleSidebar();
         } catch (error) {
@@ -62,22 +64,12 @@ export class ChatUI {
 
     // Send message events
     this.sendButton.addEventListener('click', async (e) => {
-      const event = new CustomEvent('send-message', {
-        bubbles: true,
-        cancelable: true,
-        composed: false,
-      });
-      this.root.dispatchEvent(event);
+      DOMUtils.dispatchEvent(this.root, 'send-message');
     });
     this.textarea.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        const event = new CustomEvent('send-message', {
-          bubbles: true,
-          cancelable: true,
-          composed: false,
-        });
-        this.root.dispatchEvent(event);
+        DOMUtils.dispatchEvent(this.root, 'send-message');
       }
     });
 
@@ -109,12 +101,7 @@ export class ChatUI {
 
     // New chat button event
     this.newChatButton.addEventListener('click', () => {
-      const event = new CustomEvent('new-chat', {
-        bubbles: true,
-        cancelable: true,
-        composed: false,
-      });
-      this.root.dispatchEvent(event);
+      DOMUtils.dispatchEvent(this.root, 'new-chat');
     });
 
     // Model selection event
@@ -122,14 +109,8 @@ export class ChatUI {
       this.selectModel(e.target);
     });
 
-    // Network status updates
-    // window.addEventListener('offline', () => this.updateNetworkStatus());
-    // window.addEventListener('online', () => this.updateNetworkStatus());
-
     document.addEventListener('DOMContentLoaded', () => {
-
-      // this.updateNetworkStatus();
-      this.root.classList.add('loaded');
+      DOMUtils.addClass(this.root, 'loaded');
     });
 
     // Delegate click events for editing messages
@@ -148,15 +129,15 @@ export class ChatUI {
       localStorage.setItem(this.uiOptions.sidebarStateName, isOpen);
 
       // Handle the backdrop for the sidebar
-      let backdrop = this.root.querySelector(this.uiOptions.backdrop);
+      let backdrop = DOMUtils.findElement(this.root, this.uiOptions.backdrop);
       if (!backdrop && isOpen) {
         backdrop = document.createElement('backdrop');
-        backdrop.classList.add('chat-backdrop');
+        DOMUtils.addClass(backdrop, 'chat-backdrop');
         backdrop.addEventListener('click', () => this.toggleSidebar());
         this.root.appendChild(backdrop);
       }
       if (backdrop) {
-        backdrop.classList.toggle('open');
+        DOMUtils.toggleClass(backdrop, 'open');
       }
     } catch (error) {
       console.error('Error in toggleSidebar:', error);
@@ -180,11 +161,11 @@ export class ChatUI {
     // Sanitize user input if needed and generate HTML for the message block
     const finalContent = role === 'user' ? this.sanitizeInput(content) : content;
     const messageHTML = this.generateMessageBlock(finalContent, role);
-    this.contentContainer.insertAdjacentHTML('beforeend', messageHTML);
+    DOMUtils.insertHTML(this.contentContainer, 'beforeend', messageHTML);
   }
 
   addChatHistoryItem(title, sessionId, position = 'beforeend') {
-    this.chatHistoryContainer.insertAdjacentHTML(position,
+    DOMUtils.insertHTML(this.chatHistoryContainer, position,
       `<div class="item" data-session-id="${sessionId}">
         <span class="title">${title}</span>
         <div class="menu">
@@ -280,8 +261,8 @@ export class ChatUI {
       </div>
     `;
 
-    messageBlock.classList.add('editing');
-    messageBlock.insertAdjacentHTML('beforeend', editUI);
+    DOMUtils.addClass(messageBlock, 'editing');
+    DOMUtils.insertHTML(messageBlock, 'beforeend', editUI);
 
     const textarea = messageBlock.querySelector('.edit-textarea');
     textarea.focus();
@@ -316,13 +297,7 @@ export class ChatUI {
       const content = newText;
       const messageIndex = Array.from(messageBlock.parentNode.children).indexOf(messageBlock);
 
-      const event = new CustomEvent('save-edit', {
-        detail: { messageBlock, content, messageIndex },
-        bubbles: true,
-        cancelable: true,
-        composed: false,
-      });
-      this.root.dispatchEvent(event);
+      DOMUtils.dispatchEvent(this.root, 'save-edit', { messageBlock, content, messageIndex });
     }
     this.exitEditMode();
   }
@@ -334,9 +309,9 @@ export class ChatUI {
 
   exitEditMode() {
     if (!this.editMode) return;
-    this.editMode.block.classList.remove('editing');
+    DOMUtils.removeClass(this.editMode.block, 'editing');
     const editUI = this.editMode.block.querySelector('.edit__wrapper');
-    if (editUI) editUI.remove();
+    if (editUI) DOMUtils.removeElement(editUI);
     this.editMode = null;
   }
 
@@ -344,13 +319,7 @@ export class ChatUI {
     const sessionIdAttribute = target.getAttribute('data-session-id');
     if (!sessionIdAttribute) return;
 
-    const event = new CustomEvent('display-chat', {
-      detail: { sessionId: sessionIdAttribute },
-      bubbles: true,
-      cancelable: true,
-      composed: false,
-    });
-    this.root.dispatchEvent(event);
+    DOMUtils.dispatchEvent(this.root, 'display-chat', { sessionId: sessionIdAttribute });
   }
 
   selectModel(target) {
@@ -360,18 +329,15 @@ export class ChatUI {
 
       localStorage.setItem('selectedModel', selectedModel);
       // Update UI: mark selected model as active
-      this.modelMenu.querySelectorAll('.model').forEach(modelBtn => {
-        modelBtn.classList.remove('active');
+      DOMUtils.findElements(this.modelMenu, '.model').forEach(modelBtn => {
+        DOMUtils.removeClass(modelBtn, 'active');
       });
-      this.modelMenu.querySelector(`[data-model="${selectedModel}"]`)?.classList.add('active');
+      const selectedModelElement = this.modelMenu.querySelector(`[data-model="${selectedModel}"]`);
+      if (selectedModelElement) {
+        DOMUtils.addClass(selectedModelElement, 'active');
+      }
 
-      const event = new CustomEvent('model-selected', {
-        detail: { model: selectedModel },
-        bubbles: true,
-        cancelable: true,
-        composed: false,
-      });
-      this.root.dispatchEvent(event);
+      DOMUtils.dispatchEvent(this.root, 'model-selected', { model: selectedModel });
     } catch (error) {
       console.error('Error selecting model:', error);
     }
@@ -380,7 +346,7 @@ export class ChatUI {
   populateModelMenu(models) {
     models.forEach(model => {
       const [modelName, modelInfo] = model.name.split(':');
-      this.modelMenu.insertAdjacentHTML('beforeend', `
+      DOMUtils.insertHTML(this.modelMenu, 'beforeend', `
         <button class="model" data-model="${model.name}">
           <span class="name">${modelName}</span>
           <span class="info">${modelInfo || ''}</span>
@@ -390,11 +356,14 @@ export class ChatUI {
   }
 
   setActiveModel(model) {
-    this.modelMenu.querySelector(`[data-model="${model}"]`)?.classList.add('active');
+    const activeModelElement = this.modelMenu.querySelector(`[data-model="${model}"]`);
+    if (activeModelElement) {
+      DOMUtils.addClass(activeModelElement, 'active');
+    }
   }
 
   clearChatHistory() {
-    this.contentContainer.innerHTML = '';
+    DOMUtils.clearInnerHTML(this.contentContainer);
   }
 
   addSystemMessage(content) {
@@ -426,14 +395,14 @@ export class ChatUI {
   removeBlocksAfter(index) {
     const blocks = Array.from(this.contentContainer.children);
     blocks.slice(index).forEach(block => {
-      block.remove();
+      DOMUtils.removeElement(block);
     });
   }
 
 
   enableHistoryRenameMode(historyItem) {
     const titleSpan = historyItem.querySelector('.title');
-    if (!titleSpan || historyItem.classList.contains('renaming')) return;
+    if (!titleSpan || DOMUtils.hasClass(historyItem, 'renaming')) return;
     
     const originalText = titleSpan.textContent;
     
@@ -448,19 +417,14 @@ export class ChatUI {
       const sessionId = historyItem.dataset.sessionId;
       
       if (newTitle && newTitle !== originalText) {
-        const event = new CustomEvent('rename-chat', {
-          detail: { sessionId, title: newTitle },
-          bubbles: true,
-          cancelable: true
-        });
-        this.root.dispatchEvent(event);
+        DOMUtils.dispatchEvent(this.root, 'rename-chat', { sessionId, title: newTitle });
         titleSpan.textContent = newTitle;
       } else {
         titleSpan.textContent = originalText;
       }
       
-      input.remove();
-      historyItem.classList.remove('renaming');
+      DOMUtils.removeElement(input);
+      DOMUtils.removeClass(historyItem, 'renaming');
     };
 
     input.addEventListener('keydown', (e) => {
@@ -470,14 +434,14 @@ export class ChatUI {
       }
       if (e.key === 'Escape') {
         titleSpan.textContent = originalText;
-        input.remove();
-        historyItem.classList.remove('renaming');
+        DOMUtils.removeElement(input);
+        DOMUtils.removeClass(historyItem, 'renaming');
       }
     });
 
     input.addEventListener('blur', saveRename);
 
-    historyItem.classList.add('renaming');
+    DOMUtils.addClass(historyItem, 'renaming');
     titleSpan.after(input);
     input.focus();
     input.select();
@@ -485,12 +449,7 @@ export class ChatUI {
 
   deleteHistoryItem(historyItem) {
     const sessionId = historyItem.dataset.sessionId;
-    const event = new CustomEvent('delete-chat', {
-      detail: { sessionId },
-      bubbles: true,
-      cancelable: true
-    });
-    this.root.dispatchEvent(event);
-    historyItem.remove();
+    DOMUtils.dispatchEvent(this.root, 'delete-chat', { sessionId });
+    DOMUtils.removeElement(historyItem);
   }
 }
