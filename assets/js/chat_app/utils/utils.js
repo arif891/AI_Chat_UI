@@ -71,3 +71,11 @@ export function sanitizeInput(input) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     }
+
+ export async function copyToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (error) {
+      console.error('Failed to copy text:', error);
+    }
+  }   

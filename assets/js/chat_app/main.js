@@ -2,7 +2,7 @@ import { ChatConfig } from './core/ChatConfig.js';
 import { DatabaseManager } from './core/DatabaseManager.js';
 import { ChatUI } from './ui/ChatUI.js';
 import { ChatService } from './core/ChatService.js';
-import { DOMUtils } from './utils/utils.js';
+import { DOMUtils, copyToClipboard } from './utils/utils.js';
 import { MarkdownUtils } from './utils/MarkdownUtils.js';
 import { ModelManager } from './core/ModelManager.js';
 
@@ -97,6 +97,28 @@ class ChatApplication {
       if (this.sessionId === Number(sessionId)) {
         this.startNewChat();
       }
+    });
+
+    this.ui.root.addEventListener('copy-message', async (e) => {
+      await copyToClipboard(e.detail.content);
+    });
+
+    this.ui.root.addEventListener('regenerate-message', async (e) => {
+      const { messageBlock, messageIndex } = e.detail;
+      
+      // Get the last user message
+      const userBlock = this.ui.contentContainer.children[messageIndex - 1];
+      const userContent = userBlock.querySelector('.message').textContent;
+
+      this.ui.removeBlocksAfter(messageIndex - 1); // Remove from the user message
+      
+      // Refresh context to exclude removed messages
+      const conversationInfo = await this.dbManager.db.get(this.config.stores.conversations.name, this.sessionId);
+      const updatedMessages = conversationInfo.messages.slice(0, [messageIndex - 1]);
+      await this.refreshContext(updatedMessages, this.maxContext);
+      
+      // Process the user message again
+      await this.processChat(userContent);
     });
   }
 
