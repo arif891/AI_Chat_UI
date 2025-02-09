@@ -132,6 +132,19 @@ export class ChatUI {
         const messageBlock = editButton.closest('.chat__block');
         this.enableEditMode(messageBlock);
       }
+
+      const copyButton = e.target.closest('.action__button.copy');
+      if (copyButton) {
+        const messageText = copyButton.closest('.chat__block.assistant .response').textContent;
+        DOMUtils.dispatchEvent(this.root, 'copy-message', { content: messageText });
+      }
+
+      const regenerateButton = e.target.closest('.action__button.regenerate');
+      if (regenerateButton) {
+        const messageBlock = regenerateButton.closest('.chat__block.assistant');
+        const messageIndex = Array.from(messageBlock.parentNode.children).indexOf(messageBlock);
+        DOMUtils.dispatchEvent(this.root, 'regenerate-message', { messageBlock, messageIndex });
+      }
     });
   }
 
@@ -224,7 +237,7 @@ export class ChatUI {
                           <use href="/assets/image/svg/icons.svg#copy-icon" />
                         </svg>
                       </button>
-                      <button class="action__button repeat" title="Regenerate response">
+                      <button class="action__button regenerate" title="Regenerate response">
                         <svg class="icon">
                           <use href="/assets/image/svg/icons.svg#repeat-icon" />
                         </svg>
