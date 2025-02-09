@@ -33,8 +33,8 @@ export class ChatConfig {
       },
       ui: {
        pageSize: {
-         history: 10,
-         messages: 15
+         history: 50,
+         messages: 25
        }
       },
       ...userConfig
