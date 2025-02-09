@@ -12,6 +12,7 @@ export class ChatUI {
       contentScrollContainer: '#content-scroll-container',
       contentContainer: '#content-container',
       modelMenu: '#model-menu',
+      scrollButton: '#scroll-button',
       sidebarStateName: 'chat-sidebar-open',
       backdrop: '.chat-backdrop',
       ...options
@@ -33,6 +34,7 @@ export class ChatUI {
     this.contentScrollContainer = DOMUtils.findElement(this.root, this.uiOptions.contentScrollContainer);
     this.contentContainer = DOMUtils.findElement(this.root, this.uiOptions.contentContainer);
     this.modelMenu = DOMUtils.findElement(this.root, this.uiOptions.modelMenu);
+    this.scrollButton = DOMUtils.findElement(this.root, this.uiOptions.scrollButton);
   }
 
   registerEventListeners() {
@@ -73,6 +75,10 @@ export class ChatUI {
       }
     });
 
+    this.scrollButton.addEventListener('click', () =>  {
+      this.scrollToBottom();
+    })
+
     // Chat history item click event
     this.chatHistoryContainer.addEventListener('click', (e) => {
 
@@ -108,6 +114,10 @@ export class ChatUI {
     this.modelMenu.addEventListener('click', (e) => {
       this.selectModel(e.target);
     });
+
+    // Network status updates
+    // window.addEventListener('offline', () => this.updateNetworkStatus());
+    // window.addEventListener('online', () => this.updateNetworkStatus());
 
     document.addEventListener('DOMContentLoaded', () => {
       DOMUtils.addClass(this.root, 'loaded');

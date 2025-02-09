@@ -297,6 +297,23 @@
                         }
                     }
                 }
+
+            }
+
+            .scroll-to-bottom {
+                --bg: var(--surface-2-color);
+                position: absolute;
+                inset: auto 0 var(--space-2);
+                width: fit-content;
+                margin-inline: auto;
+                padding: .5rem;
+                border-radius: 50%;
+                z-index: 2;
+
+                .icon {
+                    rotate: 180deg;
+                    height: 1.25rem;
+                }
             }
 
             .initial__content_wrapper,
