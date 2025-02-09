@@ -1,9 +1,12 @@
-import { DOMUtils, debounce} from '../utils/utils.js';
+import { DOMUtils, debounce, sanitizeInput} from '../utils/utils.js';
+import { HistoryManager } from '../core/HistoryManager.js';
+import { ModelManager } from '../core/ModelManager.js';
+import { TemplateUtils } from '../utils/TemplateUtils.js';
 
 export class ChatUI {
-  constructor(root, options = {}) {
-    this.root = root;
+  constructor(options = {}) {
     this.uiOptions = {
+      root: '#chat-app-root',
       sidebarTogglers: '.sidebar-toggler',
       textarea: '#chat-massage',
       sendButton: '#chat-send-button',
@@ -17,6 +20,12 @@ export class ChatUI {
       backdrop: '.chat-backdrop',
       ...options
     };
+
+    this.root = document.querySelector(this.uiOptions.root);
+
+
+    this.historyManager = new HistoryManager(this.root);
+    this.modelManager = new ModelManager(this.root);
 
     this.initWindowControls();
     this.initializeElements();
@@ -88,7 +97,7 @@ export class ChatUI {
       if (renameButton) {
         e.stopPropagation();
         const historyItem = renameButton.closest('.item');
-        this.enableHistoryRenameMode(historyItem);
+        this.historyManager.enableHistoryRenameMode(historyItem);
         return;
       }
 
@@ -96,12 +105,12 @@ export class ChatUI {
       if (deleteButton) {
         e.stopPropagation();
         const historyItem = deleteButton.closest('.item');
-        this.deleteHistoryItem(historyItem);
+        this.historyManager.deleteHistoryItem(historyItem);
         return;
       }
 
       try {
-        this.displayChatHistory(e.target);
+        this.historyManager.displayChatHistory(e.target);
       } catch (error) {
         console.error('Error showing chat history:', error);
       }
@@ -114,7 +123,7 @@ export class ChatUI {
 
     // Model selection event
     this.modelMenu.addEventListener('click', (e) => {
-      this.selectModel(e.target);
+      this.modelManager.selectModel(e.target);
     });
 
     // Network status updates
@@ -173,95 +182,17 @@ export class ChatUI {
     this.root.classList.toggle('offline', !navigator.onLine);
   }
 
-  sanitizeInput(input) {
-    return input
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
+
 
   renderMessage(content, role) {
     // Sanitize user input if needed and generate HTML for the message block
-    const finalContent = role === 'user' ? this.sanitizeInput(content) : content;
-    const messageHTML = this.generateMessageBlock(finalContent, role);
+    const finalContent = role === 'user' ? sanitizeInput(content) : content;
+    const messageHTML = TemplateUtils.generateMessageBlock(finalContent, role);
     DOMUtils.insertHTML(this.contentContainer, 'beforeend', messageHTML);
   }
 
   addChatHistoryItem(title, sessionId, position = 'beforeend') {
-    DOMUtils.insertHTML(this.chatHistoryContainer, position,
-      `<div class="item" data-session-id="${sessionId}">
-        <span class="title">${title}</span>
-        <div class="menu">
-          <button class="menu__item rename" title="Rename">
-            <svg class="icon">
-                <use href="/assets/image/svg/icons.svg#edit-icon" />
-            </svg>
-          </button>
-          <button class="menu__item delete" title="Delete">
-             <svg class="icon">
-                <use href="/assets/image/svg/icons.svg#delete-icon" />
-            </svg>
-          </button>
-        </div>
-      </div>`
-    );
-  }
-
-  generateMessageBlock(content, role) {
-    switch (role) {
-      case 'user':
-        return `<div class="chat__block user" data-role="${role}">
-                  <div class="actions__wrapper">
-                    <button class="action__button edit" title="Edit message">
-                      <svg class="icon">
-                        <use href="/assets/image/svg/icons.svg#edit-icon" />
-                      </svg>
-                    </button>
-                  </div>
-                  <span class="message">${content}</span>
-                </div>`;
-      case 'assistant':
-        return `<div class="chat__block assistant" data-role="${role}">
-                  <svg class="icon assistant__logo">
-                    <use href="/assets/image/svg/icons.svg#stars-icon" />
-                  </svg>
-                  <div class="response_wrapper">
-                    <div class="response">
-                      ${content}
-                    </div>
-                    <div class="actions__wrapper">
-                      <button class="action__button copy" title="Copy message">
-                        <svg class="icon">
-                          <use href="/assets/image/svg/icons.svg#copy-icon" />
-                        </svg>
-                      </button>
-                      <button class="action__button regenerate" title="Regenerate response">
-                        <svg class="icon">
-                          <use href="/assets/image/svg/icons.svg#repeat-icon" />
-                        </svg>
-                      </button>
-                      <button class="action__button like" title="Good response">
-                        <svg class="icon">
-                          <use href="/assets/image/svg/icons.svg#like-icon" />
-                        </svg>
-                      </button>
-                      <button class="action__button dislike" title="Bad response">
-                        <svg class="icon">
-                          <use href="/assets/image/svg/icons.svg#dislike-icon" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>`;
-      case 'system':
-        return `<div class="chat__block system">
-                  ${content} 
-                </div>`;
-      default:
-        return '';
-    }
+    DOMUtils.insertHTML(this.chatHistoryContainer, position, TemplateUtils.generateChatHistoryItem(title, sessionId));
   }
 
   scrollToBottom() {
@@ -349,53 +280,6 @@ export class ChatUI {
     this.editMode = null;
   }
 
-  displayChatHistory(target) {
-    const sessionIdAttribute = target.getAttribute('data-session-id');
-    if (!sessionIdAttribute) return;
-
-    DOMUtils.dispatchEvent(this.root, 'display-chat', { sessionId: sessionIdAttribute });
-  }
-
-  selectModel(target) {
-    try {
-      const selectedModel = target.getAttribute('data-model');
-      if (!selectedModel) return;
-
-      localStorage.setItem('selectedModel', selectedModel);
-      // Update UI: mark selected model as active
-      DOMUtils.findElements(this.modelMenu, '.model').forEach(modelBtn => {
-        DOMUtils.removeClass(modelBtn, 'active');
-      });
-      const selectedModelElement = this.modelMenu.querySelector(`[data-model="${selectedModel}"]`);
-      if (selectedModelElement) {
-        DOMUtils.addClass(selectedModelElement, 'active');
-      }
-
-      DOMUtils.dispatchEvent(this.root, 'model-selected', { model: selectedModel });
-    } catch (error) {
-      console.error('Error selecting model:', error);
-    }
-  }
-
-  populateModelMenu(models) {
-    models.forEach(model => {
-      const [modelName, modelInfo] = model.name.split(':');
-      DOMUtils.insertHTML(this.modelMenu, 'beforeend', `
-        <button class="model" data-model="${model.name}">
-          <span class="name">${modelName}</span>
-          <span class="info">${modelInfo || ''}</span>
-        </button>
-      `);
-    });
-  }
-
-  setActiveModel(model) {
-    const activeModelElement = this.modelMenu.querySelector(`[data-model="${model}"]`);
-    if (activeModelElement) {
-      DOMUtils.addClass(activeModelElement, 'active');
-    }
-  }
-
   clearChatHistory() {
     DOMUtils.clearInnerHTML(this.contentContainer);
   }
@@ -431,59 +315,5 @@ export class ChatUI {
     blocks.slice(index).forEach(block => {
       DOMUtils.removeElement(block);
     });
-  }
-
-
-  enableHistoryRenameMode(historyItem) {
-    const titleSpan = historyItem.querySelector('.title');
-    if (!titleSpan || DOMUtils.hasClass(historyItem, 'renaming')) return;
-
-    const originalText = titleSpan.textContent;
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.value = originalText;
-    input.className = 'rename-input';
-
-    const saveRename = async () => {
-
-      const newTitle = input.value.trim();
-      const sessionId = historyItem.dataset.sessionId;
-
-      if (newTitle && newTitle !== originalText) {
-        DOMUtils.dispatchEvent(this.root, 'rename-chat', { sessionId, title: newTitle });
-        titleSpan.textContent = newTitle;
-      } else {
-        titleSpan.textContent = originalText;
-      }
-
-      DOMUtils.removeElement(input);
-      DOMUtils.removeClass(historyItem, 'renaming');
-    };
-
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        input.blur();
-      }
-      if (e.key === 'Escape') {
-        titleSpan.textContent = originalText;
-        DOMUtils.removeElement(input);
-        DOMUtils.removeClass(historyItem, 'renaming');
-      }
-    });
-
-    input.addEventListener('blur', saveRename);
-
-    DOMUtils.addClass(historyItem, 'renaming');
-    titleSpan.after(input);
-    input.focus();
-    input.select();
-  }
-
-  deleteHistoryItem(historyItem) {
-    const sessionId = historyItem.dataset.sessionId;
-    DOMUtils.dispatchEvent(this.root, 'delete-chat', { sessionId });
-    DOMUtils.removeElement(historyItem);
   }
 }

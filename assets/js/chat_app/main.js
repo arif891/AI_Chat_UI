@@ -4,12 +4,14 @@ import { ChatUI } from './ui/ChatUI.js';
 import { ChatService } from './core/ChatService.js';
 import { DOMUtils } from './utils/utils.js';
 import { MarkdownUtils } from './utils/MarkdownUtils.js';
+import { ModelManager } from './core/ModelManager.js';
 
 class ChatApplication {
   constructor(config = {}) {
     this.config = new ChatConfig(config);
     this.dbManager = new DatabaseManager(this.config);
-    this.ui = new ChatUI(document.querySelector('#chat-app-root'));
+    this.ui = new ChatUI();
+    this.modelManager = new ModelManager(this.ui.root);
 
     this.host = 'localhost:11434';
     this.chatService = new ChatService(this.host);
@@ -244,8 +246,8 @@ class ChatApplication {
         this.model = localStorage.getItem('selectedModel');
 
         // Populate the model menu
-        this.ui.populateModelMenu(this.modelList);
-        this.ui.setActiveModel(this.model);
+        this.modelManager.populateModelMenu(this.modelList);
+        this.modelManager.setActiveModel(this.model);
       } else {
         console.error('At least one model is required');
         this.ui.addSystemMessage('At least one model is required');

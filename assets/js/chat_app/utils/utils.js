@@ -63,3 +63,11 @@ export function debounce(func, wait = 250) {
     };
   }
   
+export function sanitizeInput(input) {
+      return input
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
