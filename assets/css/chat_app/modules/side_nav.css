@@ -93,6 +93,7 @@
                         overflow: hidden;
                         text-overflow: ellipsis;
                         background-color: transparent;
+                        cursor: pointer;
 
                         &:hover, &:focus-within, .active {
                             background-color: var(--surface-color);
@@ -127,6 +128,10 @@
                             .menu__item {
                                 padding: 0;
                                 background: none;
+
+                                &.delete .icon {
+                                   fill: red;
+                                }
                             }
                         }
 

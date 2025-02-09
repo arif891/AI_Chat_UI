@@ -264,6 +264,7 @@ export class ChatUI {
     const isBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + threshold;
     
     this.root.classList[isBottom ? 'add' : 'remove']('bottom');
+    this.root.classList.add('scrolled')
   }
 
   enableEditMode(messageBlock) {

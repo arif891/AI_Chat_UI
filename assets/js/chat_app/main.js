@@ -184,6 +184,7 @@ class ChatApplication {
     this.ui.textarea.value = '';
     DOMUtils.removeAttribute(this.ui.root, 'data-session-id');
     this.context = [];
+    this.sessionId = 0;
 
     // Push new history state
     history.pushState({ type: 'new' }, null, window.location.pathname);

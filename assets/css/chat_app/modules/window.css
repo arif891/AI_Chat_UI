@@ -309,10 +309,12 @@
                 padding: .5rem;
                 border-radius: 50%;
                 z-index: 2;
+                opacity: 0;
+                pointer-events: none;
 
-                .bottom & {
-                    opacity: 0;
-                    pointer-events: none;
+                .scrolled:not(.bottom) {
+                    opacity: 1;
+                    pointer-events: auto;
                 }
 
                 .icon {
