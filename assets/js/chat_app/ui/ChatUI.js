@@ -1,4 +1,4 @@
-import { DOMUtils } from '../utils/DOMUtils.js';
+import { DOMUtils, debounce} from '../utils/utils.js';
 
 export class ChatUI {
   constructor(root, options = {}) {
@@ -75,9 +75,11 @@ export class ChatUI {
       }
     });
 
-    this.scrollButton.addEventListener('click', () =>  {
+    this.contentScrollContainer.addEventListener('scroll', debounce(() => this.updateScrollState()), { passive: true });
+
+    this.scrollButton.addEventListener('click', () => {
       this.scrollToBottom();
-    })
+    });
 
     // Chat history item click event
     this.chatHistoryContainer.addEventListener('click', (e) => {
@@ -256,6 +258,14 @@ export class ChatUI {
     });
   }
 
+
+  updateScrollState(threshold = 400) {
+    const container = this.contentScrollContainer;
+    const isBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + threshold;
+    
+    this.root.classList[isBottom ? 'add' : 'remove']('bottom');
+  }
+
   enableEditMode(messageBlock) {
     if (this.editMode) return; // Prevent multiple concurrent edits
 
@@ -413,26 +423,26 @@ export class ChatUI {
   enableHistoryRenameMode(historyItem) {
     const titleSpan = historyItem.querySelector('.title');
     if (!titleSpan || DOMUtils.hasClass(historyItem, 'renaming')) return;
-    
+
     const originalText = titleSpan.textContent;
-    
+
     const input = document.createElement('input');
     input.type = 'text';
     input.value = originalText;
     input.className = 'rename-input';
-    
+
     const saveRename = async () => {
-      
+
       const newTitle = input.value.trim();
       const sessionId = historyItem.dataset.sessionId;
-      
+
       if (newTitle && newTitle !== originalText) {
         DOMUtils.dispatchEvent(this.root, 'rename-chat', { sessionId, title: newTitle });
         titleSpan.textContent = newTitle;
       } else {
         titleSpan.textContent = originalText;
       }
-      
+
       DOMUtils.removeElement(input);
       DOMUtils.removeClass(historyItem, 'renaming');
     };
@@ -440,7 +450,7 @@ export class ChatUI {
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        input.blur(); 
+        input.blur();
       }
       if (e.key === 'Escape') {
         titleSpan.textContent = originalText;

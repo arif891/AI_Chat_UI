@@ -2,7 +2,7 @@ import { ChatConfig } from './core/ChatConfig.js';
 import { DatabaseManager } from './core/DatabaseManager.js';
 import { ChatUI } from './ui/ChatUI.js';
 import { ChatService } from './core/ChatService.js';
-import { DOMUtils } from './utils/DOMUtils.js';
+import { DOMUtils } from './utils/utils.js';
 import { MarkdownUtils } from './utils/MarkdownUtils.js';
 
 class ChatApplication {
