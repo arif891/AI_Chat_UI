@@ -17,7 +17,7 @@ export class ChatService {
                     content: `Generate a title for this message: '${userContent}'.`
                 }
             ]
-        });
+        },null);
 
         if (titleResponse.message.content) {
             return titleResponse.message.content.replaceAll('"', '');
