@@ -1185,6 +1185,18 @@ export function default_add_token(data, type) {
 	data.nodes[data.index] = slot
 }
 
+
+export function parse(markdown) {
+    const root = document.createElement('div');
+    const renderer = default_renderer(root)
+    const p = parser(renderer)
+
+    parser_write(p, markdown)
+    parser_end(p)
+
+    return root.innerHTML
+}
+
 /** @type {Default_Renderer_End_Token} */
 export function default_end_token(data) {
 	data.index -= 1
