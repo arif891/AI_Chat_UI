@@ -144,8 +144,9 @@ export class ChatUI {
 
       const copyButton = e.target.closest('.action__button.copy');
       if (copyButton) {
-        const messageText = copyButton.closest('.chat__block.assistant .response').textContent;
-        DOMUtils.dispatchEvent(this.root, 'copy-message', { content: messageText });
+        const messageBlock = copyButton.closest('.chat__block.assistant');
+        const messageText = messageBlock.querySelector('.response').textContent.trim();
+        DOMUtils.dispatchEvent(this.root, 'copy-message', {block: messageBlock, content: messageText });
       }
 
       const regenerateButton = e.target.closest('.action__button.regenerate');
