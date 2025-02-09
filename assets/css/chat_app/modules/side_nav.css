@@ -94,7 +94,7 @@
                         text-overflow: ellipsis;
                         background-color: transparent;
 
-                        &:hover, .active {
+                        &:hover, &:focus-within, .active {
                             background-color: var(--surface-color);
                         }
 
@@ -117,9 +117,11 @@
                             padding-inline: .5rem 1rem;
                             background-color: var(--surface-color);
                             opacity: 0;
+                            pointer-events: none;
 
                             .item:hover & {
                                 opacity: 1;
+                                pointer-events: auto;
                             }
 
                             .menu__item {
