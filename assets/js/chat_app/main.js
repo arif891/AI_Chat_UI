@@ -146,6 +146,7 @@ class ChatApplication {
         assistantContent += part.message.content;
         MarkdownUtils.parserWrite(parser, part.message.content);
       }
+      MarkdownUtils.parserEnd(parser);
 
       DOMUtils.removeClass(this.ui.root, 'generating');
 
