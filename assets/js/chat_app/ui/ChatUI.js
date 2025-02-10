@@ -227,7 +227,7 @@ export class ChatUI {
   }
 
 
-  updateScrollState(threshold = 400) {
+  updateScrollState(threshold = 500) {
     const container = this.contentScrollContainer;
     const isBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + threshold;
     

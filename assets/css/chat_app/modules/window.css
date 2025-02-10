@@ -97,9 +97,12 @@
                                 text-align: left;
                                 background-color: transparent;
 
-                                &:hover,
                                 &.active {
                                     background-color: var(--bg-color);
+                                }
+
+                                &:hover, &:focus-within {
+                                    background-color: rgb(from var(--bg-color) r g b / 50%);
                                 }
 
                                 span {
@@ -312,7 +315,7 @@
                 opacity: 0;
                 pointer-events: none;
 
-                .scrolled:not(.bottom) {
+                .scrolled:not(.bottom) & {
                     opacity: 1;
                     pointer-events: auto;
                 }

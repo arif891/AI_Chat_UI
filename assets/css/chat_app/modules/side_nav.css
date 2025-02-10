@@ -82,7 +82,7 @@
                 .items__wrapper {
                     display: flex;
                     flex-direction: column;
-                    gap: .05rem;
+                    gap: .25rem;
 
                     .item {
                         position: relative;
@@ -96,10 +96,16 @@
                         background-color: transparent;
                         cursor: pointer;
 
-                        &:hover,
-                        &:focus-within,
                         &.active {
                             background-color: var(--surface-color);
+                        }
+
+                        &:hover, &:focus-within {
+                            background-color: rgb(from var(--surface-color) r g b / 75%);
+                        }
+
+                        &:focus {
+                            outline-color: var(--accent-color);
                         }
 
                         .title,
@@ -119,8 +125,8 @@
                             inset: 0 0 0 auto;
                             display: flex;
                             gap: var(--space);
-                            padding-inline: .5rem 1rem;
-                            background-color: var(--surface-color);
+                            padding-inline: .75rem 1rem;
+                            background: linear-gradient(to right, transparent, var(--surface-color) 15% 100%) ;
                             opacity: 0;
                             pointer-events: none;
 
