@@ -82,6 +82,7 @@
                 .items__wrapper {
                     display: flex;
                     flex-direction: column;
+                    gap: .05rem;
 
                     .item {
                         position: relative;
@@ -95,12 +96,15 @@
                         background-color: transparent;
                         cursor: pointer;
 
-                        &:hover, &:focus-within, .active {
+                        &:hover,
+                        &:focus-within,
+                        &.active {
                             background-color: var(--surface-color);
                         }
 
-                        .title, .menu {
-                            
+                        .title,
+                        .menu {
+
                             .renaming & {
                                 display: none;
                             }
@@ -120,17 +124,30 @@
                             opacity: 0;
                             pointer-events: none;
 
-                            .item:hover & {
-                                opacity: 1;
-                                pointer-events: auto;
+                           
+
+
+                            @media (hover: hover) {
+                                .item:hover &, .item:focus-within & {
+                                    opacity: 1;
+                                    pointer-events: auto;
+                                }
                             }
+
+                            @media (hover: none) {
+                                .item.active & {
+                                    opacity: 1;
+                                    pointer-events: auto;
+                                }
+                            }
+
 
                             .menu__item {
                                 padding: 0;
                                 background: none;
 
                                 &.delete .icon {
-                                   fill: red;
+                                    fill: red;
                                 }
                             }
                         }
@@ -138,7 +155,7 @@
                         .rename-input {
                             width: 100%;
                             font: inherit;
-                            
+
                             &:focus {
                                 outline-color: var(--accent-color);
                             }

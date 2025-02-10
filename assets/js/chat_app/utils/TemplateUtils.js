@@ -55,7 +55,7 @@ export class TemplateUtils {
   }
 
   static generateChatHistoryItem(title, sessionId) {
-    return `<div class="item" data-session-id="${sessionId}">
+    return `<div class="item" data-session-id="${sessionId}" tabindex="0">
               <span class="title">${title}</span>
               <div class="menu">
                 <button class="menu__item rename" title="Rename">

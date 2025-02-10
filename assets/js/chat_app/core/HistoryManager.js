@@ -13,6 +13,8 @@ export class HistoryManager {
     }
 
     enableHistoryRenameMode(historyItem) {
+        const metaTag = document.querySelector('meta[name="viewport"]');
+        
         const titleSpan = historyItem.querySelector('.title');
         if (!titleSpan || DOMUtils.hasClass(historyItem, 'renaming')) return;
 
@@ -37,6 +39,7 @@ export class HistoryManager {
 
             DOMUtils.removeElement(input);
             DOMUtils.removeClass(historyItem, 'renaming');
+            metaTag.setAttribute('content', 'width=device-width, initial-scale=1.0, interactive-widget=resizes-content');
         };
 
         input.addEventListener('keydown', (e) => {
@@ -48,12 +51,14 @@ export class HistoryManager {
                 titleSpan.textContent = originalText;
                 DOMUtils.removeElement(input);
                 DOMUtils.removeClass(historyItem, 'renaming');
+                metaTag.setAttribute('content', 'width=device-width, initial-scale=1.0, interactive-widget=resizes-content');
             }
         });
 
         input.addEventListener('blur', saveRename);
 
         DOMUtils.addClass(historyItem, 'renaming');
+        metaTag.setAttribute('content', 'width=device-width, initial-scale=1.0, interactive-widget=resizes-visual');
         titleSpan.after(input);
         input.focus();
         input.select();
