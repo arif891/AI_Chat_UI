@@ -209,6 +209,7 @@ class ChatApplication {
     DOMUtils.removeAttribute(this.ui.root, 'data-session-id');
     this.context = [];
     this.sessionId = 0;
+    this.ui.clearActiveHistoryItem();
 
     // Push new history state
     history.pushState({ type: 'new' }, null, window.location.pathname);
@@ -252,6 +253,11 @@ class ChatApplication {
 
       const sessionInfo = await this.dbManager.db.get(this.config.stores.sessions.name, this.sessionId);
       document.title = sessionInfo.title;
+
+      const historyItem = this.ui.chatHistoryContainer.querySelector(`.item[data-session-id="${sessionId}"]`);
+      if (historyItem) {
+        this.ui.setActiveHistoryItem(historyItem);
+      }
     } catch (error) {
       console.error('Error displaying chat history:', error);
     }

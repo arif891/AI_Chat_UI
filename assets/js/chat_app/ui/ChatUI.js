@@ -32,6 +32,7 @@ export class ChatUI {
     this.registerEventListeners();
 
     this.editMode = null;
+    this.activeHistoryItem = null;
   }
 
   initializeElements() {
@@ -44,6 +45,23 @@ export class ChatUI {
     this.contentContainer = DOMUtils.findElement(this.root, this.uiOptions.contentContainer);
     this.modelMenu = DOMUtils.findElement(this.root, this.uiOptions.modelMenu);
     this.scrollButton = DOMUtils.findElement(this.root, this.uiOptions.scrollButton);
+  }
+
+  setActiveHistoryItem(historyItem) {
+    if (this.activeHistoryItem) {
+      DOMUtils.removeClass(this.activeHistoryItem, 'active');
+    }
+    this.activeHistoryItem = historyItem;
+    if (historyItem) {
+      DOMUtils.addClass(this.activeHistoryItem, 'active');
+    }
+  }
+
+  clearActiveHistoryItem() {
+    if (this.activeHistoryItem) {
+      DOMUtils.removeClass(this.activeHistoryItem, 'active');
+      this.activeHistoryItem = null;
+    }
   }
 
   registerEventListeners() {
@@ -107,6 +125,11 @@ export class ChatUI {
         const historyItem = deleteButton.closest('.item');
         this.historyManager.deleteHistoryItem(historyItem);
         return;
+      }
+
+      const historyItem = e.target.closest('.item');
+      if (historyItem) {
+        this.setActiveHistoryItem(historyItem);
       }
 
       try {
