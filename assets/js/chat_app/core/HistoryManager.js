@@ -61,7 +61,6 @@ export class HistoryManager {
         metaTag.setAttribute('content', 'width=device-width, initial-scale=1.0, interactive-widget=resizes-visual');
         titleSpan.after(input);
         input.focus();
-        input.select();
     }
 
     deleteHistoryItem(historyItem) {

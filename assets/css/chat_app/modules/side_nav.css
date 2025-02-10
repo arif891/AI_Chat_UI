@@ -4,13 +4,15 @@
         grid-template-rows: max-content max-content 1fr max-content;
         gap: var(--space-2);
         overflow-x: clip;
-        padding: var(--space);
+        margin: var(--space);
         content-visibility: auto;
 
         @media (width < 992px) {
             position: fixed;
             inset: 0 auto 0 0;
             width: min(80%, var(--sidebar-width));
+            padding: var(--space);
+            margin: 0;
             background-color: var(--bg-color);
             z-index: 2;
             transition: .6s;
