@@ -97,12 +97,12 @@
                                 text-align: left;
                                 background-color: transparent;
 
-                                &.active {
-                                    background-color: var(--bg-color);
-                                }
-
                                 &:hover, &:focus-within {
                                     background-color: rgb(from var(--bg-color) r g b / 50%);
+                                }
+
+                                &.active {
+                                    background-color: var(--bg-color);
                                 }
 
                                 span {

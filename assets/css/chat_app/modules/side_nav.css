@@ -82,7 +82,7 @@
                 .items__wrapper {
                     display: flex;
                     flex-direction: column;
-                    gap: .25rem;
+                    gap: .15rem;
 
                     .item {
                         position: relative;
@@ -196,6 +196,7 @@
                 border-radius: var(--radius);
                 color: inherit;
                 background-color: var(--surface-color);
+                cursor: pointer;
 
                 >* {
                     flex-shrink: 0;
