@@ -44,7 +44,6 @@ AI_Chat_UI/
 └── pages/            # Static pages
 ```
 
-
 ## Development
 
 ### Customization
@@ -62,8 +61,8 @@ Modify theme variables in:
 
 You can customize the chat UI by modifying the following files:
 
--   `assets/css/chat_app/main.css`: Main stylesheet for the chat interface.
--   `assets/js/chat_app/main.js`: Main script for the chat interface.
+- `assets/css/chat_app/main.css`: Main stylesheet for the chat interface.
+- `assets/js/chat_app/main.js`: Main script for the chat interface.
 
 ## PWA Support
 
@@ -95,6 +94,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Future Enhancements
 
--   Add support for more LLMs.
--   Add more customization options for the chat interface.
--   Implement voice input and output.
+- Add support for more LLMs.
+- Add more customization options for the chat interface.
+- Implement voice input and output.
