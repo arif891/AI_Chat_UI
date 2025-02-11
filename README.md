@@ -10,6 +10,8 @@ No setup required, just visit [Chat UI](https://aichatui.layx.xyz) and use. You 
 
 **Note:** This application requires a local LLM like Ollama to be running. Make sure you have Ollama installed and running before using the chat interface.
 
+> ⚠️ **Notice:** This project is currently under active development. Features may be incomplete or subject to change.
+
 ## Features
 
 - 🎨 Modern, clean UI design
