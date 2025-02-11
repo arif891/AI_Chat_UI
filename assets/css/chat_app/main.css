@@ -84,7 +84,7 @@
     .ui-backdrop {
         --backdrop-bg: rgba(var(--bg-color-rgb), .6);
 
-        z-index: 2;
+        z-index: 3;
     }
 
     @media (aspect-ratio >=21/9) and (width >=2000px) {

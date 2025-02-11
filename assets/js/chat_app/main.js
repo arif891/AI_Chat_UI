@@ -208,6 +208,7 @@ class ChatApplication {
 
   startNewChat() {
     DOMUtils.addClass(this.ui.root, 'initial');
+    DOMUtils.removeClass(this.ui.root, 'scrolled');
     this.ui.clearChatHistory();
     this.ui.textarea.value = '';
     DOMUtils.removeAttribute(this.ui.root, 'data-session-id');
