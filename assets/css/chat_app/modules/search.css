@@ -1,0 +1,64 @@
+.chat__wrapper {
+
+    .search__wrapper {
+        position: fixed;
+        inset: 0;
+        z-index: 5;
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+        content-visibility: auto;
+
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+            flex-grow: 1;
+            max-width: min(48rem, 100%);
+            margin-top: 10vh;
+            padding: 1.25rem;
+            border-radius: 1.5rem 1.5rem 0 0;
+            background-color: var(--surface-3-color);
+            pointer-events: auto;
+            translate: 0 100%;
+            transition: .6s;
+
+            @media (width >=992px) {
+                padding: 2.5rem;
+                border-radius: .5rem .5rem 0 0;
+            }
+
+            .open & {
+                translate: 0 0;
+            }
+
+            .head {
+                display: flex;
+                justify-content: space-between;
+
+                .heading {
+                    text-box: trim-both cap alphabetic;
+                    margin-bottom: 1rem;
+                }
+
+                .close {}
+            }
+
+            .result-wrapper {
+                display: flex;
+                flex-direction: column;
+                gap: .5rem;
+
+                .item {
+                    display: flex;
+                    align-items: center;
+                    gap: .5rem;
+                    padding: .75rem;
+                    background-color: var(--bg-color);
+                    cursor: pointer;
+                    border-radius: .25rem;
+                }
+            }
+        }
+    }
+ }

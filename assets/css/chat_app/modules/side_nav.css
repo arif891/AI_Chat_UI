@@ -14,7 +14,7 @@
             padding: var(--space);
             margin: 0;
             background-color: var(--bg-color);
-            z-index: 2;
+            z-index: 3;
             transition: .6s;
             translate: -100% 0;
 

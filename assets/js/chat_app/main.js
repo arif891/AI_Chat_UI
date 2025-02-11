@@ -6,6 +6,7 @@ import { DOMUtils, copyToClipboard } from './utils/utils.js';
 import { MarkdownUtils } from './utils/MarkdownUtils.js';
 import { ModelManager } from './core/ModelManager.js';
 import { SettingsManager } from './core/SettingsManager.js';
+import { SearchManager } from './core/SearchManager.js';
 
 class ChatApplication {
   constructor(config = {}) {
@@ -14,6 +15,7 @@ class ChatApplication {
     this.ui = new ChatUI();
     this.modelManager = new ModelManager(this.ui.root);
     this.settingsManager = new SettingsManager(this.ui.root);
+    this.searchManager = new SearchManager(this.ui.root);
 
     this.host = this.settingsManager.getHost();
     this.chatService = new ChatService(this.host);
