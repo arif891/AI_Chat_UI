@@ -5,6 +5,7 @@ import { ChatService } from './core/ChatService.js';
 import { DOMUtils, copyToClipboard } from './utils/utils.js';
 import { MarkdownUtils } from './utils/MarkdownUtils.js';
 import { ModelManager } from './core/ModelManager.js';
+import { SettingsManager } from './core/SettingsManager.js';
 
 class ChatApplication {
   constructor(config = {}) {
@@ -12,8 +13,9 @@ class ChatApplication {
     this.dbManager = new DatabaseManager(this.config);
     this.ui = new ChatUI();
     this.modelManager = new ModelManager(this.ui.root);
+    this.settingsManager = new SettingsManager(this.ui.root);
 
-    this.host = 'http://localhost:11434';
+    this.host = this.settingsManager.getHost();
     this.chatService = new ChatService(this.host);
     this.sessionId = 0;
     this.context = [];

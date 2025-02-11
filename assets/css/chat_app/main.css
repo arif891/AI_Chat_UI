@@ -80,6 +80,12 @@
         }
     }
 
+    .ui-backdrop {
+        --backdrop-bg: rgba(var(--bg-color-rgb), .6);
+
+        z-index: 2;
+    }
+
     @media (aspect-ratio >=21/9) and (width >=2000px) {
         padding-inline: 15%;
     }

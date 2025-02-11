@@ -144,21 +144,24 @@
       </div>
 
 
-      <div class="setting_wrapper" >
+      <div class="setting_wrapper" id="settings">
         <div class="wrapper">
           <div class="head">
             <h4 class="heading">Settings</h4>
             <button class="close"></button>
           </div>
           <div class="link_wrapper">
-            <button class="link" data-window-target="api">API</button>
+            <button class="link active" data-window-target="api">API</button>
+            <button class="link" data-window-target="ui">UI</button>
           </div>
           <div class="window__wrapper">
-             <div class="window api" data-window="api">
+            <div class="window api" data-window="api">
+              <form id="api-form">
                 <label for="host">Host</label>
-                <input class="wide" type="url" name="host" placeholder="Host URL (e.g. http://localhost:11434)">
-                <button class="dark lg wide">Save</button>
-             </div>
+                <input class="wide validate" type="url" name="host" placeholder="Host URL (e.g. http://localhost:11434)">
+                <button class="dark submit-btn" type="submit">Save</button>
+              </form>
+            </div>
           </div>
         </div>
       </div>

@@ -6,7 +6,7 @@
         z-index: 5;
         display: flex;
         justify-content: center;
-        background-color: rgba(var(--bg-color-rgb), .6);
+        pointer-events: none;
         content-visibility: auto;
 
         .wrapper {
@@ -14,11 +14,23 @@
             flex-direction: column;
             gap: .5rem;
             flex-grow: 1;
-            max-width: 50rem;
-            padding: 2.5rem;
-            margin-top: 5rem;
-            border-radius: .5rem .5rem 0 0;
+            max-width: 48rem;
+            margin-top: 10vh;
+            padding: 1.25rem;
+            border-radius: 1.5rem 1.5rem 0 0;
             background-color: var(--surface-3-color);
+            pointer-events: auto;
+            translate: 0 100%;
+            transition: .6s;
+
+            @media (width >=992px) {
+                padding: 2.5rem;
+                border-radius: .5rem .5rem 0 0;
+            }
+
+            .open & {
+                translate: 0 0;
+            }
 
             .head, .link_wrapper, .window__wrapper {
                 display: flex;
@@ -29,19 +41,32 @@
 
                 .heading {
                     text-box: trim-both cap alphabetic;
+                    margin-bottom: 1rem;
                 }
 
                 .close {
-                 height: 1.15rem;
+                 
                 }
             }
 
             .link_wrapper {
+                flex-wrap: wrap;
                 gap: .5rem;
 
               .link {
                 --padding-x: 1.25rem;
                 --padding-y: 1rem;
+                --bg: transparent;
+
+                flex-grow: 1;
+
+                &:hover {
+                    --bg: var(--surface-color);
+                }
+
+                &.active {
+                  --bg: var(--bg-color);
+                }
               }
             }
 
@@ -56,6 +81,19 @@
                     max-height: 100%;
                     overflow-y: auto;
                     flex-shrink: 0;
+                }
+
+                .api {
+                    #api-form {
+                        display: flex;
+                        flex-direction: column;
+                        padding: 0 2px;
+                        background: unset;
+
+                        .submit-btn {
+                            --padding-y: 1.35rem;
+                        }
+                    }
                 }
             }
         }
