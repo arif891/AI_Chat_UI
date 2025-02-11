@@ -76,9 +76,9 @@ The application includes Progressive Web App features:
 ## Browser Support
 
 - Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
 - Edge (latest)
+- Safari (latest)
+- Firefox (latest)
 
 ## Contributing
 
