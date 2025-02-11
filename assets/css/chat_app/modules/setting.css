@@ -14,7 +14,7 @@
             flex-direction: column;
             gap: .5rem;
             flex-grow: 1;
-            max-width: 48rem;
+            max-width: min(48rem, 100%);
             margin-top: 10vh;
             padding: 1.25rem;
             border-radius: 1.5rem 1.5rem 0 0;
@@ -72,7 +72,7 @@
 
             .window__wrapper {
                 flex-grow: 1;
-                overflow-x: auto;
+                overflow-x: hidden;
                 scrollbar-width: none;
                 margin-top: .5rem;
                 scroll-snap-type: x mandatory;

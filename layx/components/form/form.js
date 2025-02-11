@@ -25,6 +25,7 @@ class Form {
             // Update CSS custom property on input change
             input.addEventListener('input', () => {
                 input.style.setProperty('--value', input.value);
+                input.setAttribute('value', input.value);
             });
         });
     }

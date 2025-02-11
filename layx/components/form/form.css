@@ -292,8 +292,7 @@ input:not(.default) {
         transition: background-size .1s;
 
         &.value::after {
-            counter-set: value var(--value);
-            content: var(--value-before, '') counter(value) var(--value-after, '');
+            content: var(--value-before, '') attr(value) var(--value-after, '');
             pointer-events: none;
             position: absolute;
             inset: .5rem;
