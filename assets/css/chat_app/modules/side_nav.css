@@ -161,8 +161,9 @@
                         }
 
                         .rename-input {
-                            width: 100%;
-                            font: inherit;
+                            padding: .1rem;
+                            margin: 0;
+                            border-radius: 0;
 
                             &:focus {
                                 outline-color: var(--accent-color);

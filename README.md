@@ -1,5 +1,7 @@
 # AI Chat UI for local LLM
 
+![App Screenshot](.github/screenshot.png)
+
 A modern, responsive chat interface built with the LayX framework, designed for AI-powered conversations using local Large Language Models (LLMs) such as **Ollama**.
 
 ## Setup
