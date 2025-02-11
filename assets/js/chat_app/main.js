@@ -13,7 +13,7 @@ class ChatApplication {
     this.ui = new ChatUI();
     this.modelManager = new ModelManager(this.ui.root);
 
-    this.host = 'localhost:11434';
+    this.host = 'http://localhost:11434';
     this.chatService = new ChatService(this.host);
     this.sessionId = 0;
     this.context = [];

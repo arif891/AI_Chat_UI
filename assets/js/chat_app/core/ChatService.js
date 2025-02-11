@@ -27,7 +27,7 @@ export class ChatService {
 
     async chat(options, signal = this.abortController.signal) {
         try {
-            const response = await fetch(`http://${this.host}/api/chat`, {
+            const response = await fetch(`${this.host}/api/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -53,7 +53,7 @@ export class ChatService {
 
     async *streamChat(options, signal = this.abortController.signal) {
         try {
-            const response = await fetch(`http://${this.host}/api/chat`, {
+            const response = await fetch(`${this.host}/api/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -112,7 +112,7 @@ export class ChatService {
 
     async list() {
         try {
-            const response = await fetch(`http://${this.host}/api/tags`, {
+            const response = await fetch(`${this.host}/api/tags`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'

@@ -1,6 +1,7 @@
 @import url(modules/side_nav.css);
 @import url(modules/window.css);
 @import url(modules/action.css);
+@import url(modules/setting.css);
 
 .chat__wrapper {
     --sidebar-width: 20rem;

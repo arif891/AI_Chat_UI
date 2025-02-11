@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
-    
+
     <!-- Primary Meta Tags -->
     <title>AI Chat</title>
 
@@ -73,6 +73,8 @@
           </div>
         </div>
       </div>
+
+
       <div class="main">
         <div class="window__wrapper">
           <div class="header__wrapper">
@@ -114,9 +116,11 @@
             </div>
           </div>
         </div>
+
         <div class="action__wrapper">
           <div class="chat__action" id="chat-action">
-            <textarea class="chat__textarea" id="chat-massage" placeholder="Ask to model" enterkeyhint="send"></textarea>
+            <textarea class="chat__textarea" id="chat-massage" placeholder="Ask to model"
+              enterkeyhint="send"></textarea>
             <div class="bottom__wrapper">
               <button class="r chat__button">
                 <svg class="icon">
@@ -136,6 +140,26 @@
             </div>
           </div>
           <span class="note">Model can make mistakes. Check important info.</span>
+        </div>
+      </div>
+
+
+      <div class="setting_wrapper" >
+        <div class="wrapper">
+          <div class="head">
+            <h4 class="heading">Settings</h4>
+            <button class="close"></button>
+          </div>
+          <div class="link_wrapper">
+            <button class="link" data-window-target="api">API</button>
+          </div>
+          <div class="window__wrapper">
+             <div class="window api" data-window="api">
+                <label for="host">Host</label>
+                <input class="wide" type="url" name="host" placeholder="Host URL (e.g. http://localhost:11434)">
+                <button class="dark lg wide">Save</button>
+             </div>
+          </div>
         </div>
       </div>
     </div>
