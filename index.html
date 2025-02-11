@@ -153,14 +153,39 @@
           <div class="link_wrapper">
             <button class="link active" data-window-target="api">API</button>
             <button class="link" data-window-target="ui">UI</button>
+            <button class="link" data-window-target="chat">Chat</button>
+            <button class="link" data-window-target="other">Other</button>
           </div>
           <div class="window__wrapper">
             <div class="window api" data-window="api">
               <form id="api-form">
                 <label for="host">Host</label>
-                <input class="wide validate" type="url" name="host" placeholder="Host URL (e.g. http://localhost:11434)">
+                <input class="validate" type="url" name="host" placeholder="Host URL (e.g. http://localhost:11434)">
                 <button class="dark submit-btn" type="submit">Save</button>
               </form>
+            </div>
+            <div class="window ui" data-window="ui">
+              <form id="ui-form">
+                <label>Message Format</label>
+                <select name="messageFormat" class="">
+                  <option value="markdown">Markdown</option>
+                  <option value="plain">Plain Text</option>
+                </select>
+                <button class="dark submit-btn" type="submit">Save</button>
+              </form>
+            </div>
+            <div class="window chat" data-window="chat" >
+              <form id="chat-form">
+                <label>Max Context Length</label>
+                <input type="number" name="maxContextLength" min="1" max="100" placeholder="e.g. 20 ">
+                <label>System Prompt</label>
+                <textarea name="systemPrompt" placeholder="System Prompt"></textarea>
+                <button class="dark submit-btn" type="submit">Save</button>
+              </form>
+            </div>
+            <div class="window other" data-window="other" >
+              <button class="export-settings lg wide">Export Settings</button>
+              <button class="import-settings lg wide">Import Settings</button>
             </div>
           </div>
         </div>

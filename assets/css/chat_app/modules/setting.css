@@ -1,5 +1,5 @@
 .chat__wrapper {
-   
+
     .setting_wrapper {
         position: fixed;
         inset: 0;
@@ -32,7 +32,9 @@
                 translate: 0 0;
             }
 
-            .head, .link_wrapper, .window__wrapper {
+            .head,
+            .link_wrapper,
+            .window__wrapper {
                 display: flex;
             }
 
@@ -44,30 +46,28 @@
                     margin-bottom: 1rem;
                 }
 
-                .close {
-                 
-                }
+                .close {}
             }
 
             .link_wrapper {
                 flex-wrap: wrap;
                 gap: .5rem;
 
-              .link {
-                --padding-x: 1.25rem;
-                --padding-y: 1rem;
-                --bg: transparent;
+                .link {
+                    --padding-x: 1.25rem;
+                    --padding-y: .9rem;
+                    --bg: transparent;
 
-                flex-grow: 1;
+                    flex-grow: 1;
 
-                &:hover {
-                    --bg: var(--surface-color);
+                    &:hover {
+                        --bg: var(--surface-color);
+                    }
+
+                    &.active {
+                        --bg: var(--bg-color);
+                    }
                 }
-
-                &.active {
-                  --bg: var(--bg-color);
-                }
-              }
             }
 
             .window__wrapper {
@@ -75,27 +75,41 @@
                 overflow-x: auto;
                 scrollbar-width: none;
                 margin-top: .5rem;
+                scroll-snap-type: x mandatory;
 
                 .window {
                     width: 100%;
                     max-height: 100%;
                     overflow-y: auto;
                     flex-shrink: 0;
-                }
+                    scroll-snap-align: center;
 
-                .api {
-                    #api-form {
+                    form {
                         display: flex;
                         flex-direction: column;
                         padding: 0 2px;
                         background: unset;
-
-                        .submit-btn {
-                            --padding-y: 1.35rem;
-                        }
                     }
+                }
+
+                button {
+                    --padding-y: 1rem;
+                    line-height: normal;
+                }
+
+                @media (width >=992px) {
+                    button, input, select, textarea {
+                        --padding-y: 1.25rem;
+                    }
+                }
+
+
+                .other {
+                    display: flex;
+                    flex-direction: column;
+                    gap: .5rem;
                 }
             }
         }
     }
- }
+}
