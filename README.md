@@ -31,8 +31,9 @@ A modern, responsive chat interface for AI conversations using local Large Langu
    sudo systemctl restart ollama
    ```
 
-2. Visit [Chat UI](https://aichatui.layx.xyz)
-3. Install as PWA (optional)
+2. Restart the Ollama application
+3. Visit [Chat UI](https://aichatui.layx.xyz)
+4. Install as PWA (optional)
 
 > ⚠️ Requires Ollama running locally
 
