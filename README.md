@@ -1,6 +1,6 @@
 # AI Chat UI for Local LLM
 
-A modern, responsive chat interface powered by LayX framework for AI conversations using local Large Language Models like Ollama.
+A modern, responsive chat interface for AI conversations using local Large Language Models like Ollama.
 
 ![App Screenshot](.github/screenshot.png)
 
@@ -46,7 +46,6 @@ A modern, responsive chat interface powered by LayX framework for AI conversatio
 
 ## Tech Stack
 
-- LayX Framework
 - HTML5/CSS3
 - Vanilla JavaScript (ES6+)
 - Service Workers
