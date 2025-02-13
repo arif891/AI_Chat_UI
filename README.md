@@ -1,4 +1,4 @@
-# AI Chat UI for Local LLM
+# AI Chat UI for Ollama
 
 A modern, responsive chat interface for AI conversations using local Large Language Models like Ollama.
 
