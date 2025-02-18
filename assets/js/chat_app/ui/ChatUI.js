@@ -244,8 +244,8 @@ export class ChatUI {
       <div class="edit__wrapper">
         <textarea class="edit-textarea">${originalText}</textarea>
         <div class="edit__actions">
-          <button class="dark r save-edit">Save</button>
           <button class="r cancel-edit">Cancel</button>
+          <button class="dark r save-edit">Save</button>
         </div> 
       </div>
     `;
